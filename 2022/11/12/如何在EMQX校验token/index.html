@@ -1,0 +1,432 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>如何在EMQX校验token - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="初识mqtt最近有个做聊天室的需求，一般来说我们用we...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">如何在EMQX校验token</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">如何在EMQX校验token</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>November 12, 2022</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2092</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h3 id="初识mqtt"><a href="#初识mqtt" class="headerlink" title="初识mqtt"></a><strong>初识mqtt</strong></h3><p>最近有个做聊天室的需求，一般来说我们用websocket和socket.io比较多，但比较消耗服务器资源。今天我们来玩个新家伙EMQX，来解耦我们的服务，降低服务器压力，并进行鉴权。</p>
+<hr>
+<h2 id="1-MQTT-和-EMQX-是什么？"><a href="#1-MQTT-和-EMQX-是什么？" class="headerlink" title="1. MQTT 和 EMQX 是什么？"></a><strong>1. MQTT 和 EMQX 是什么？</strong></h2><p>咱先来搞明白 MQTT 和 EMQX 是啥。</p>
+<ul>
+<li><strong>MQTT</strong>：一种轻量级消息协议，特别适合低带宽。</li>
+<li><strong>EMQX</strong>：一个强大的 MQTT Broker（服务端），可以管理上百万设备连接，同时支持各种高级功能，比如身份认证、消息路由、还有把那些“不听话”的客户端拒之门外。</li>
+</ul>
+<hr>
+<h2 id="2-Token-鉴权能干啥？"><a href="#2-Token-鉴权能干啥？" class="headerlink" title="2. Token 鉴权能干啥？"></a><strong>2. Token 鉴权能干啥？</strong></h2><ol>
+<li><strong>验证身份</strong></li>
+<li><strong>限制权限</strong></li>
+<li><strong>短期授权</strong></li>
+</ol>
+<hr>
+<h2 id="3-配置-EMQX-进行-Token-鉴权"><a href="#3-配置-EMQX-进行-Token-鉴权" class="headerlink" title="3. 配置 EMQX 进行 Token 鉴权"></a><strong>3. 配置 EMQX 进行 Token 鉴权</strong></h2><p>下面是实战环节，直接上代码，简单又不失优雅！</p>
+<h3 id="3-1-安装-EMQX"><a href="#3-1-安装-EMQX" class="headerlink" title="3.1 安装 EMQX"></a><strong>3.1 安装 EMQX</strong></h3><p>你可以从 <a target="_blank" rel="noopener" href="https://www.emqx.io/">EMQX 官网</a> 下载，也可以用 Docker 一键启动：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker run -d --name emqx -p 1883:1883 -p 8081:8081 emqx/emqx:latest<br></code></pre></td></tr></table></figure>
+
+<p>启动后，你可以访问管理界面（默认账号 <code>admin</code>，密码 <code>public</code>）：<br><a target="_blank" rel="noopener" href="http://localhost:18083/">http://localhost:18083</a></p>
+<hr>
+<h3 id="3-2-启用-JWT-鉴权插件"><a href="#3-2-启用-JWT-鉴权插件" class="headerlink" title="3.2 启用 JWT 鉴权插件"></a><strong>3.2 启用 JWT 鉴权插件</strong></h3><p>EMQX 内置了 <code>emqx_auth_jwt</code> 插件，用来支持基于 JWT 的 Token 鉴权。我们需要先加载这个插件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">./bin/emqx_ctl plugins load emqx_auth_jwt<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-3-配置-JWT-鉴权"><a href="#3-3-配置-JWT-鉴权" class="headerlink" title="3.3 配置 JWT 鉴权"></a><strong>3.3 配置 JWT 鉴权</strong></h3><p>JWT 的验证规则和密钥需要手动配置，打开 <code>etc/plugins/emqx_auth_jwt.conf</code>：</p>
+<h4 id="使用对称密钥-HS256-签名"><a href="#使用对称密钥-HS256-签名" class="headerlink" title="使用对称密钥 (HS256) 签名"></a><strong>使用对称密钥 (HS256) 签名</strong></h4><p>在配置文件中添加以下内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">auth.jwt.secret = my_secret_key<br>auth.jwt.claim.username = sub   <span class="hljs-comment"># 将 Token 中的 sub 字段映射为客户端 ID</span><br>auth.jwt.claim.expiry = exp     <span class="hljs-comment"># 校验 Token 的过期时间</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="使用非对称密钥-RS256-签名"><a href="#使用非对称密钥-RS256-签名" class="headerlink" title="使用非对称密钥 (RS256) 签名"></a><strong>使用非对称密钥 (RS256) 签名</strong></h4><p>也可以使用公私钥验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">auth.jwt.public_key = -----BEGIN PUBLIC KEY-----<br>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...<br>-----END PUBLIC KEY-----<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-4-客户端连接带-Token"><a href="#3-4-客户端连接带-Token" class="headerlink" title="3.4 客户端连接带 Token"></a><strong>3.4 客户端连接带 Token</strong></h3><p>配置好了服务端，客户端也需要用 Token 进行连接，代码长这样：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs javascript"><span class="hljs-keyword">const</span> mqtt = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;mqtt&#x27;</span>);<br><span class="hljs-keyword">const</span> client = mqtt.<span class="hljs-title function_">connect</span>(<span class="hljs-string">&#x27;mqtt://broker.example.com&#x27;</span>, &#123;<br>  <span class="hljs-attr">username</span>: <span class="hljs-string">&#x27;token&#x27;</span>,          <span class="hljs-comment">// 表示使用 Token 鉴权</span><br>  <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;your_jwt_token&#x27;</span>, <span class="hljs-comment">// JWT Token</span><br>  <span class="hljs-attr">clientId</span>: <span class="hljs-string">&#x27;client123&#x27;</span>,      <span class="hljs-comment">// 客户端唯一标识</span><br>&#125;);<br><br>client.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;connect&#x27;</span>, <span class="hljs-function">() =&gt;</span> &#123;<br>  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Connected to EMQX with Token!&#x27;</span>);<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-测试-Token-鉴权：效果拔群"><a href="#4-测试-Token-鉴权：效果拔群" class="headerlink" title="4. 测试 Token 鉴权：效果拔群"></a><strong>4. 测试 Token 鉴权：效果拔群</strong></h2><ol>
+<li><strong>Token 正确</strong>：设备成功连接 EMQX，消息传递通畅无阻！</li>
+<li><strong>Token 无效</strong>：服务器直接返回“认证失败”，你再多试几次，它也不会放你进来——“大门紧闭，非请莫入”。</li>
+</ol>
+<hr>
+<h2 id="5-实现动态权限管理"><a href="#5-实现动态权限管理" class="headerlink" title="5. 实现动态权限管理"></a><strong>5. 实现动态权限管理</strong></h2><p>除了验证身份，我们还可以利用 JWT 的声明功能，为不同设备配置不同的权限。</p>
+<h3 id="示例：Token-中声明主题权限"><a href="#示例：Token-中声明主题权限" class="headerlink" title="示例：Token 中声明主题权限"></a><strong>示例：Token 中声明主题权限</strong></h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;sub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;client123&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;exp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1700000000</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;topics&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;devices/123/#&quot;</span><span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="动态-ACL-配置"><a href="#动态-ACL-配置" class="headerlink" title="动态 ACL 配置"></a><strong>动态 ACL 配置</strong></h3><p>将 <code>topics</code> 声明映射到 EMQX 的权限系统：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">auth.jwt.claim.acl = topics<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-最佳实践：安全-Tips"><a href="#6-最佳实践：安全-Tips" class="headerlink" title="6. 最佳实践：安全 Tips"></a><strong>6. 最佳实践：安全 Tips</strong></h2><ol>
+<li><strong>使用 TLS 加密</strong>：不管多强的 Token，如果被明文传输，都可能被劫持。务必启用 TLS！</li>
+<li><strong>设置短期有效期</strong>：Token 应该有一个合理的过期时间（例如 10 分钟），失效后需要重新获取。</li>
+<li><strong>限制设备权限</strong>：设备只能订阅&#x2F;发布自己相关的主题，不能随便乱窜。</li>
+<li><strong>监控与日志</strong>：开启 EMQX 的日志和仪表盘功能，实时监控客户端行为，防止异常访问。</li>
+</ol>
+<hr>
+<p>EMQX 提供了丰富的配置选项，无论是用简单的对称密钥，还是复杂的公私钥，都能让你轻松驾驭。</p>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2022/11/12/%E5%A6%82%E4%BD%95%E5%9C%A8EMQX%E6%A0%A1%E9%AA%8Ctoken/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2022&#x2F;11&#x2F;12&#x2F;%E5%A6%82%E4%BD%95%E5%9C%A8EMQX%E6%A0%A1%E9%AA%8Ctoken&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2022&#x2F;11&#x2F;12&#x2F;%E5%A6%82%E4%BD%95%E5%9C%A8EMQX%E6%A0%A1%E9%AA%8Ctoken&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/rocketMQ/" rel="tag">rocketMQ</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97/" rel="tag">消息队列</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2022/11/12/%E5%AE%9E%E7%8E%B0Rtmp+Socket.io/"><i class="iconfont iconleft"></i>实现Rtmp+Socket.io</a>
+    <a href="/2022/11/08/Websocket%E5%92%8CSocket.io/">Websocket和Socket.io<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E8%AF%86mqtt"><span class="toc-text">初识mqtt</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-MQTT-%E5%92%8C-EMQX-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1. MQTT 和 EMQX 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Token-%E9%89%B4%E6%9D%83%E8%83%BD%E5%B9%B2%E5%95%A5%EF%BC%9F"><span class="toc-text">2. Token 鉴权能干啥？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%85%8D%E7%BD%AE-EMQX-%E8%BF%9B%E8%A1%8C-Token-%E9%89%B4%E6%9D%83"><span class="toc-text">3. 配置 EMQX 进行 Token 鉴权</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%AE%89%E8%A3%85-EMQX"><span class="toc-text">3.1 安装 EMQX</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%90%AF%E7%94%A8-JWT-%E9%89%B4%E6%9D%83%E6%8F%92%E4%BB%B6"><span class="toc-text">3.2 启用 JWT 鉴权插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E9%85%8D%E7%BD%AE-JWT-%E9%89%B4%E6%9D%83"><span class="toc-text">3.3 配置 JWT 鉴权</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%9E%E6%8E%A5%E5%B8%A6-Token"><span class="toc-text">3.4 客户端连接带 Token</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%B5%8B%E8%AF%95-Token-%E9%89%B4%E6%9D%83%EF%BC%9A%E6%95%88%E6%9E%9C%E6%8B%94%E7%BE%A4"><span class="toc-text">4. 测试 Token 鉴权：效果拔群</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86"><span class="toc-text">5. 实现动态权限管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9AToken-%E4%B8%AD%E5%A3%B0%E6%98%8E%E4%B8%BB%E9%A2%98%E6%9D%83%E9%99%90"><span class="toc-text">示例：Token 中声明主题权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81-ACL-%E9%85%8D%E7%BD%AE"><span class="toc-text">动态 ACL 配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9A%E5%AE%89%E5%85%A8-Tips"><span class="toc-text">6. 最佳实践：安全 Tips</span></a>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

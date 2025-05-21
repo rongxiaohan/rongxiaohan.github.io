@@ -43,7 +43,7 @@
       
         
         
-<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/xcode.min.css" name="highlight-style" mode="light">
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
 
       
         
@@ -200,7 +200,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>November 12, 2022</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2811</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>3550</span>
     </div>
   </div>
 </section>
@@ -278,15 +278,11 @@
 <li><code>@PostConstruct</code>：定义初始化方法。</li>
 <li><code>@PreDestroy</code>：定义销毁方法。</li>
 </ul>
-<h2 id="7-Spring-中的配置方式"><a href="#7-Spring-中的配置方式" class="headerlink" title="7. Spring 中的配置方式"></a>7. Spring 中的配置方式</h2><p>Spring 提供了多种配置方式来定义和管理 Bean。最常见的配置方式有：<br><img    class="lazyload" data-original="/images/favicon.ico" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="   ><span class="image-caption">图片描述</span></p>
-<h3 id="7-1-基于-XML-的配置"><a href="#7-1-基于-XML-的配置" class="headerlink" title="7.1 基于 XML 的配置"></a>7.1 基于 XML 的配置</h3><p>在早期的 Spring 版本中，开发者通常通过 XML 文件来定义和配置 Bean，下面是一个简单的例子：<br><img    class="lazyload" data-original="/images/favicon.ico" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="   ><span class="image-caption">图片描述</span></p>
-<pre><code class="xml">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot; 
-       xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-       xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans 
-                           http://www.springframework.org/schema/beans/spring-beans.xsd&quot;&gt;
-    &lt;bean id=&quot;exampleBean&quot; class=&quot;com.example.ExampleBean&quot;/&gt;
-&lt;/beans&gt;
-</code></pre>
+<h2 id="7-Spring-中的配置方式"><a href="#7-Spring-中的配置方式" class="headerlink" title="7. Spring 中的配置方式"></a>7. Spring 中的配置方式</h2><p>Spring 提供了多种配置方式来定义和管理 Bean。最常见的配置方式有：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 一个简单的Java程序</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">HelloWorld</span> &#123;<br><br>    <span class="hljs-comment">// 主方法，程序执行入口</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 打印 &quot;Hello, World!&quot; 到控制台</span><br>        System.out.println(<span class="hljs-string">&quot;Hello, World!&quot;</span>);<br><br>        <span class="hljs-comment">// 定义两个整数</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">num1</span> <span class="hljs-operator">=</span> <span class="hljs-number">10</span>;<br>        <span class="hljs-type">int</span> <span class="hljs-variable">num2</span> <span class="hljs-operator">=</span> <span class="hljs-number">20</span>;<br><br>        <span class="hljs-comment">// 调用加法方法并输出结果</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> add(num1, num2);<br>        System.out.println(<span class="hljs-string">&quot;The sum of &quot;</span> + num1 + <span class="hljs-string">&quot; and &quot;</span> + num2 + <span class="hljs-string">&quot; is: &quot;</span> + result);<br>    &#125;<br><br>    <span class="hljs-comment">// 一个简单的加法方法</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">add</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> &#123;<br>        <span class="hljs-keyword">return</span> a + b;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="7-1-基于-XML-的配置"><a href="#7-1-基于-XML-的配置" class="headerlink" title="7.1 基于 XML 的配置"></a>7.1 基于 XML 的配置</h3><p>在早期的 Spring 版本中，开发者通常通过 XML 文件来定义和配置 Bean，下面是一个简单的例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 一个简单的Java程序</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">HelloWorld</span> &#123;<br><br>    <span class="hljs-comment">// 主方法，程序执行入口</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        <span class="hljs-comment">// 打印 &quot;Hello, World!&quot; 到控制台</span><br>        System.out.println(<span class="hljs-string">&quot;Hello, World!&quot;</span>);<br><br>        <span class="hljs-comment">// 定义两个整数</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">num1</span> <span class="hljs-operator">=</span> <span class="hljs-number">10</span>;<br>        <span class="hljs-type">int</span> <span class="hljs-variable">num2</span> <span class="hljs-operator">=</span> <span class="hljs-number">20</span>;<br><br>        <span class="hljs-comment">// 调用加法方法并输出结果</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> add(num1, num2);<br>        System.out.println(<span class="hljs-string">&quot;The sum of &quot;</span> + num1 + <span class="hljs-string">&quot; and &quot;</span> + num2 + <span class="hljs-string">&quot; is: &quot;</span> + result);<br>    &#125;<br><br>    <span class="hljs-comment">// 一个简单的加法方法</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">add</span><span class="hljs-params">(<span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> &#123;<br>        <span class="hljs-keyword">return</span> a + b;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
       </section>
       <section class="extra">
@@ -294,7 +290,7 @@
           <ul class="copyright">
   
     <li><strong>本文作者：</strong>单线程垃圾清理工</li>
-    <li><strong>本文链接：</strong><a href="http://example.com/2022/11/12/Spring%20%E5%9F%BA%E7%A1%80/index.html" title="http:&#x2F;&#x2F;example.com&#x2F;2022&#x2F;11&#x2F;12&#x2F;Spring%20%E5%9F%BA%E7%A1%80&#x2F;index.html">http:&#x2F;&#x2F;example.com&#x2F;2022&#x2F;11&#x2F;12&#x2F;Spring%20%E5%9F%BA%E7%A1%80&#x2F;index.html</a></li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2022/11/12/Spring%20%E5%9F%BA%E7%A1%80/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2022&#x2F;11&#x2F;12&#x2F;Spring%20%E5%9F%BA%E7%A1%80&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2022&#x2F;11&#x2F;12&#x2F;Spring%20%E5%9F%BA%E7%A1%80&#x2F;index.html</a></li>
     <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
   
 </ul>
@@ -304,6 +300,11 @@
   <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a></li></ul> 
 
         
+  <nav class="nav">
+    <a href="/2024/05/21/Mysql%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E4%B8%80/"><i class="iconfont iconleft"></i>Mysql索引优化一</a>
+    <a href="/2022/11/12/%E5%AE%9E%E7%8E%B0Rtmp+Socket.io/">实现Rtmp+Socket.io<i class="iconfont iconright"></i></a>
+  </nav>
+
       </section>
       
     </section>

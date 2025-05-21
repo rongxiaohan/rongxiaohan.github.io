@@ -1,0 +1,457 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Websocket和Socket.io - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="WebSocket 和 Socket.IO：它们究竟有...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Websocket和Socket.io</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Websocket和Socket.io</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>November 08, 2022</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2231</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h2 id="WebSocket-和-Socket-IO：它们究竟有什么不同？"><a href="#WebSocket-和-Socket-IO：它们究竟有什么不同？" class="headerlink" title="WebSocket 和 Socket.IO：它们究竟有什么不同？"></a>WebSocket 和 Socket.IO：它们究竟有什么不同？</h2><p>之前公司用Socket.io和rtmp做网络视频通讯的需求，有人问我为什么不用Websocket，<strong>WebSocket</strong> 和 <strong>Socket.IO</strong>有什么区别 。我们往往在这两个名字面前有点迷茫：它们到底有啥区别？都能做什么？哪个更适合？</p>
+<p>今天，我就来做个 <strong>“WebSocket vs Socket.IO”</strong> 简单的对比，让你在两者之间的选择变得不再像“选择困难症”一样痛苦。准备好了吗？</p>
+<h3 id="1-WebSocket：低调的老牌英雄"><a href="#1-WebSocket：低调的老牌英雄" class="headerlink" title="1. WebSocket：低调的老牌英雄"></a>1. WebSocket：低调的老牌英雄</h3><p>首先，咱们得认识一下 WebSocket，这个已经在浏览器中浸淫多年的老家伙。你可以把 WebSocket 想象成一个安静但极为强大的通讯员——它专门用来在客户端和服务器之间提供全双工（双向）通信，效率极高，基本上你给它一个请求，它就可以在连接开启后无时无刻地向你回信。</p>
+<h4 id="WebSocket-的优点："><a href="#WebSocket-的优点：" class="headerlink" title="WebSocket 的优点："></a>WebSocket 的优点：</h4><ul>
+<li><strong>极速</strong>：一旦连接建立，WebSocket 连接将会保持打开状态，数据可以在客户端和服务器之间无障碍地传递，不会像 HTTP 那样每次请求都要重新建立连接。</li>
+<li><strong>简洁</strong>：WebSocket 本身是一个标准协议，它没有太多复杂的功能，消息的格式也很简单。</li>
+</ul>
+<h4 id="但！它也有缺点："><a href="#但！它也有缺点：" class="headerlink" title="但！它也有缺点："></a>但！它也有缺点：</h4><ul>
+<li><strong>功能单一</strong>：WebSocket 就是一个“裸”协议。它仅仅负责提供连接和通信，不会做其他事情，比如自动重连、消息广播、房间管理等。你想实现这些功能，就得自己动手。</li>
+</ul>
+<p><strong>总结：</strong> WebSocket 是个“做事干脆”的家伙，但如果你希望它能做点儿别的事，得自己给它加点功能，就像你买了一辆车，虽然车跑得快，但你得自己加装导航和空调。</p>
+<h3 id="2-Socket-IO：带着附加功能的超级英雄"><a href="#2-Socket-IO：带着附加功能的超级英雄" class="headerlink" title="2. Socket.IO：带着附加功能的超级英雄"></a>2. Socket.IO：带着附加功能的超级英雄</h3><p>接下来我们要介绍的就是 <strong>Socket.IO</strong>，这个可是更“全能”的角色。Socket.IO 并不是一种协议，而是一个基于 WebSocket 和其他协议的库，它为你封装了很多 WebSocket 不能做的事情。</p>
+<h4 id="Socket-IO-的优点："><a href="#Socket-IO-的优点：" class="headerlink" title="Socket.IO 的优点："></a>Socket.IO 的优点：</h4><ul>
+<li><strong>自动重连</strong>：如果你的连接断开，Socket.IO 会自动尝试重新连接，而 WebSocket 就只能眼睁睁看着连接消失，什么都不做。</li>
+<li><strong>跨浏览器兼容性</strong>：Socket.IO 不仅仅依赖 WebSocket。如果 WebSocket 不可用，它会自动降级使用长轮询等其他协议来保持连接。这就像你找不到 Wi-Fi 了，它还能自动切换到 4G 网络，保证不掉线。</li>
+<li><strong>广播和房间</strong>：Socket.IO 允许你通过“房间”和“命名空间”来分发消息。你可以轻松地管理不同的聊天房间，或者仅向特定的用户广播消息。WebSocket 没这功能，你得自己实现。</li>
+<li><strong>事件驱动</strong>：Socket.IO 提供了丰富的事件处理机制，不仅支持标准的消息传递，还可以通过自定义事件来完成更复杂的通信任务。</li>
+</ul>
+<h4 id="Socket-IO-的缺点："><a href="#Socket-IO-的缺点：" class="headerlink" title="Socket.IO 的缺点："></a>Socket.IO 的缺点：</h4><ul>
+<li><strong>性能开销</strong>：因为 Socket.IO 在 WebSocket 基础上封装了更多功能，所以它的性能比 WebSocket 略有损失。不过对于大多数应用来说，这点差距几乎是忽略不计的。</li>
+</ul>
+<p><strong>总结：</strong> Socket.IO 就像那种看起来啥都能做的“全能工具人”，它不光会打游戏，还能帮你做作业，甚至能陪你聊天。但有时候，它也会在做事情时拖慢一点速度，因为它得用更多的工具。</p>
+<h3 id="3-WebSocket-vs-Socket-IO：你需要知道的那些差异"><a href="#3-WebSocket-vs-Socket-IO：你需要知道的那些差异" class="headerlink" title="3. WebSocket vs Socket.IO：你需要知道的那些差异"></a>3. WebSocket vs Socket.IO：你需要知道的那些差异</h3><p>那么，WebSocket 和 Socket.IO 之间究竟有哪些差别呢？我们来总结一下：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>WebSocket</th>
+<th>Socket.IO</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>协议&#x2F;库</strong></td>
+<td>协议（RFC 6455）</td>
+<td>基于 WebSocket 封装的 JavaScript 库</td>
+</tr>
+<tr>
+<td><strong>自动重连</strong></td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td><strong>广播&#x2F;房间管理</strong></td>
+<td>需要手动实现</td>
+<td>内建广播和房间功能</td>
+</tr>
+<tr>
+<td><strong>协议兼容性</strong></td>
+<td>只支持 WebSocket</td>
+<td>支持 WebSocket、长轮询、FlashSocket 等</td>
+</tr>
+<tr>
+<td><strong>事件驱动</strong></td>
+<td>不支持</td>
+<td>支持自定义事件</td>
+</tr>
+<tr>
+<td><strong>跨平台支持</strong></td>
+<td>浏览器支持较好，需自己实现降级策略</td>
+<td>提供对 Node.js、Python、Java 等的支持</td>
+</tr>
+<tr>
+<td><strong>性能</strong></td>
+<td>性能优越（较为原始的协议）</td>
+<td>有一定性能开销，但一般不会影响大多数应用</td>
+</tr>
+<tr>
+<td><strong>使用场景</strong></td>
+<td>高性能、简单的实时通信</td>
+<td>需要多功能支持（如自动重连、广播等）的应用</td>
+</tr>
+</tbody></table>
+<h3 id="4-使用场景：WebSocket-还是-Socket-IO？"><a href="#4-使用场景：WebSocket-还是-Socket-IO？" class="headerlink" title="4. 使用场景：WebSocket 还是 Socket.IO？"></a>4. 使用场景：WebSocket 还是 Socket.IO？</h3><ul>
+<li><p><strong>如果你需要一个高效、简洁的通信协议，且自己能处理掉断线重连、广播等问题</strong>，那么 <strong>WebSocket</strong> 就是你的选择。适合对性能要求极高的应用，比如实时股票行情、体育比赛数据等。</p>
+</li>
+<li><p><strong>如果你需要更多的功能，比如自动重连、广播、房间管理等，并且不想重新发明轮子</strong>，那 <strong>Socket.IO</strong> 绝对是你的最佳伴侣。适合聊天室、在线游戏、实时协作工具等应用。</p>
+</li>
+</ul>
+<h3 id="5-结语：各有千秋，选择看需求"><a href="#5-结语：各有千秋，选择看需求" class="headerlink" title="5. 结语：各有千秋，选择看需求"></a>5. 结语：各有千秋，选择看需求</h3><p>总的来说，WebSocket 和 Socket.IO 都是非常强大的实时通信工具，各有其独特的优势。WebSocket 更简单直接，适合那些对性能要求极高的应用；而 Socket.IO 则提供了更多的功能和更好的开发体验，适合需要高层功能的应用。</p>
+<p>所以，选择哪个工具，还是得看你的需求！就像在做饭时，有时你只需要一个锅，而有时你可能需要一个多功能电饭煲；只不过选择 WebSocket 或者 Socket.IO 就像选择锅一样简单——只要根据菜肴的要求来就行了。</p>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2022/11/08/Websocket%E5%92%8CSocket.io/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2022&#x2F;11&#x2F;08&#x2F;Websocket%E5%92%8CSocket.io&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2022&#x2F;11&#x2F;08&#x2F;Websocket%E5%92%8CSocket.io&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Socket-io/" rel="tag">Socket.io</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Websocket/" rel="tag">Websocket</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2022/11/12/%E5%A6%82%E4%BD%95%E5%9C%A8EMQX%E6%A0%A1%E9%AA%8Ctoken/"><i class="iconfont iconleft"></i>如何在EMQX校验token</a>
+    <a></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WebSocket-%E5%92%8C-Socket-IO%EF%BC%9A%E5%AE%83%E4%BB%AC%E7%A9%B6%E7%AB%9F%E6%9C%89%E4%BB%80%E4%B9%88%E4%B8%8D%E5%90%8C%EF%BC%9F"><span class="toc-text">WebSocket 和 Socket.IO：它们究竟有什么不同？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-WebSocket%EF%BC%9A%E4%BD%8E%E8%B0%83%E7%9A%84%E8%80%81%E7%89%8C%E8%8B%B1%E9%9B%84"><span class="toc-text">1. WebSocket：低调的老牌英雄</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Socket-IO%EF%BC%9A%E5%B8%A6%E7%9D%80%E9%99%84%E5%8A%A0%E5%8A%9F%E8%83%BD%E7%9A%84%E8%B6%85%E7%BA%A7%E8%8B%B1%E9%9B%84"><span class="toc-text">2. Socket.IO：带着附加功能的超级英雄</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-WebSocket-vs-Socket-IO%EF%BC%9A%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E9%82%A3%E4%BA%9B%E5%B7%AE%E5%BC%82"><span class="toc-text">3. WebSocket vs Socket.IO：你需要知道的那些差异</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9AWebSocket-%E8%BF%98%E6%98%AF-Socket-IO%EF%BC%9F"><span class="toc-text">4. 使用场景：WebSocket 还是 Socket.IO？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%BB%93%E8%AF%AD%EF%BC%9A%E5%90%84%E6%9C%89%E5%8D%83%E7%A7%8B%EF%BC%8C%E9%80%89%E6%8B%A9%E7%9C%8B%E9%9C%80%E6%B1%82"><span class="toc-text">5. 结语：各有千秋，选择看需求</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

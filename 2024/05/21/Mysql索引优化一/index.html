@@ -1,0 +1,751 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Mysql索引优化一 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="索引下推优化详解
+什么是索引下推（ICP）？在没有 I...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Mysql索引优化一</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Mysql索引优化一</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 21, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>6164</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h1 id="索引下推优化详解"><a href="#索引下推优化详解" class="headerlink" title="索引下推优化详解"></a><strong>索引下推优化详解</strong></h1><hr>
+<h2 id="什么是索引下推（ICP）？"><a href="#什么是索引下推（ICP）？" class="headerlink" title="什么是索引下推（ICP）？"></a>什么是索引下推（ICP）？</h2><p>在没有 ICP 的情况下，MySQL 在使用索引时，<strong>只利用索引中能过滤的最左前缀列</strong>，一旦遇到不能通过索引判断的条件，就必须回表查询完整数据，然后再进行条件过滤。</p>
+<p>而启用 ICP 后，MySQL 会将更多的 <strong>WHERE 条件“下推”到存储引擎层</strong>，在索引遍历时就尝试判断是否满足条件，从而 <strong>减少回表操作，提高效率</strong>。</p>
+<hr>
+<h3 id="📌-举个栗子："><a href="#📌-举个栗子：" class="headerlink" title="📌 举个栗子："></a>📌 举个栗子：</h3><h3 id="表结构："><a href="#表结构：" class="headerlink" title="表结构："></a>表结构：</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> <span class="hljs-keyword">user</span> (<br>  id <span class="hljs-type">INT</span> <span class="hljs-keyword">PRIMARY</span> KEY,<br>  name <span class="hljs-type">VARCHAR</span>(<span class="hljs-number">50</span>),<br>  age <span class="hljs-type">INT</span>,<br>  city <span class="hljs-type">VARCHAR</span>(<span class="hljs-number">50</span>),<br>  INDEX idx_name_age (name, age)<br>);<br></code></pre></td></tr></table></figure>
+
+<h2 id="查询语句："><a href="#查询语句：" class="headerlink" title="查询语句："></a>查询语句：</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Tom&#x27;</span> <span class="hljs-keyword">AND</span> age <span class="hljs-operator">&gt;</span> <span class="hljs-number">30</span>;<br></code></pre></td></tr></table></figure>
+
+<h2 id="无-ICP-的行为："><a href="#无-ICP-的行为：" class="headerlink" title="无 ICP 的行为："></a>无 ICP 的行为：</h2><ul>
+<li><p>使用 <code>idx_name_age</code> 索引。</p>
+</li>
+<li><p>用索引过滤 <code>name = &#39;Tom&#39;</code>。</p>
+</li>
+<li><p>对于 name &#x3D; ‘Tom’ 的所有记录，回表查整行数据，再判断 <code>age &gt; 30</code>。</p>
+</li>
+</ul>
+<h2 id="有-ICP-的行为："><a href="#有-ICP-的行为：" class="headerlink" title="有 ICP 的行为："></a>有 ICP 的行为：</h2><ul>
+<li><p>使用 <code>idx_name_age</code>。</p>
+</li>
+<li><p>在遍历索引时就直接判断 <code>name = &#39;Tom&#39; AND age &gt; 30</code>，<strong>只有匹配的记录才回表</strong>。</p>
+</li>
+</ul>
+<hr>
+<h2 id="📊-性能优势"><a href="#📊-性能优势" class="headerlink" title="📊 性能优势"></a>📊 性能优势</h2><table>
+<thead>
+<tr>
+<th>条件过滤位置</th>
+<th>回表频率</th>
+<th>性能表现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无 ICP，Server 层</td>
+<td>高</td>
+<td>慢</td>
+</tr>
+<tr>
+<td>有 ICP，Storage 层</td>
+<td>低</td>
+<td>更快 🚀</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔍-怎么知道有没有启用-ICP？"><a href="#🔍-怎么知道有没有启用-ICP？" class="headerlink" title="🔍 怎么知道有没有启用 ICP？"></a>🔍 怎么知道有没有启用 ICP？</h2><p>使用 <code>EXPLAIN</code> 或 <code>EXPLAIN ANALYZE</code> 看 <code>Extra</code> 字段是否包含：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">Using index condition<br></code></pre></td></tr></table></figure>
+
+<p>如果看到了，那就说明用了索引下推。</p>
+<hr>
+<h2 id="🛠-小贴士"><a href="#🛠-小贴士" class="headerlink" title="🛠 小贴士"></a>🛠 小贴士</h2><ul>
+<li><p>ICP 仅在 <strong>二级索引</strong> 上有效（主键除外）。</p>
+</li>
+<li><p>支持的存储引擎：InnoDB、MyISAM。</p>
+</li>
+<li><p>默认是开启的（MySQL 5.6+）。</p>
+</li>
+<li><p>可以通过以下方式禁用（一般不建议）：</p>
+  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SET</span> optimizer_switch<span class="hljs-operator">=</span><span class="hljs-string">&#x27;index_condition_pushdown=off&#x27;</span>;<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h1 id="Mysql优化器索引选择探究"><a href="#Mysql优化器索引选择探究" class="headerlink" title="Mysql优化器索引选择探究"></a><strong>Mysql优化器索引选择探究</strong></h1><h2 id="🧠-优化器选择索引的核心逻辑"><a href="#🧠-优化器选择索引的核心逻辑" class="headerlink" title="🧠 优化器选择索引的核心逻辑"></a>🧠 优化器选择索引的核心逻辑</h2><p>优化器目标是：<strong>找出最便宜的执行计划（成本最小）</strong>。</p>
+<p>其索引选择过程主要基于以下几个维度：</p>
+<h3 id="1-过滤性（Selectivity）"><a href="#1-过滤性（Selectivity）" class="headerlink" title="1. 过滤性（Selectivity）"></a>1. <strong>过滤性（Selectivity）</strong></h3><ul>
+<li><p><strong>过滤性越高（返回行数越少）越优。</strong></p>
+</li>
+<li><p>优化器通过 <strong>索引统计信息</strong> 估算某条件过滤后剩余的数据量。</p>
+</li>
+</ul>
+<p>比如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> gender <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;M&#x27;</span>;<br><span class="hljs-comment">-- gender 有两个值（M / F），过滤性低</span><br><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> id <span class="hljs-operator">=</span> <span class="hljs-number">123</span>;<br><span class="hljs-comment">-- id 是主键，过滤性极高</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-索引的最左前缀匹配原则"><a href="#2-索引的最左前缀匹配原则" class="headerlink" title="2. 索引的最左前缀匹配原则"></a>2. <strong>索引的最左前缀匹配原则</strong></h3><p>对于联合索引 <code>(a, b, c)</code>：</p>
+<ul>
+<li><p><code>WHERE a = 1 AND b = 2</code> ✅</p>
+</li>
+<li><p><code>WHERE b = 2</code> ❌（跳过了 a）</p>
+</li>
+<li><p><code>WHERE a = 1 AND c = 3</code> ✅（但不能使用 c 进行索引过滤）</p>
+</li>
+</ul>
+<p>优化器优先考虑 <strong>从左到右能连续匹配的列</strong>。</p>
+<hr>
+<h3 id="3-是否能覆盖查询（covering-index）"><a href="#3-是否能覆盖查询（covering-index）" class="headerlink" title="3. 是否能覆盖查询（covering index）"></a>3. <strong>是否能覆盖查询（covering index）</strong></h3><p>如果某个索引包含了查询需要的所有列，MySQL 会优先选择该索引，因为：</p>
+<ul>
+<li><p><strong>无需回表（减少 I&#x2F;O）</strong></p>
+</li>
+<li><p>查询更快</p>
+</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> id, name <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Tom&#x27;</span>;<br><span class="hljs-comment">-- 如果有索引 (name, id)，这就是 covering index</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-是否符合排序、分组优化"><a href="#4-是否符合排序、分组优化" class="headerlink" title="4. 是否符合排序、分组优化"></a>4. <strong>是否符合排序、分组优化</strong></h3><p>如果索引能用于 <code>ORDER BY</code>、<code>GROUP BY</code>，优化器更倾向于用它来省略排序操作。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">WHERE</span> user_id <span class="hljs-operator">=</span> <span class="hljs-number">1</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> create_time <span class="hljs-keyword">DESC</span>;<br><span class="hljs-comment">-- 如果有索引 (user_id, create_time)，可以用上</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="5-统计信息和成本估算"><a href="#5-统计信息和成本估算" class="headerlink" title="5. 统计信息和成本估算"></a>5. <strong>统计信息和成本估算</strong></h3><p>优化器依赖表和索引的统计信息，包括：</p>
+<ul>
+<li><p>表的总行数</p>
+</li>
+<li><p>索引中某列的基数（cardinality）</p>
+</li>
+<li><p>NULL 值分布</p>
+</li>
+<li><p>区块分布（histogram）等（MySQL 8.0+）</p>
+</li>
+</ul>
+<p>👉 <strong>如果统计信息不准确，优化器可能选错索引！</strong></p>
+<hr>
+<h3 id="6-索引-vs-全表扫描"><a href="#6-索引-vs-全表扫描" class="headerlink" title="6. 索引 vs 全表扫描"></a>6. <strong>索引 vs 全表扫描</strong></h3><p>如果优化器估算某索引带来的扫描行数 &gt; 全表扫描代价，它会放弃索引。</p>
+<p>例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> log <span class="hljs-keyword">WHERE</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;active&#x27;</span>;<br><span class="hljs-comment">-- log 表有 1000 万行，status = &#x27;active&#x27; 有 950 万</span><br><span class="hljs-comment">-- 优化器可能选择全表扫描（因为回表代价高）</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔍-如何观察优化器选择了哪个索引？"><a href="#🔍-如何观察优化器选择了哪个索引？" class="headerlink" title="🔍 如何观察优化器选择了哪个索引？"></a>🔍 如何观察优化器选择了哪个索引？</h2><p>使用 <code>EXPLAIN</code> 或 <code>EXPLAIN ANALYZE</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql">EXPLAIN <span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Tom&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>看以下字段：</p>
+<ul>
+<li><p><code>key</code>: 实际选择使用的索引</p>
+</li>
+<li><p><code>rows</code>: 预计扫描的行数</p>
+</li>
+<li><p><code>Extra</code>: 有无 <code>Using index</code>（覆盖索引）、<code>Using where</code>（筛选）</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧪-强制优化器使用某索引（慎用）"><a href="#🧪-强制优化器使用某索引（慎用）" class="headerlink" title="🧪 强制优化器使用某索引（慎用）"></a>🧪 强制优化器使用某索引（慎用）</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> FORCE INDEX (idx_name) <span class="hljs-keyword">WHERE</span> name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Tom&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>也可以用 <code>USE INDEX</code>（倾向用）或 <code>IGNORE INDEX</code>（排除某些索引）。</p>
+<p>但注意：<strong>一旦数据量、分布变化，强制索引可能反而变慢</strong>。</p>
+<hr>
+<h2 id="🧩-为什么优化器会“选错”索引？"><a href="#🧩-为什么优化器会“选错”索引？" class="headerlink" title="🧩 为什么优化器会“选错”索引？"></a>🧩 为什么优化器会“选错”索引？</h2><ul>
+<li><p>统计信息过旧（用 <code>ANALYZE TABLE</code> 刷新）</p>
+</li>
+<li><p>索引设计不合理</p>
+</li>
+<li><p>查询条件未命中最左前缀</p>
+</li>
+<li><p>联合索引顺序不当</p>
+</li>
+<li><p>字段类型不匹配（隐式转换）</p>
+</li>
+</ul>
+<hr>
+<h2 id="📌-调优建议"><a href="#📌-调优建议" class="headerlink" title="📌 调优建议"></a>📌 调优建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多条件查询</td>
+<td>联合索引按照“过滤性高的字段在前”排列</td>
+</tr>
+<tr>
+<td>覆盖查询</td>
+<td>优先考虑覆盖索引，减少回表</td>
+</tr>
+<tr>
+<td>排序优化</td>
+<td>创建 <code>ORDER BY</code> 相关的索引</td>
+</tr>
+<tr>
+<td>数据分布极度倾斜</td>
+<td>考虑用直方图（MySQL 8.0+）提高估算准确性</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="索引优化Order-by与Group-by"><a href="#索引优化Order-by与Group-by" class="headerlink" title="索引优化Order by与Group by"></a><strong>索引优化Order by与Group by</strong></h1><hr>
+<h2 id="🌀-ORDER-BY-与索引优化"><a href="#🌀-ORDER-BY-与索引优化" class="headerlink" title="🌀 ORDER BY 与索引优化"></a>🌀 <code>ORDER BY</code> 与索引优化</h2><h3 id="✅-目标：避免“文件排序（filesort）”操作"><a href="#✅-目标：避免“文件排序（filesort）”操作" class="headerlink" title="✅ 目标：避免“文件排序（filesort）”操作"></a>✅ 目标：<strong>避免“文件排序（filesort）”操作</strong></h3><p>MySQL 默认会将 <code>ORDER BY</code> 的结果写入临时表再排序，叫做 <strong>filesort</strong>，这是性能杀手。</p>
+<p>但如果满足一定条件，MySQL 可以使用索引直接返回排序后的数据（天然有序）——这就是我们要争取的优化。</p>
+<hr>
+<h3 id="📋-索引优化-ORDER-BY-的条件："><a href="#📋-索引优化-ORDER-BY-的条件：" class="headerlink" title="📋 索引优化 ORDER BY 的条件："></a>📋 索引优化 <code>ORDER BY</code> 的条件：</h3><h4 id="1-排序字段必须出现在索引的最左前缀"><a href="#1-排序字段必须出现在索引的最左前缀" class="headerlink" title="1. 排序字段必须出现在索引的最左前缀"></a>1. <strong>排序字段必须出现在索引的最左前缀</strong></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(create_time)</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> create_time;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-排序方向必须一致"><a href="#2-排序方向必须一致" class="headerlink" title="2. 排序方向必须一致"></a>2. <strong>排序方向必须一致</strong></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(a, b)</span><br><span class="hljs-comment">-- ✅ 可以：ORDER BY a ASC, b ASC</span><br><span class="hljs-comment">-- ❌ 不行：ORDER BY a ASC, b DESC</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="3-WHERE-子句限制范围一致"><a href="#3-WHERE-子句限制范围一致" class="headerlink" title="3. WHERE 子句限制范围一致"></a>3. <strong>WHERE 子句限制范围一致</strong></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(user_id, create_time)</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> orders<br><span class="hljs-keyword">WHERE</span> user_id <span class="hljs-operator">=</span> <span class="hljs-number">123</span><br><span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> create_time <span class="hljs-keyword">DESC</span>; <span class="hljs-comment">-- 可以用索引</span><br></code></pre></td></tr></table></figure>
+
+<p>但是如果 WHERE 只用了 <code>create_time</code>，就不能使用 (user_id, create_time) 索引排序了。</p>
+<hr>
+<h3 id="📌-提示：使用-EXPLAIN-看-Extra-字段是否包含："><a href="#📌-提示：使用-EXPLAIN-看-Extra-字段是否包含：" class="headerlink" title="📌 提示：使用 EXPLAIN 看 Extra 字段是否包含："></a>📌 提示：使用 <code>EXPLAIN</code> 看 <code>Extra</code> 字段是否包含：</h3><ul>
+<li><p>✅ <code>Using index</code> + <code>Using where</code></p>
+</li>
+<li><p>✅ <code>Using index for group-by</code></p>
+</li>
+<li><p>✅ <code>Using index for order-by</code></p>
+</li>
+<li><p>❌ <code>Using filesort</code>（就意味着排序未优化）</p>
+</li>
+</ul>
+<hr>
+<h2 id="🌀-GROUP-BY-与索引优化"><a href="#🌀-GROUP-BY-与索引优化" class="headerlink" title="🌀 GROUP BY 与索引优化"></a>🌀 <code>GROUP BY</code> 与索引优化</h2><h3 id="✅-目标：使用索引避免临时表和排序"><a href="#✅-目标：使用索引避免临时表和排序" class="headerlink" title="✅ 目标：使用索引避免临时表和排序"></a>✅ 目标：<strong>使用索引避免临时表和排序</strong></h3><p>与 <code>ORDER BY</code> 类似，<code>GROUP BY</code> 如果能利用索引，可以跳过临时表和排序阶段。</p>
+<hr>
+<h3 id="📋-索引优化-GROUP-BY-的条件："><a href="#📋-索引优化-GROUP-BY-的条件：" class="headerlink" title="📋 索引优化 GROUP BY 的条件："></a>📋 索引优化 <code>GROUP BY</code> 的条件：</h3><h4 id="1-GROUP-BY-字段是索引的最左前缀"><a href="#1-GROUP-BY-字段是索引的最左前缀" class="headerlink" title="1. GROUP BY 字段是索引的最左前缀"></a>1. <strong>GROUP BY 字段是索引的最左前缀</strong></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(category_id)</span><br><span class="hljs-keyword">SELECT</span> category_id, <span class="hljs-built_in">COUNT</span>(<span class="hljs-operator">*</span>) <span class="hljs-keyword">FROM</span> products <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> category_id;<br></code></pre></td></tr></table></figure>
+
+<h4 id="2-排序方向要一致（MySQL-默认是-ASC）"><a href="#2-排序方向要一致（MySQL-默认是-ASC）" class="headerlink" title="2. 排序方向要一致（MySQL 默认是 ASC）"></a>2. <strong>排序方向要一致（MySQL 默认是 ASC）</strong></h4><h4 id="3-索引顺序与-GROUP-BY-字段顺序一致"><a href="#3-索引顺序与-GROUP-BY-字段顺序一致" class="headerlink" title="3. 索引顺序与 GROUP BY 字段顺序一致"></a>3. <strong>索引顺序与 GROUP BY 字段顺序一致</strong></h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(a, b)</span><br><span class="hljs-keyword">SELECT</span> a, b <span class="hljs-keyword">FROM</span> tbl <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> a, b; <span class="hljs-comment">-- ✅ 可以用索引</span><br><span class="hljs-keyword">SELECT</span> b, a <span class="hljs-keyword">FROM</span> tbl <span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> b, a; <span class="hljs-comment">-- ❌ 不能用索引</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="📌-看-EXPLAIN-判断是否命中索引："><a href="#📌-看-EXPLAIN-判断是否命中索引：" class="headerlink" title="📌 看 EXPLAIN 判断是否命中索引："></a>📌 看 <code>EXPLAIN</code> 判断是否命中索引：</h3><ul>
+<li><p>✅ <code>Using index for group-by</code></p>
+</li>
+<li><p>❌ <code>Using temporary</code> + <code>Using filesort</code> → 说明优化失败</p>
+</li>
+</ul>
+<hr>
+<h2 id="✅-一个例子双杀-GROUP-BY-ORDER-BY："><a href="#✅-一个例子双杀-GROUP-BY-ORDER-BY：" class="headerlink" title="✅ 一个例子双杀 GROUP BY + ORDER BY："></a>✅ 一个例子双杀 <code>GROUP BY + ORDER BY</code>：</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(user_id, create_time)</span><br><span class="hljs-keyword">SELECT</span> user_id, <span class="hljs-built_in">COUNT</span>(<span class="hljs-operator">*</span>)<br><span class="hljs-keyword">FROM</span> orders<br><span class="hljs-keyword">WHERE</span> user_id <span class="hljs-keyword">BETWEEN</span> <span class="hljs-number">100</span> <span class="hljs-keyword">AND</span> <span class="hljs-number">200</span><br><span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> user_id<br><span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> user_id;<br></code></pre></td></tr></table></figure>
+
+<p>✔️ 满足最左前缀<br>✔️ 顺序一致<br>✔️ 可以使用索引完成 <code>group + order</code></p>
+<hr>
+<h2 id="🛠-索引设计建议"><a href="#🛠-索引设计建议" class="headerlink" title="🛠 索引设计建议"></a>🛠 索引设计建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>索引建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>纯排序（order by）</td>
+<td>以排序字段建单列或组合索引</td>
+</tr>
+<tr>
+<td>过滤 + 排序</td>
+<td>将 <code>WHERE</code> 条件字段放在索引前，再加排序字段</td>
+</tr>
+<tr>
+<td>group by 多字段</td>
+<td>严格遵守 group by 字段顺序与索引顺序一致</td>
+</tr>
+<tr>
+<td>想避免排序和临时表</td>
+<td>使用 <code>EXPLAIN</code> 检查是否用了索引排序</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧨-警惕的“优化陷阱”"><a href="#🧨-警惕的“优化陷阱”" class="headerlink" title="🧨 警惕的“优化陷阱”"></a>🧨 警惕的“优化陷阱”</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LIMIT + ORDER BY 慢</td>
+<td>如果不能走索引，会非常慢。可考虑“延迟关联”优化。</td>
+</tr>
+<tr>
+<td>排序方向不一致</td>
+<td>索引无法同时支持 ASC + DESC</td>
+</tr>
+<tr>
+<td>索引顺序不匹配</td>
+<td><code>GROUP BY b, a</code> 与索引 <code>(a, b)</code> 不匹配，索引失效</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="索引设计原则"><a href="#索引设计原则" class="headerlink" title="索引设计原则"></a><strong>索引设计原则</strong></h1><h2 id="🧱-一、索引设计的基本原则"><a href="#🧱-一、索引设计的基本原则" class="headerlink" title="🧱 一、索引设计的基本原则"></a>🧱 一、索引设计的基本原则</h2><table>
+<thead>
+<tr>
+<th>原则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>1. 选择性高的字段建索引</strong></td>
+<td>选择性 &#x3D; 不重复值 &#x2F; 总记录数，越高越好</td>
+</tr>
+<tr>
+<td><strong>2. 常用于 WHERE、JOIN、ORDER BY、GROUP BY 的字段</strong></td>
+<td>这些场景最依赖索引</td>
+</tr>
+<tr>
+<td><strong>3. 控制索引数量</strong></td>
+<td>每张表不建议超过 5~7 个索引</td>
+</tr>
+<tr>
+<td><strong>4. 避免对频繁更新的字段建索引</strong></td>
+<td>索引会增加写入成本（Insert&#x2F;Update&#x2F;Delete）</td>
+</tr>
+<tr>
+<td><strong>5. 覆盖索引优先</strong></td>
+<td>查询字段都在索引中，可避免回表</td>
+</tr>
+<tr>
+<td><strong>6. 最左前缀匹配</strong></td>
+<td>多列索引必须遵循最左匹配原则</td>
+</tr>
+<tr>
+<td><strong>7. 避免重复索引和冗余索引</strong></td>
+<td>节省空间，减少维护开销</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧠-二、设计索引时的具体策略"><a href="#🧠-二、设计索引时的具体策略" class="headerlink" title="🧠 二、设计索引时的具体策略"></a>🧠 二、设计索引时的具体策略</h2><h3 id="✅-1-优先考虑选择性高的列"><a href="#✅-1-优先考虑选择性高的列" class="headerlink" title="✅ 1. 优先考虑选择性高的列"></a>✅ 1. <strong>优先考虑选择性高的列</strong></h3><p>选择性越高，过滤能力越强，越适合建索引。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- gender 字段只有 &#x27;M&#x27; 和 &#x27;F&#x27;，选择性差，不适合单独索引</span><br><span class="hljs-comment">-- user_id、email、手机号这类唯一性高，适合索引</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="✅-2-组合索引-单列索引"><a href="#✅-2-组合索引-单列索引" class="headerlink" title="✅ 2. 组合索引 &gt; 单列索引"></a>✅ 2. <strong>组合索引 &gt; 单列索引</strong></h3><p>比起多个单列索引，组合索引能同时覆盖多个查询条件，效率更高。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(user_id, status)</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">WHERE</span> user_id <span class="hljs-operator">=</span> ? <span class="hljs-keyword">AND</span> status <span class="hljs-operator">=</span> ?;<br></code></pre></td></tr></table></figure>
+
+<p>⚠️ 注意最左匹配原则：</p>
+<ul>
+<li><p><code>(user_id, status)</code> 支持 <code>WHERE user_id = ?</code></p>
+</li>
+<li><p>但不支持 <code>WHERE status = ?</code>（除非 user_id 也带上）</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-3-覆盖索引（覆盖所有查询列）"><a href="#✅-3-覆盖索引（覆盖所有查询列）" class="headerlink" title="✅ 3. 覆盖索引（覆盖所有查询列）"></a>✅ 3. <strong>覆盖索引（覆盖所有查询列）</strong></h3><p>查询所需字段全部包含在索引中，无需回表，提高效率。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(user_id, status, create_time)</span><br><span class="hljs-keyword">SELECT</span> user_id, status <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">WHERE</span> user_id <span class="hljs-operator">=</span> ? <span class="hljs-keyword">AND</span> status <span class="hljs-operator">=</span> ?;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="✅-4-排序字段加在索引末尾"><a href="#✅-4-排序字段加在索引末尾" class="headerlink" title="✅ 4. 排序字段加在索引末尾"></a>✅ 4. <strong>排序字段加在索引末尾</strong></h3><p>如果你经常按时间排序，考虑将排序字段加入组合索引末尾。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 索引：(user_id, create_time)</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">WHERE</span> user_id <span class="hljs-operator">=</span> ? <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> create_time <span class="hljs-keyword">DESC</span>;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="✅-5-避免函数或表达式导致索引失效"><a href="#✅-5-避免函数或表达式导致索引失效" class="headerlink" title="✅ 5. 避免函数或表达式导致索引失效"></a>✅ 5. <strong>避免函数或表达式导致索引失效</strong></h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- ❌ 不走索引</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">WHERE</span> <span class="hljs-type">DATE</span>(create_time) <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;2024-01-01&#x27;</span>;<br><br><span class="hljs-comment">-- ✅ 改写成范围查询</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> orders <span class="hljs-keyword">WHERE</span> create_time <span class="hljs-keyword">BETWEEN</span> <span class="hljs-string">&#x27;2024-01-01&#x27;</span> <span class="hljs-keyword">AND</span> <span class="hljs-string">&#x27;2024-01-01 23:59:59&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="✅-6-合理使用前缀索引（针对长文本）"><a href="#✅-6-合理使用前缀索引（针对长文本）" class="headerlink" title="✅ 6. 合理使用前缀索引（针对长文本）"></a>✅ 6. <strong>合理使用前缀索引（针对长文本）</strong></h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- email 字段太长时使用前缀索引</span><br><span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> users <span class="hljs-keyword">ADD</span> INDEX idx_email(email(<span class="hljs-number">10</span>));<br></code></pre></td></tr></table></figure>
+
+<p>⚠️ 注意：前缀索引不能用来做覆盖索引。</p>
+<hr>
+<h3 id="✅-7-避免索引“失效”写法"><a href="#✅-7-避免索引“失效”写法" class="headerlink" title="✅ 7. 避免索引“失效”写法"></a>✅ 7. <strong>避免索引“失效”写法</strong></h3><ul>
+<li><p><code>!=</code> 或 <code>&lt;&gt;</code></p>
+</li>
+<li><p><code>LIKE &#39;%xx&#39;</code></p>
+</li>
+<li><p><code>OR</code> 多个字段不共用索引</p>
+</li>
+<li><p>自动类型转换（比如 <code>WHERE id = &#39;123&#39;</code> 会隐式转换）</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧨-三、常见索引设计误区"><a href="#🧨-三、常见索引设计误区" class="headerlink" title="🧨 三、常见索引设计误区"></a>🧨 三、常见索引设计误区</h2><table>
+<thead>
+<tr>
+<th>误区</th>
+<th>错误示例</th>
+<th>正确建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>为所有字段都建索引</td>
+<td>每个字段都建一个索引</td>
+<td>聚焦常用字段，慎用索引</td>
+</tr>
+<tr>
+<td>只建单列索引</td>
+<td>分别建 user_id、status</td>
+<td>用 <code>(user_id, status)</code> 组合索引</td>
+</tr>
+<tr>
+<td>忽视更新成本</td>
+<td>对频繁更新字段建索引</td>
+<td>评估写性能是否可接受</td>
+</tr>
+<tr>
+<td>忽视索引大小</td>
+<td>BLOB &#x2F; TEXT 建索引</td>
+<td>用前缀索引或不建索引</td>
+</tr>
+<tr>
+<td>不看执行计划</td>
+<td>拿不准是否走索引</td>
+<td>用 <code>EXPLAIN</code> 查看执行路径</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧩-四、实际场景索引设计参考"><a href="#🧩-四、实际场景索引设计参考" class="headerlink" title="🧩 四、实际场景索引设计参考"></a>🧩 四、实际场景索引设计参考</h2><h3 id="✅-用户系统（users）"><a href="#✅-用户系统（users）" class="headerlink" title="✅ 用户系统（users）"></a>✅ 用户系统（users）</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 常查邮箱、手机号登录</span><br>INDEX(email), INDEX(phone)<br><span class="hljs-comment">-- 用户名唯一性</span><br><span class="hljs-keyword">UNIQUE</span>(username)<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="✅-订单系统（orders）"><a href="#✅-订单系统（orders）" class="headerlink" title="✅ 订单系统（orders）"></a>✅ 订单系统（orders）</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 查询订单状态</span><br>INDEX(status)<br><span class="hljs-comment">-- 查询某用户订单 + 时间排序</span><br>INDEX(user_id, create_time)<br><span class="hljs-comment">-- 用于统计</span><br>INDEX(create_time)<br></code></pre></td></tr></table></figure>
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/21/Mysql%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E4%B8%80/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;21&#x2F;Mysql%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E4%B8%80&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;21&#x2F;Mysql%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E4%B8%80&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mysql/" rel="tag">Mysql</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2022/11/12/Spring%20%E5%9F%BA%E7%A1%80/">Spring 基础知识<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8%E4%BC%98%E5%8C%96%E8%AF%A6%E8%A7%A3"><span class="toc-text">索引下推优化详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%B4%A2%E5%BC%95%E4%B8%8B%E6%8E%A8%EF%BC%88ICP%EF%BC%89%EF%BC%9F"><span class="toc-text">什么是索引下推（ICP）？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-%E4%B8%BE%E4%B8%AA%E6%A0%97%E5%AD%90%EF%BC%9A"><span class="toc-text">📌 举个栗子：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E7%BB%93%E6%9E%84%EF%BC%9A"><span class="toc-text">表结构：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%EF%BC%9A"><span class="toc-text">查询语句：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0-ICP-%E7%9A%84%E8%A1%8C%E4%B8%BA%EF%BC%9A"><span class="toc-text">无 ICP 的行为：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%89-ICP-%E7%9A%84%E8%A1%8C%E4%B8%BA%EF%BC%9A"><span class="toc-text">有 ICP 的行为：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8A-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8A%BF"><span class="toc-text">📊 性能优势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%8D-%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93%E6%9C%89%E6%B2%A1%E6%9C%89%E5%90%AF%E7%94%A8-ICP%EF%BC%9F"><span class="toc-text">🔍 怎么知道有没有启用 ICP？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E5%B0%8F%E8%B4%B4%E5%A3%AB"><span class="toc-text">🛠 小贴士</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Mysql%E4%BC%98%E5%8C%96%E5%99%A8%E7%B4%A2%E5%BC%95%E9%80%89%E6%8B%A9%E6%8E%A2%E7%A9%B6"><span class="toc-text">Mysql优化器索引选择探究</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%BC%98%E5%8C%96%E5%99%A8%E9%80%89%E6%8B%A9%E7%B4%A2%E5%BC%95%E7%9A%84%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91"><span class="toc-text">🧠 优化器选择索引的核心逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%BF%87%E6%BB%A4%E6%80%A7%EF%BC%88Selectivity%EF%BC%89"><span class="toc-text">1. 过滤性（Selectivity）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%B4%A2%E5%BC%95%E7%9A%84%E6%9C%80%E5%B7%A6%E5%89%8D%E7%BC%80%E5%8C%B9%E9%85%8D%E5%8E%9F%E5%88%99"><span class="toc-text">2. 索引的最左前缀匹配原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%98%AF%E5%90%A6%E8%83%BD%E8%A6%86%E7%9B%96%E6%9F%A5%E8%AF%A2%EF%BC%88covering-index%EF%BC%89"><span class="toc-text">3. 是否能覆盖查询（covering index）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%98%AF%E5%90%A6%E7%AC%A6%E5%90%88%E6%8E%92%E5%BA%8F%E3%80%81%E5%88%86%E7%BB%84%E4%BC%98%E5%8C%96"><span class="toc-text">4. 是否符合排序、分组优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%BB%9F%E8%AE%A1%E4%BF%A1%E6%81%AF%E5%92%8C%E6%88%90%E6%9C%AC%E4%BC%B0%E7%AE%97"><span class="toc-text">5. 统计信息和成本估算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E7%B4%A2%E5%BC%95-vs-%E5%85%A8%E8%A1%A8%E6%89%AB%E6%8F%8F"><span class="toc-text">6. 索引 vs 全表扫描</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%8D-%E5%A6%82%E4%BD%95%E8%A7%82%E5%AF%9F%E4%BC%98%E5%8C%96%E5%99%A8%E9%80%89%E6%8B%A9%E4%BA%86%E5%93%AA%E4%B8%AA%E7%B4%A2%E5%BC%95%EF%BC%9F"><span class="toc-text">🔍 如何观察优化器选择了哪个索引？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E5%BC%BA%E5%88%B6%E4%BC%98%E5%8C%96%E5%99%A8%E4%BD%BF%E7%94%A8%E6%9F%90%E7%B4%A2%E5%BC%95%EF%BC%88%E6%85%8E%E7%94%A8%EF%BC%89"><span class="toc-text">🧪 强制优化器使用某索引（慎用）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%98%E5%8C%96%E5%99%A8%E4%BC%9A%E2%80%9C%E9%80%89%E9%94%99%E2%80%9D%E7%B4%A2%E5%BC%95%EF%BC%9F"><span class="toc-text">🧩 为什么优化器会“选错”索引？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8C-%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE"><span class="toc-text">📌 调优建议</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96Order-by%E4%B8%8EGroup-by"><span class="toc-text">索引优化Order by与Group by</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%80-ORDER-BY-%E4%B8%8E%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96"><span class="toc-text">🌀 ORDER BY 与索引优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%9B%AE%E6%A0%87%EF%BC%9A%E9%81%BF%E5%85%8D%E2%80%9C%E6%96%87%E4%BB%B6%E6%8E%92%E5%BA%8F%EF%BC%88filesort%EF%BC%89%E2%80%9D%E6%93%8D%E4%BD%9C"><span class="toc-text">✅ 目标：避免“文件排序（filesort）”操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8B-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96-ORDER-BY-%E7%9A%84%E6%9D%A1%E4%BB%B6%EF%BC%9A"><span class="toc-text">📋 索引优化 ORDER BY 的条件：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-%E6%8F%90%E7%A4%BA%EF%BC%9A%E4%BD%BF%E7%94%A8-EXPLAIN-%E7%9C%8B-Extra-%E5%AD%97%E6%AE%B5%E6%98%AF%E5%90%A6%E5%8C%85%E5%90%AB%EF%BC%9A"><span class="toc-text">📌 提示：使用 EXPLAIN 看 Extra 字段是否包含：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%80-GROUP-BY-%E4%B8%8E%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96"><span class="toc-text">🌀 GROUP BY 与索引优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%9B%AE%E6%A0%87%EF%BC%9A%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95%E9%81%BF%E5%85%8D%E4%B8%B4%E6%97%B6%E8%A1%A8%E5%92%8C%E6%8E%92%E5%BA%8F"><span class="toc-text">✅ 目标：使用索引避免临时表和排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8B-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96-GROUP-BY-%E7%9A%84%E6%9D%A1%E4%BB%B6%EF%BC%9A"><span class="toc-text">📋 索引优化 GROUP BY 的条件：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-%E7%9C%8B-EXPLAIN-%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E5%91%BD%E4%B8%AD%E7%B4%A2%E5%BC%95%EF%BC%9A"><span class="toc-text">📌 看 EXPLAIN 判断是否命中索引：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E4%B8%80%E4%B8%AA%E4%BE%8B%E5%AD%90%E5%8F%8C%E6%9D%80-GROUP-BY-ORDER-BY%EF%BC%9A"><span class="toc-text">✅ 一个例子双杀 GROUP BY + ORDER BY：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%BB%BA%E8%AE%AE"><span class="toc-text">🛠 索引设计建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A8-%E8%AD%A6%E6%83%95%E7%9A%84%E2%80%9C%E4%BC%98%E5%8C%96%E9%99%B7%E9%98%B1%E2%80%9D"><span class="toc-text">🧨 警惕的“优化陷阱”</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-text">索引设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-%E4%B8%80%E3%80%81%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E5%88%99"><span class="toc-text">🧱 一、索引设计的基本原则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%BA%8C%E3%80%81%E8%AE%BE%E8%AE%A1%E7%B4%A2%E5%BC%95%E6%97%B6%E7%9A%84%E5%85%B7%E4%BD%93%E7%AD%96%E7%95%A5"><span class="toc-text">🧠 二、设计索引时的具体策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-1-%E4%BC%98%E5%85%88%E8%80%83%E8%99%91%E9%80%89%E6%8B%A9%E6%80%A7%E9%AB%98%E7%9A%84%E5%88%97"><span class="toc-text">✅ 1. 优先考虑选择性高的列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-2-%E7%BB%84%E5%90%88%E7%B4%A2%E5%BC%95-%E5%8D%95%E5%88%97%E7%B4%A2%E5%BC%95"><span class="toc-text">✅ 2. 组合索引 &gt; 单列索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-3-%E8%A6%86%E7%9B%96%E7%B4%A2%E5%BC%95%EF%BC%88%E8%A6%86%E7%9B%96%E6%89%80%E6%9C%89%E6%9F%A5%E8%AF%A2%E5%88%97%EF%BC%89"><span class="toc-text">✅ 3. 覆盖索引（覆盖所有查询列）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-4-%E6%8E%92%E5%BA%8F%E5%AD%97%E6%AE%B5%E5%8A%A0%E5%9C%A8%E7%B4%A2%E5%BC%95%E6%9C%AB%E5%B0%BE"><span class="toc-text">✅ 4. 排序字段加在索引末尾</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-5-%E9%81%BF%E5%85%8D%E5%87%BD%E6%95%B0%E6%88%96%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%AF%BC%E8%87%B4%E7%B4%A2%E5%BC%95%E5%A4%B1%E6%95%88"><span class="toc-text">✅ 5. 避免函数或表达式导致索引失效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-6-%E5%90%88%E7%90%86%E4%BD%BF%E7%94%A8%E5%89%8D%E7%BC%80%E7%B4%A2%E5%BC%95%EF%BC%88%E9%92%88%E5%AF%B9%E9%95%BF%E6%96%87%E6%9C%AC%EF%BC%89"><span class="toc-text">✅ 6. 合理使用前缀索引（针对长文本）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-7-%E9%81%BF%E5%85%8D%E7%B4%A2%E5%BC%95%E2%80%9C%E5%A4%B1%E6%95%88%E2%80%9D%E5%86%99%E6%B3%95"><span class="toc-text">✅ 7. 避免索引“失效”写法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A8-%E4%B8%89%E3%80%81%E5%B8%B8%E8%A7%81%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E8%AF%AF%E5%8C%BA"><span class="toc-text">🧨 三、常见索引设计误区</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E5%9B%9B%E3%80%81%E5%AE%9E%E9%99%85%E5%9C%BA%E6%99%AF%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%E5%8F%82%E8%80%83"><span class="toc-text">🧩 四、实际场景索引设计参考</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F%EF%BC%88users%EF%BC%89"><span class="toc-text">✅ 用户系统（users）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E8%AE%A2%E5%8D%95%E7%B3%BB%E7%BB%9F%EF%BC%88orders%EF%BC%89"><span class="toc-text">✅ 订单系统（orders）</span></a></li></ol></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
