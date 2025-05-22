@@ -1,0 +1,459 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Mysql分页优化 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="🌟 一、基本分页查询语法最常见的分页语句：
+1SEL...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Mysql分页优化</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Mysql分页优化</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 22, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1524</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h2 id="🌟-一、基本分页查询语法"><a href="#🌟-一、基本分页查询语法" class="headerlink" title="🌟 一、基本分页查询语法"></a>🌟 一、基本分页查询语法</h2><p>最常见的分页语句：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> create_time <span class="hljs-keyword">DESC</span> LIMIT <span class="hljs-number">10000</span>, <span class="hljs-number">20</span>;<br></code></pre></td></tr></table></figure>
+
+<p>含义是：跳过前 10000 条，取 20 条记录。</p>
+<hr>
+<h2 id="⚠️-二、分页性能问题"><a href="#⚠️-二、分页性能问题" class="headerlink" title="⚠️ 二、分页性能问题"></a>⚠️ 二、分页性能问题</h2><h3 id="1-OFFSET-大会慢"><a href="#1-OFFSET-大会慢" class="headerlink" title="1. OFFSET 大会慢"></a>1. <strong>OFFSET 大会慢</strong></h3><p>MySQL 在执行 <code>LIMIT offset, N</code> 时，<strong>必须扫描 offset + N 条记录</strong>，再丢弃前 offset 条。</p>
+<p>例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql">LIMIT <span class="hljs-number">100000</span>, <span class="hljs-number">20</span>;<br></code></pre></td></tr></table></figure>
+
+<p>实际上 MySQL 扫描了 100020 条记录，只返回最后 20 条。</p>
+<h3 id="2-使用复杂-ORDER-BY-会导致额外排序"><a href="#2-使用复杂-ORDER-BY-会导致额外排序" class="headerlink" title="2. 使用复杂 ORDER BY 会导致额外排序"></a>2. <strong>使用复杂 ORDER BY 会导致额外排序</strong></h3><p>比如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> name <span class="hljs-keyword">COLLATE</span> utf8_general_ci LIMIT <span class="hljs-number">10000</span>, <span class="hljs-number">20</span>;<br></code></pre></td></tr></table></figure>
+
+<p>如果排序字段无索引，MySQL 可能要用 <strong>临时表 + 文件排序</strong>，更慢。</p>
+<hr>
+<h2 id="🚀-三、分页优化策略"><a href="#🚀-三、分页优化策略" class="headerlink" title="🚀 三、分页优化策略"></a>🚀 三、分页优化策略</h2><h3 id="✅-1-使用索引覆盖分页"><a href="#✅-1-使用索引覆盖分页" class="headerlink" title="✅ 1. 使用索引覆盖分页"></a>✅ 1. 使用索引覆盖分页</h3><p>避免 OFFSET，改为基于索引或主键“<strong>游标翻页</strong>”：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 第一页：</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> id LIMIT <span class="hljs-number">20</span>;<br><br><span class="hljs-comment">-- 下一页（假设最后一条 id 为 10020）：</span><br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> id <span class="hljs-operator">&gt;</span> <span class="hljs-number">10020</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> id LIMIT <span class="hljs-number">20</span>;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>优点：不跳过记录，性能线性增长。<br>缺点：只能按一个字段正序&#x2F;倒序翻页，不能跳转到第 N 页。</p>
+</blockquote>
+<h3 id="✅-2-使用子查询优化大偏移分页"><a href="#✅-2-使用子查询优化大偏移分页" class="headerlink" title="✅ 2. 使用子查询优化大偏移分页"></a>✅ 2. 使用子查询优化大偏移分页</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span><br><span class="hljs-keyword">WHERE</span> id <span class="hljs-keyword">IN</span> (<br>  <span class="hljs-keyword">SELECT</span> id <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> id LIMIT <span class="hljs-number">100000</span>, <span class="hljs-number">20</span><br>)<br><span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> id;<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>先获取 id，再回表查数据</strong>。可以避免回表扫描大范围数据，但性能提升有限。</p>
+</blockquote>
+<h3 id="✅-3-分页缓存热点页"><a href="#✅-3-分页缓存热点页" class="headerlink" title="✅ 3. 分页缓存热点页"></a>✅ 3. 分页缓存热点页</h3><p>对第一页、前几页做缓存（如 Redis）。热点数据不用每次查数据库。</p>
+<h3 id="✅-4-控制最大分页深度"><a href="#✅-4-控制最大分页深度" class="headerlink" title="✅ 4. 控制最大分页深度"></a>✅ 4. 控制最大分页深度</h3><p>限制最大页数，例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs sql">if (page <span class="hljs-operator">&gt;</span> <span class="hljs-number">1000</span>) &#123;<br>  throw <span class="hljs-keyword">new</span> IllegalArgumentException(&quot;分页过深，请缩小筛选范围&quot;);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="💡-四、MySQL-分页原理简析"><a href="#💡-四、MySQL-分页原理简析" class="headerlink" title="💡 四、MySQL 分页原理简析"></a>💡 四、MySQL 分页原理简析</h2><p>MySQL 执行 <code>LIMIT offset, size</code> 会：</p>
+<ol>
+<li><p>执行查询语句（扫描所有满足条件的记录）。</p>
+</li>
+<li><p>排序（如有 <code>ORDER BY</code>）。</p>
+</li>
+<li><p>丢弃 offset 条，返回 size 条。</p>
+</li>
+</ol>
+<p>即使索引覆盖了排序字段，也需要扫描 offset + size 条记录，才开始返回。</p>
+<hr>
+<h2 id="🔧-五、使用分页插件优化（如-MyBatis-Plus-JPA）"><a href="#🔧-五、使用分页插件优化（如-MyBatis-Plus-JPA）" class="headerlink" title="🔧 五、使用分页插件优化（如 MyBatis-Plus &#x2F; JPA）"></a>🔧 五、使用分页插件优化（如 MyBatis-Plus &#x2F; JPA）</h2><p>MyBatis-Plus 提供了自动分页插件，但底层仍用的是 <code>LIMIT</code>，你可以结合游标优化手动控制：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">QueryWrapper&lt;User&gt; wrapper = <span class="hljs-keyword">new</span> <span class="hljs-title class_">QueryWrapper</span>&lt;&gt;();<br>wrapper.gt(<span class="hljs-string">&quot;id&quot;</span>, lastId).orderByAsc(<span class="hljs-string">&quot;id&quot;</span>).last(<span class="hljs-string">&quot;LIMIT 20&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📌-六、总结"><a href="#📌-六、总结" class="headerlink" title="📌 六、总结"></a>📌 六、总结</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LIMIT offset, size</td>
+<td>简单直接</td>
+<td>offset 大时性能差</td>
+</tr>
+<tr>
+<td>游标分页（基于 id）</td>
+<td>性能好，线性增长</td>
+<td>不支持跳页</td>
+</tr>
+<tr>
+<td>子查询分页</td>
+<td>中规中矩，性能稍好</td>
+<td>结构复杂，回表</td>
+</tr>
+<tr>
+<td>缓存热点页</td>
+<td>秒级响应</td>
+<td>数据可能不实时</td>
+</tr>
+<tr>
+<td>限制分页深度</td>
+<td>保护数据库</td>
+<td>用户体验需平衡</td>
+</tr>
+</tbody></table>
+<hr>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/22/Mysql%E5%88%86%E9%A1%B5%E4%BC%98%E5%8C%96/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;22&#x2F;Mysql%E5%88%86%E9%A1%B5%E4%BC%98%E5%8C%96&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;22&#x2F;Mysql%E5%88%86%E9%A1%B5%E4%BC%98%E5%8C%96&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mysql/" rel="tag">Mysql</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/05/21/Mysql%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E4%B8%80/">Mysql索引优化一<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%9F-%E4%B8%80%E3%80%81%E5%9F%BA%E6%9C%AC%E5%88%86%E9%A1%B5%E6%9F%A5%E8%AF%A2%E8%AF%AD%E6%B3%95"><span class="toc-text">🌟 一、基本分页查询语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%A0%EF%B8%8F-%E4%BA%8C%E3%80%81%E5%88%86%E9%A1%B5%E6%80%A7%E8%83%BD%E9%97%AE%E9%A2%98"><span class="toc-text">⚠️ 二、分页性能问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-OFFSET-%E5%A4%A7%E4%BC%9A%E6%85%A2"><span class="toc-text">1. OFFSET 大会慢</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BD%BF%E7%94%A8%E5%A4%8D%E6%9D%82-ORDER-BY-%E4%BC%9A%E5%AF%BC%E8%87%B4%E9%A2%9D%E5%A4%96%E6%8E%92%E5%BA%8F"><span class="toc-text">2. 使用复杂 ORDER BY 会导致额外排序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-%E4%B8%89%E3%80%81%E5%88%86%E9%A1%B5%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-text">🚀 三、分页优化策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-1-%E4%BD%BF%E7%94%A8%E7%B4%A2%E5%BC%95%E8%A6%86%E7%9B%96%E5%88%86%E9%A1%B5"><span class="toc-text">✅ 1. 使用索引覆盖分页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-2-%E4%BD%BF%E7%94%A8%E5%AD%90%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%A4%A7%E5%81%8F%E7%A7%BB%E5%88%86%E9%A1%B5"><span class="toc-text">✅ 2. 使用子查询优化大偏移分页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-3-%E5%88%86%E9%A1%B5%E7%BC%93%E5%AD%98%E7%83%AD%E7%82%B9%E9%A1%B5"><span class="toc-text">✅ 3. 分页缓存热点页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-4-%E6%8E%A7%E5%88%B6%E6%9C%80%E5%A4%A7%E5%88%86%E9%A1%B5%E6%B7%B1%E5%BA%A6"><span class="toc-text">✅ 4. 控制最大分页深度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%A1-%E5%9B%9B%E3%80%81MySQL-%E5%88%86%E9%A1%B5%E5%8E%9F%E7%90%86%E7%AE%80%E6%9E%90"><span class="toc-text">💡 四、MySQL 分页原理简析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%A7-%E4%BA%94%E3%80%81%E4%BD%BF%E7%94%A8%E5%88%86%E9%A1%B5%E6%8F%92%E4%BB%B6%E4%BC%98%E5%8C%96%EF%BC%88%E5%A6%82-MyBatis-Plus-JPA%EF%BC%89"><span class="toc-text">🔧 五、使用分页插件优化（如 MyBatis-Plus &#x2F; JPA）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8C-%E5%85%AD%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">📌 六、总结</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
