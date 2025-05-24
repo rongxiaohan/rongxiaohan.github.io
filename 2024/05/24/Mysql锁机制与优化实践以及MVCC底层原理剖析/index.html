@@ -1,0 +1,984 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Mysql锁机制与优化实践以及MVCC底层原理剖析 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="MVCC多版本并发控制机制详解
+一、MVCC 的基本原...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Mysql锁机制与优化实践以及MVCC底层原理剖析</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Mysql锁机制与优化实践以及MVCC底层原理剖析</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 24, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>7559</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h1 id="MVCC多版本并发控制机制详解"><a href="#MVCC多版本并发控制机制详解" class="headerlink" title="MVCC多版本并发控制机制详解"></a><strong>MVCC多版本并发控制机制详解</strong></h1><hr>
+<h2 id="一、MVCC-的基本原理"><a href="#一、MVCC-的基本原理" class="headerlink" title="一、MVCC 的基本原理"></a>一、MVCC 的基本原理</h2><p>MVCC 的核心思想是：</p>
+<blockquote>
+<p><strong>为每个事务提供数据在某一时刻的一致性视图（Snapshot）</strong>，即每个事务看到的是一个“历史版本”。</p>
+</blockquote>
+<p>具体体现在：</p>
+<ul>
+<li><p>数据库中的每条记录不止一份副本，而是多个版本。</p>
+</li>
+<li><p>每个版本都有<strong>创建时间（或事务ID）</strong>和<strong>过期时间（或删除标记）</strong>。</p>
+</li>
+<li><p>事务在读取数据时会选择<strong>对自己“可见”的版本</strong>，而不会直接读取当前最新数据。</p>
+</li>
+</ul>
+<hr>
+<h2 id="二、MVCC-与传统锁机制的区别"><a href="#二、MVCC-与传统锁机制的区别" class="headerlink" title="二、MVCC 与传统锁机制的区别"></a>二、MVCC 与传统锁机制的区别</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>MVCC</th>
+<th>锁机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>并发读</td>
+<td>✅ 非阻塞</td>
+<td>❌ 会锁表&#x2F;行</td>
+</tr>
+<tr>
+<td>并发写</td>
+<td>✅ 支持但复杂</td>
+<td>✅ 基于锁</td>
+</tr>
+<tr>
+<td>读写冲突</td>
+<td>读不会阻塞写</td>
+<td>读写互斥</td>
+</tr>
+<tr>
+<td>一致性</td>
+<td>快照读保证一致性</td>
+<td>锁读保证一致性</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>高</td>
+<td>较低（高并发时）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、MVCC-如何实现"><a href="#三、MVCC-如何实现" class="headerlink" title="三、MVCC 如何实现"></a>三、MVCC 如何实现</h2><h3 id="1-版本链（Version-Chain）"><a href="#1-版本链（Version-Chain）" class="headerlink" title="1. 版本链（Version Chain）"></a>1. 版本链（Version Chain）</h3><p>每条记录在物理存储上维护一个版本链，每次更新&#x2F;删除都会生成一个新版本，并挂在链上。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">User(id=1):  <br>  v3 -&gt; v2 -&gt; v1<br></code></pre></td></tr></table></figure>
+
+<p>其中每个版本包含：</p>
+<ul>
+<li><p><strong>创建事务ID</strong></p>
+</li>
+<li><p><strong>删除事务ID</strong></p>
+</li>
+<li><p><strong>实际数据内容</strong></p>
+</li>
+</ul>
+<h3 id="2-可见性规则（Visibility-Rules）"><a href="#2-可见性规则（Visibility-Rules）" class="headerlink" title="2. 可见性规则（Visibility Rules）"></a>2. 可见性规则（Visibility Rules）</h3><p>一个事务在读取数据时，系统会根据以下规则判断一个版本是否可见：</p>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>是否可见</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>版本的创建事务ID &lt; 当前事务ID</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>版本的删除事务ID &#x3D;&#x3D; NULL 或 &gt; 当前事务ID</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>否则</td>
+<td>❌ 不可见</td>
+</tr>
+</tbody></table>
+<p>例如：</p>
+<ul>
+<li><p>事务 T1 开始于时间点 100。</p>
+</li>
+<li><p>某行数据 v2 创建于事务 90，删除于事务 110。</p>
+</li>
+<li><p>则对 T1 可见 v2。</p>
+</li>
+</ul>
+<hr>
+<h2 id="四、MVCC-在数据库中的实现"><a href="#四、MVCC-在数据库中的实现" class="headerlink" title="四、MVCC 在数据库中的实现"></a>四、MVCC 在数据库中的实现</h2><h3 id="1-MySQL-InnoDB-引擎"><a href="#1-MySQL-InnoDB-引擎" class="headerlink" title="1. MySQL (InnoDB 引擎)"></a>1. MySQL (InnoDB 引擎)</h3><p>InnoDB 使用了**隐藏列 <code>DB_TRX_ID</code> 和 <code>DB_ROLL_PTR</code>**：</p>
+<ul>
+<li><p><code>DB_TRX_ID</code>: 记录该版本由哪个事务创建。</p>
+</li>
+<li><p><code>DB_ROLL_PTR</code>: 回滚指针，指向前一个版本，便于构建快照。</p>
+</li>
+</ul>
+<p>支持两种读取方式：</p>
+<ul>
+<li><p><strong>快照读（Snapshot Read）</strong>：使用 MVCC，非锁定读，例如 <code>SELECT * FROM table WHERE ...</code>。</p>
+</li>
+<li><p><strong>当前读（Current Read）</strong>：锁定读，例如 <code>SELECT ... FOR UPDATE</code>，获取当前版本并加锁。</p>
+</li>
+</ul>
+<h3 id="2-PostgreSQL"><a href="#2-PostgreSQL" class="headerlink" title="2. PostgreSQL"></a>2. PostgreSQL</h3><p>PostgreSQL 每次更新都生成新版本的记录（tuple），旧版本仍保留。其采用<strong>“不可见即垃圾”</strong>的清理方式，通过 VACUUM 清理无用数据。</p>
+<hr>
+<h2 id="五、MVCC-的优点和挑战"><a href="#五、MVCC-的优点和挑战" class="headerlink" title="五、MVCC 的优点和挑战"></a>五、MVCC 的优点和挑战</h2><h3 id="✅-优点："><a href="#✅-优点：" class="headerlink" title="✅ 优点："></a>✅ 优点：</h3><ul>
+<li><p>高并发读写性能</p>
+</li>
+<li><p>避免读写互相阻塞</p>
+</li>
+<li><p>事务隔离性强（默认支持 Repeatable Read）</p>
+</li>
+</ul>
+<h3 id="❌-缺点："><a href="#❌-缺点：" class="headerlink" title="❌ 缺点："></a>❌ 缺点：</h3><ul>
+<li><p>占用更多存储空间（多版本）</p>
+</li>
+<li><p>写放大，更新成本较高</p>
+</li>
+<li><p>需要后台清理旧版本（如 MySQL 的 purge、PostgreSQL 的 vacuum）</p>
+</li>
+<li><p>可见性判断逻辑复杂</p>
+</li>
+</ul>
+<hr>
+<h2 id="六、MVCC-与事务隔离级别"><a href="#六、MVCC-与事务隔离级别" class="headerlink" title="六、MVCC 与事务隔离级别"></a>六、MVCC 与事务隔离级别</h2><p>MVCC 与事务隔离级别关系密切，尤其在 InnoDB 中：</p>
+<table>
+<thead>
+<tr>
+<th>隔离级别</th>
+<th>是否使用快照</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>READ UNCOMMITTED</td>
+<td>❌</td>
+<td>读未提交，不使用 MVCC</td>
+</tr>
+<tr>
+<td>READ COMMITTED</td>
+<td>✅</td>
+<td>每次读都生成新快照</td>
+</tr>
+<tr>
+<td>REPEATABLE READ（默认）</td>
+<td>✅</td>
+<td>同一事务使用同一个快照</td>
+</tr>
+<tr>
+<td>SERIALIZABLE</td>
+<td>✅（配合锁）</td>
+<td>加锁确保序列化</td>
+</tr>
+</tbody></table>
+<h1 id="Undo日志版本链与Read-View机制详解"><a href="#Undo日志版本链与Read-View机制详解" class="headerlink" title="Undo日志版本链与Read View机制详解"></a><strong>Undo日志版本链与Read View机制详解</strong></h1><hr>
+<h2 id="一、Undo-日志版本链是什么？"><a href="#一、Undo-日志版本链是什么？" class="headerlink" title="一、Undo 日志版本链是什么？"></a>一、Undo 日志版本链是什么？</h2><h3 id="📘-概念："><a href="#📘-概念：" class="headerlink" title="📘 概念："></a>📘 概念：</h3><p>InnoDB 在执行 <strong>DML（INSERT、UPDATE、DELETE）</strong> 时，会将变更前的数据写入 Undo 日志，以便：</p>
+<ul>
+<li><p>支持事务 <strong>回滚</strong></p>
+</li>
+<li><p>构建 <strong>历史版本链</strong>（MVCC 的实现基础）</p>
+</li>
+</ul>
+<blockquote>
+<p>换句话说，<strong>Undo Log 是老版本数据的备份库 + 时间机器</strong>。</p>
+</blockquote>
+<hr>
+<h3 id="🧬-Undo-日志与版本链的结构："><a href="#🧬-Undo-日志与版本链的结构：" class="headerlink" title="🧬 Undo 日志与版本链的结构："></a>🧬 Undo 日志与版本链的结构：</h3><p>每条记录在 InnoDB 中，都可以通过一个字段 <code>roll_pointer</code> 指向其上一个版本，形成 <strong>一个倒序的链表</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">最新版本（当前行）<br>↓  roll_pointer<br>版本 v3（由 T3 创建）<br>↓<br>版本 v2（由 T2 创建）<br>↓<br>版本 v1（由 T1 创建）<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>每个版本都包含：</p>
+<ul>
+<li><p><code>DB_TRX_ID</code>（创建它的事务ID）</p>
+</li>
+<li><p><code>roll_pointer</code>（指向前一个版本的 Undo 记录）</p>
+</li>
+<li><p>实际的数据内容</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="二、Read-View-是什么？"><a href="#二、Read-View-是什么？" class="headerlink" title="二、Read View 是什么？"></a>二、Read View 是什么？</h2><h3 id="📘-概念：-1"><a href="#📘-概念：-1" class="headerlink" title="📘 概念："></a>📘 概念：</h3><p>当事务执行第一个 <strong>快照读（普通 SELECT）</strong> 时，会生成一个 <strong>Read View（可见性视图）</strong>，用于定义：</p>
+<blockquote>
+<p><strong>哪些版本的记录对当前事务可见，哪些不可见。</strong></p>
+</blockquote>
+<p>Read View 保留以下信息：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>m_ids</code></td>
+<td>当前活跃事务列表（未提交）</td>
+</tr>
+<tr>
+<td><code>min_trx_id</code></td>
+<td>当前活跃事务中最小的 trx_id</td>
+</tr>
+<tr>
+<td><code>max_trx_id</code></td>
+<td>当前事务创建视图时已分配的最大事务 ID</td>
+</tr>
+<tr>
+<td><code>creator_trx_id</code></td>
+<td>当前事务自身的 ID</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-判断可见性的四大规则："><a href="#✅-判断可见性的四大规则：" class="headerlink" title="✅ 判断可见性的四大规则："></a>✅ 判断可见性的四大规则：</h3><p>InnoDB 判断某个版本是否对当前事务可见，逻辑如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs sql">如果 version.trx_id <span class="hljs-operator">&lt;</span> min_trx_id:<br>    ✅ 可见（版本属于已提交事务）<br><br>如果 version.trx_id <span class="hljs-operator">=</span><span class="hljs-operator">=</span> creator_trx_id:<br>    ✅ 可见（是自己创建的）<br><br>如果 version.trx_id 在 m_ids 中:<br>    ❌ 不可见（该版本还未提交）<br><br>如果 version.trx_id <span class="hljs-operator">&gt;</span> max_trx_id:<br>    ❌ 不可见（该版本在我之后创建的）<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、Undo-日志与-Read-View-如何协作？"><a href="#三、Undo-日志与-Read-View-如何协作？" class="headerlink" title="三、Undo 日志与 Read View 如何协作？"></a>三、Undo 日志与 Read View 如何协作？</h2><p>这两者在 MVCC 中的配合流程如下：</p>
+<h3 id="💡-场景示例："><a href="#💡-场景示例：" class="headerlink" title="💡 场景示例："></a>💡 场景示例：</h3><ul>
+<li><p>假设事务 T5 正在读取一行数据（SELECT）</p>
+</li>
+<li><p>该行最新版本是由事务 T7 写的</p>
+</li>
+<li><p>当前活跃事务列表 m_ids &#x3D; [T6, T7]</p>
+</li>
+</ul>
+<h3 id="步骤："><a href="#步骤：" class="headerlink" title="步骤："></a>步骤：</h3><ol>
+<li><p>T5 生成自己的 Read View，记录活跃事务列表（m_ids）。</p>
+</li>
+<li><p>T5 发现当前记录由 T7 创建（<code>DB_TRX_ID = T7</code>）。</p>
+</li>
+<li><p>查 m_ids：T7 是活跃事务，还没提交，所以版本对 T5 不可见。</p>
+</li>
+<li><p>顺着 <code>roll_pointer</code> 找到前一版本（T4 的版本），判断其是否可见。</p>
+</li>
+<li><p>直到找到可见版本（如 T3）为止。</p>
+</li>
+</ol>
+<p>这样，T5 看到的是 T3 创建的记录，<strong>即历史版本，而不是当前版本</strong>。</p>
+<hr>
+<h2 id="四、Undo-日志的类型与生命周期"><a href="#四、Undo-日志的类型与生命周期" class="headerlink" title="四、Undo 日志的类型与生命周期"></a>四、Undo 日志的类型与生命周期</h2><h3 id="✏️-Undo-Log-类型："><a href="#✏️-Undo-Log-类型：" class="headerlink" title="✏️ Undo Log 类型："></a>✏️ Undo Log 类型：</h3><ul>
+<li><p><strong>Insert Undo</strong>：插入记录时产生，用于回滚插入。</p>
+</li>
+<li><p><strong>Update Undo</strong>：更新&#x2F;删除时产生，用于回滚 &amp; 构建版本链。</p>
+</li>
+</ul>
+<h3 id="♻️-生命周期："><a href="#♻️-生命周期：" class="headerlink" title="♻️ 生命周期："></a>♻️ 生命周期：</h3><ul>
+<li><p>事务未提交时：Undo 保留。</p>
+</li>
+<li><p>事务提交后：</p>
+<ul>
+<li><p><strong>Insert Undo</strong> 可立即丢弃（不可再回滚）。</p>
+</li>
+<li><p><strong>Update Undo</strong> 需等待所有可能访问该版本的 Read View 都失效后，才能清除。</p>
+</li>
+</ul>
+</li>
+<li><p>最终通过 <strong>Purge 线程</strong> 清理。</p>
+</li>
+</ul>
+<hr>
+<h2 id="五、一个图解总结"><a href="#五、一个图解总结" class="headerlink" title="五、一个图解总结"></a>五、一个图解总结</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs text">记录结构：<br><br>+--------------------+<br>| 当前记录版本 (T7)  | ← DB_TRX_ID = T7 (未提交)<br>| roll_pointer →     |<br>+--------------------+     ↓<br>                      +------------------+<br>                      | 旧版本 (T4)       | ← DB_TRX_ID = T4 (已提交)<br>                      | roll_pointer →   |<br>                      +------------------+<br>                            ↓<br>                      +------------------+<br>                      | 旧旧版本 (T2)     | ← DB_TRX_ID = T2<br>                      +------------------+<br><br>事务 T5 的 Read View：活跃事务 = [T6, T7]<br><br>读取时，T5 会忽略 T7，选择 T4。<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、MVCC-Read-View-的性能影响"><a href="#六、MVCC-Read-View-的性能影响" class="headerlink" title="六、MVCC &amp; Read View 的性能影响"></a>六、MVCC &amp; Read View 的性能影响</h2><h3 id="👍-优点："><a href="#👍-优点：" class="headerlink" title="👍 优点："></a>👍 优点：</h3><ul>
+<li><p>非阻塞读，高并发</p>
+</li>
+<li><p>支持事务隔离（Repeatable Read）</p>
+</li>
+</ul>
+<h3 id="👎-潜在问题："><a href="#👎-潜在问题：" class="headerlink" title="👎 潜在问题："></a>👎 潜在问题：</h3><ul>
+<li><p>长事务会拖住 Undo 的清理，造成 <strong>历史版本堆积</strong>。</p>
+</li>
+<li><p>频繁更新会导致版本链过长，读取成本上升。</p>
+</li>
+</ul>
+<blockquote>
+<p>💡 <strong>优化建议</strong>：</p>
+<ul>
+<li><p>控制长事务</p>
+</li>
+<li><p>开启自动 purge</p>
+</li>
+<li><p>避免事务中频繁大批量更新</p>
+</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><table>
+<thead>
+<tr>
+<th>技术点</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Undo 日志</td>
+<td>保存历史版本，支持回滚 &amp; MVCC</td>
+</tr>
+<tr>
+<td>Roll Pointer</td>
+<td>串联版本链</td>
+</tr>
+<tr>
+<td>Read View</td>
+<td>定义事务能看见哪些版本</td>
+</tr>
+<tr>
+<td>Purge</td>
+<td>清理旧的 Undo 版本</td>
+</tr>
+</tbody></table>
+<h1 id="Innodb引擎BufferPool缓存机制详解"><a href="#Innodb引擎BufferPool缓存机制详解" class="headerlink" title="Innodb引擎BufferPool缓存机制详解"></a><strong>Innodb引擎BufferPool缓存机制详解</strong></h1><hr>
+<h2 id="🧠-1-什么是-Buffer-Pool？"><a href="#🧠-1-什么是-Buffer-Pool？" class="headerlink" title="🧠 1. 什么是 Buffer Pool？"></a>🧠 1. 什么是 Buffer Pool？</h2><p><strong>Buffer Pool（缓冲池）</strong> 是 InnoDB 的内存缓存区域，用于缓存磁盘中的：</p>
+<ul>
+<li><p>数据页（Data Pages）</p>
+</li>
+<li><p>索引页（Index Pages）</p>
+</li>
+<li><p>undo 页、insert buffer、adaptive hash index 等</p>
+</li>
+</ul>
+<blockquote>
+<p>🏎️ 它是 InnoDB 与磁盘之间的高速公路，是数据库性能命脉。</p>
+</blockquote>
+<hr>
+<h2 id="📦-2-Buffer-Pool-的结构"><a href="#📦-2-Buffer-Pool-的结构" class="headerlink" title="📦 2. Buffer Pool 的结构"></a>📦 2. Buffer Pool 的结构</h2><p>Buffer Pool 本质上是一个由 N 个页（Page）组成的内存池，结构如下：</p>
+<h3 id="🔹-页面（Page）"><a href="#🔹-页面（Page）" class="headerlink" title="🔹 页面（Page）"></a>🔹 页面（Page）</h3><ul>
+<li><p>每页大小默认 16KB（可通过 <code>innodb_page_size</code> 修改）</p>
+</li>
+<li><p>存储表数据、索引数据、undo、insert buffer 等</p>
+</li>
+</ul>
+<h3 id="🔸-Chunk（块）"><a href="#🔸-Chunk（块）" class="headerlink" title="🔸 Chunk（块）"></a>🔸 Chunk（块）</h3><ul>
+<li>从 MySQL 8.0 起，Buffer Pool 分块管理，提升并发加载性能</li>
+</ul>
+<h3 id="🔸-Buffer-Pool-Instance（多实例）"><a href="#🔸-Buffer-Pool-Instance（多实例）" class="headerlink" title="🔸 Buffer Pool Instance（多实例）"></a>🔸 Buffer Pool Instance（多实例）</h3><ul>
+<li><p>当 Buffer Pool 很大时（≥1GB），会自动分为多个 instance，提高并发性</p>
+</li>
+<li><p>参数：<code>innodb_buffer_pool_instances</code>（默认与大小有关）</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔁-3-数据加载与缓存过程"><a href="#🔁-3-数据加载与缓存过程" class="headerlink" title="🔁 3. 数据加载与缓存过程"></a>🔁 3. 数据加载与缓存过程</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">             查询              命中缓存<br>Client  ───────────────▶ Buffer Pool ──▶ 返回数据<br>              │                │<br>              └──没命中────────▼<br>                            磁盘文件（.ibd）<br>                                 │<br>                            加载页进缓存<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>页不存在 → 从磁盘加载进 Buffer Pool</p>
+</li>
+<li><p>页存在 → 直接返回，极快</p>
+</li>
+</ul>
+<hr>
+<h2 id="📊-4-替换策略：LRU-与-flush-list"><a href="#📊-4-替换策略：LRU-与-flush-list" class="headerlink" title="📊 4. 替换策略：LRU 与 flush list"></a>📊 4. 替换策略：LRU 与 flush list</h2><h3 id="✅-LRU（Least-Recently-Used）链表"><a href="#✅-LRU（Least-Recently-Used）链表" class="headerlink" title="✅ LRU（Least Recently Used）链表"></a>✅ LRU（Least Recently Used）链表</h3><ul>
+<li><p>最近访问的页移到链表头部</p>
+</li>
+<li><p>长时间未访问的页会被淘汰（可调控制冷热页比例）</p>
+</li>
+</ul>
+<blockquote>
+<p>📌 注意：InnoDB 使用的是 “midpoint insertion strategy”，即新页插入到 LRU 中部，防止全表扫描污染缓存。</p>
+</blockquote>
+<h3 id="✅-Flush-List（脏页刷新）"><a href="#✅-Flush-List（脏页刷新）" class="headerlink" title="✅ Flush List（脏页刷新）"></a>✅ Flush List（脏页刷新）</h3><ul>
+<li><p>修改后的页成为“脏页”（Dirty Page），加入 flush list；</p>
+</li>
+<li><p>定期刷盘到磁盘（异步）；</p>
+</li>
+<li><p>Buffer Pool 需要腾出空间时，也会强制刷脏页。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔐-5-相关核心参数"><a href="#🔐-5-相关核心参数" class="headerlink" title="🔐 5. 相关核心参数"></a>🔐 5. 相关核心参数</h2><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>innodb_buffer_pool_size</code></td>
+<td>缓存总大小（推荐占内存 60%~80%）</td>
+<td><code>4G</code></td>
+</tr>
+<tr>
+<td><code>innodb_buffer_pool_instances</code></td>
+<td>多实例个数（≥1G 时建议设为 <code>4~8</code>）</td>
+<td><code>8</code></td>
+</tr>
+<tr>
+<td><code>innodb_lru_scan_depth</code></td>
+<td>每次淘汰页时扫描深度</td>
+<td>默认 <code>1024</code></td>
+</tr>
+<tr>
+<td><code>innodb_flush_neighbors</code></td>
+<td>是否一起刷相邻页（SSD 可关闭）</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>innodb_flush_method</code></td>
+<td>刷盘方式（常用 <code>O_DIRECT</code>）</td>
+<td><code>O_DIRECT</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧪-6-如何监控-Buffer-Pool？"><a href="#🧪-6-如何监控-Buffer-Pool？" class="headerlink" title="🧪 6. 如何监控 Buffer Pool？"></a>🧪 6. 如何监控 Buffer Pool？</h2><h3 id="常用-SQL："><a href="#常用-SQL：" class="headerlink" title="常用 SQL："></a>常用 SQL：</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 命中率</span><br><span class="hljs-keyword">SHOW</span> ENGINE INNODB STATUS;<br><br><span class="hljs-comment">-- 精准查看：</span><br><span class="hljs-keyword">SELECT</span> <br>  variable_value <span class="hljs-keyword">AS</span> total<br><span class="hljs-keyword">FROM</span> performance_schema.global_status <br><span class="hljs-keyword">WHERE</span> variable_name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Innodb_buffer_pool_read_requests&#x27;</span>;<br><br><span class="hljs-keyword">SELECT</span> <br>  variable_value <span class="hljs-keyword">AS</span> disk_reads<br><span class="hljs-keyword">FROM</span> performance_schema.global_status <br><span class="hljs-keyword">WHERE</span> variable_name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Innodb_buffer_pool_reads&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<h3 id="计算命中率："><a href="#计算命中率：" class="headerlink" title="计算命中率："></a>计算命中率：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">命中率 = 1 - (Innodb_buffer_pool_reads / Innodb_buffer_pool_read_requests)<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>✅ 命中率一般应 ≥ 99%。否则说明缓存太小或者索引不合理。</p>
+</blockquote>
+<hr>
+<h2 id="🛠️-7-调优建议"><a href="#🛠️-7-调优建议" class="headerlink" title="🛠️ 7. 调优建议"></a>🛠️ 7. 调优建议</h2><table>
+<thead>
+<tr>
+<th>调优项</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>缓存命中率低</td>
+<td>增加 <code>innodb_buffer_pool_size</code>，优化 SQL 索引</td>
+</tr>
+<tr>
+<td>内存大于 1G</td>
+<td>设置 <code>innodb_buffer_pool_instances=4~8</code></td>
+</tr>
+<tr>
+<td>使用 SSD</td>
+<td>设置 <code>innodb_flush_neighbors=0</code></td>
+</tr>
+<tr>
+<td>全表扫描频繁</td>
+<td>加索引 + 使用分析工具找慢 SQL</td>
+</tr>
+<tr>
+<td>写入频繁</td>
+<td>启用 <code>innodb_flush_log_at_trx_commit=2</code> 缓解刷盘压力</td>
+</tr>
+</tbody></table>
+<h1 id="Redo与Undo日志详解"><a href="#Redo与Undo日志详解" class="headerlink" title="Redo与Undo日志详解"></a><strong>Redo与Undo日志详解</strong></h1><hr>
+<h2 id="🎯-一句话理解"><a href="#🎯-一句话理解" class="headerlink" title="🎯 一句话理解"></a>🎯 一句话理解</h2><ul>
+<li><p><strong>Redo 日志（重做日志）</strong>：保证事务的 <strong>持久性（D）</strong></p>
+</li>
+<li><p><strong>Undo 日志（回滚日志）</strong>：保证事务的 <strong>原子性（A） 和 隔离性（I）</strong></p>
+</li>
+</ul>
+<hr>
+<h2 id="🔁-Redo-日志：持久性保障"><a href="#🔁-Redo-日志：持久性保障" class="headerlink" title="🔁 Redo 日志：持久性保障"></a>🔁 Redo 日志：持久性保障</h2><h3 id="🧱-什么是-Redo-日志？"><a href="#🧱-什么是-Redo-日志？" class="headerlink" title="🧱 什么是 Redo 日志？"></a>🧱 什么是 Redo 日志？</h3><p>当事务修改了数据页，先记录一条 <strong>Redo 日志</strong>（记录“做了什么”），之后才将数据写入磁盘。这样即使宕机，也能根据日志<strong>重做</strong>已提交的操作。</p>
+<h3 id="📦-Redo-的结构"><a href="#📦-Redo-的结构" class="headerlink" title="📦 Redo 的结构"></a>📦 Redo 的结构</h3><ul>
+<li><p><strong>逻辑位置：InnoDB 内部</strong></p>
+</li>
+<li><p><strong>物理文件：<code>ib_logfile0</code>, <code>ib_logfile1</code> 等（MySQL 8.0 支持多个）</strong></p>
+</li>
+<li><p><strong>内存缓存区：<code>redo log buffer</code>（由参数 <code>innodb_log_buffer_size</code> 控制）</strong></p>
+</li>
+</ul>
+<h3 id="🚦-Redo-工作流程"><a href="#🚦-Redo-工作流程" class="headerlink" title="🚦 Redo 工作流程"></a>🚦 Redo 工作流程</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">事务开始 ➜ 修改内存页（Buffer Pool） ➜ 记录 Redo 日志（log buffer）<br>        ➜ 日志写入磁盘（控制点） ➜ 数据页最终落盘（Checkpoint）<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>提交事务时，<strong>必须先写 redo 日志到磁盘（WAL机制）</strong></p>
+</li>
+<li><p>实际数据可以延迟落盘，确保宕机恢复</p>
+</li>
+</ul>
+<h3 id="🧰-参数"><a href="#🧰-参数" class="headerlink" title="🧰 参数"></a>🧰 参数</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>innodb_log_file_size</code></td>
+<td>单个 redo 文件大小</td>
+</tr>
+<tr>
+<td><code>innodb_log_files_in_group</code></td>
+<td>文件个数（默认 2）</td>
+</tr>
+<tr>
+<td><code>innodb_log_buffer_size</code></td>
+<td>redo 缓冲区大小</td>
+</tr>
+<tr>
+<td><code>innodb_flush_log_at_trx_commit</code></td>
+<td>刷盘策略：</td>
+</tr>
+<tr>
+<td>1（默认）每次事务提交都写盘，最安全</td>
+<td></td>
+</tr>
+<tr>
+<td>2 写缓冲区，不立即落盘</td>
+<td></td>
+</tr>
+<tr>
+<td>0 延迟写入</td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="⏪-Undo-日志：回滚与-MVCC-核心"><a href="#⏪-Undo-日志：回滚与-MVCC-核心" class="headerlink" title="⏪ Undo 日志：回滚与 MVCC 核心"></a>⏪ Undo 日志：回滚与 MVCC 核心</h2><h3 id="🔄-什么是-Undo-日志？"><a href="#🔄-什么是-Undo-日志？" class="headerlink" title="🔄 什么是 Undo 日志？"></a>🔄 什么是 Undo 日志？</h3><p>Undo 日志用于 <strong>记录数据被修改前的值</strong>，以便：</p>
+<ul>
+<li><p><strong>事务回滚时恢复数据</strong></p>
+</li>
+<li><p>支持 <strong>快照读（MVCC）</strong></p>
+</li>
+</ul>
+<h3 id="🔨-Undo-的用途"><a href="#🔨-Undo-的用途" class="headerlink" title="🔨 Undo 的用途"></a>🔨 Undo 的用途</h3><ol>
+<li><p><strong>事务回滚</strong>：</p>
+<ul>
+<li>操作失败或主动 <code>ROLLBACK</code>，用 undo 日志恢复原值；</li>
+</ul>
+</li>
+<li><p><strong>实现 MVCC 隔离性</strong>：</p>
+<ul>
+<li>快照读依赖 undo 构造出“事务开始时看到的数据”；</li>
+</ul>
+</li>
+</ol>
+<h3 id="📦-Undo-的存储"><a href="#📦-Undo-的存储" class="headerlink" title="📦 Undo 的存储"></a>📦 Undo 的存储</h3><ul>
+<li><p>在系统表空间或独立表空间中，以 <strong>段（segment）</strong> 的形式存在；</p>
+</li>
+<li><p>MySQL 8.0 开始，undo 支持自动清理；</p>
+</li>
+</ul>
+<h3 id="🚦-Undo-工作流程"><a href="#🚦-Undo-工作流程" class="headerlink" title="🚦 Undo 工作流程"></a>🚦 Undo 工作流程</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">事务开始 ➜ 修改数据前，生成 undo 记录 ➜ 写入 undo 段<br>        ➜ 若事务回滚 ➜ 利用 undo 回滚数据<br>        ➜ 若快照读 ➜ 使用 undo 构建旧版本<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔃-Redo-vs-Undo：对比表"><a href="#🔃-Redo-vs-Undo：对比表" class="headerlink" title="🔃 Redo vs Undo：对比表"></a>🔃 Redo vs Undo：对比表</h2><table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Redo 日志</th>
+<th>Undo 日志</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>作用</td>
+<td>崩溃恢复，重做提交的修改</td>
+<td>回滚操作、MVCC 隔离</td>
+</tr>
+<tr>
+<td>写入时机</td>
+<td>修改数据后立即写入</td>
+<td>修改前写入</td>
+</tr>
+<tr>
+<td>内容</td>
+<td><strong>做了什么操作</strong>（重做日志）</td>
+<td><strong>数据原值</strong>（撤销日志）</td>
+</tr>
+<tr>
+<td>依赖参数</td>
+<td><code>innodb_log_*</code> 系列</td>
+<td><code>innodb_undo_*</code> 系列（如 8.0 的 undo 表空间）</td>
+</tr>
+<tr>
+<td>是否落盘</td>
+<td>✅ 会持久化</td>
+<td>✅ 落盘，支持 MVCC</td>
+</tr>
+<tr>
+<td>是否自动清理</td>
+<td>❌ 保留一段时间（崩溃恢复）</td>
+<td>✅ 提交后可清理</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧪-崩溃恢复过程-Redo-Undo-合作"><a href="#🧪-崩溃恢复过程-Redo-Undo-合作" class="headerlink" title="🧪 崩溃恢复过程 &#x3D; Redo + Undo 合作"></a>🧪 崩溃恢复过程 &#x3D; Redo + Undo 合作</h2><p>当系统崩溃，InnoDB 启动后会执行两阶段恢复：</p>
+<ol>
+<li><p><strong>重做阶段（Redo）</strong>：重做所有已提交事务的 redo 日志，确保事务“完成到底”；</p>
+</li>
+<li><p><strong>回滚阶段（Undo）</strong>：撤销未提交事务的操作，保持事务的原子性；</p>
+</li>
+</ol>
+<hr>
+<h2 id="🛠️-日志调优建议"><a href="#🛠️-日志调优建议" class="headerlink" title="🛠️ 日志调优建议"></a>🛠️ 日志调优建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>频繁写操作多</td>
+<td>增加 <code>innodb_log_buffer_size</code>，减少频繁刷盘</td>
+</tr>
+<tr>
+<td>延迟可以接受</td>
+<td>将 <code>innodb_flush_log_at_trx_commit=2</code> 提高吞吐</td>
+</tr>
+<tr>
+<td>崩溃恢复速度要求高</td>
+<td>增大 <code>innodb_log_file_size</code>，避免频繁 checkpoint</td>
+</tr>
+<tr>
+<td>长事务多，MVCC 慢</td>
+<td>合理配置 undo 表空间，控制 <code>purge lag</code></td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/24/Mysql%E9%94%81%E6%9C%BA%E5%88%B6%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5%E4%BB%A5%E5%8F%8AMVCC%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;24&#x2F;Mysql%E9%94%81%E6%9C%BA%E5%88%B6%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5%E4%BB%A5%E5%8F%8AMVCC%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;24&#x2F;Mysql%E9%94%81%E6%9C%BA%E5%88%B6%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5%E4%BB%A5%E5%8F%8AMVCC%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mysql/" rel="tag">Mysql</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2024/05/24/Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89/"><i class="iconfont iconleft"></i>Innodb底层原理与Mysq旧志机制深入剖析（一)</a>
+    <a href="/2024/05/23/Mysql%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96%E4%BA%8C/">Mysql索引优化二<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MVCC%E5%A4%9A%E7%89%88%E6%9C%AC%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-text">MVCC多版本并发控制机制详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81MVCC-%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="toc-text">一、MVCC 的基本原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81MVCC-%E4%B8%8E%E4%BC%A0%E7%BB%9F%E9%94%81%E6%9C%BA%E5%88%B6%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">二、MVCC 与传统锁机制的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81MVCC-%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0"><span class="toc-text">三、MVCC 如何实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%89%88%E6%9C%AC%E9%93%BE%EF%BC%88Version-Chain%EF%BC%89"><span class="toc-text">1. 版本链（Version Chain）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%AF%E8%A7%81%E6%80%A7%E8%A7%84%E5%88%99%EF%BC%88Visibility-Rules%EF%BC%89"><span class="toc-text">2. 可见性规则（Visibility Rules）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81MVCC-%E5%9C%A8%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%AD%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">四、MVCC 在数据库中的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-MySQL-InnoDB-%E5%BC%95%E6%93%8E"><span class="toc-text">1. MySQL (InnoDB 引擎)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-PostgreSQL"><span class="toc-text">2. PostgreSQL</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81MVCC-%E7%9A%84%E4%BC%98%E7%82%B9%E5%92%8C%E6%8C%91%E6%88%98"><span class="toc-text">五、MVCC 的优点和挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="toc-text">✅ 优点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%8C-%E7%BC%BA%E7%82%B9%EF%BC%9A"><span class="toc-text">❌ 缺点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81MVCC-%E4%B8%8E%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">六、MVCC 与事务隔离级别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Undo%E6%97%A5%E5%BF%97%E7%89%88%E6%9C%AC%E9%93%BE%E4%B8%8ERead-View%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-text">Undo日志版本链与Read View机制详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Undo-%E6%97%A5%E5%BF%97%E7%89%88%E6%9C%AC%E9%93%BE%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">一、Undo 日志版本链是什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%98-%E6%A6%82%E5%BF%B5%EF%BC%9A"><span class="toc-text">📘 概念：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%AC-Undo-%E6%97%A5%E5%BF%97%E4%B8%8E%E7%89%88%E6%9C%AC%E9%93%BE%E7%9A%84%E7%BB%93%E6%9E%84%EF%BC%9A"><span class="toc-text">🧬 Undo 日志与版本链的结构：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Read-View-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">二、Read View 是什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%98-%E6%A6%82%E5%BF%B5%EF%BC%9A-1"><span class="toc-text">📘 概念：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%88%A4%E6%96%AD%E5%8F%AF%E8%A7%81%E6%80%A7%E7%9A%84%E5%9B%9B%E5%A4%A7%E8%A7%84%E5%88%99%EF%BC%9A"><span class="toc-text">✅ 判断可见性的四大规则：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Undo-%E6%97%A5%E5%BF%97%E4%B8%8E-Read-View-%E5%A6%82%E4%BD%95%E5%8D%8F%E4%BD%9C%EF%BC%9F"><span class="toc-text">三、Undo 日志与 Read View 如何协作？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E5%9C%BA%E6%99%AF%E7%A4%BA%E4%BE%8B%EF%BC%9A"><span class="toc-text">💡 场景示例：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4%EF%BC%9A"><span class="toc-text">步骤：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Undo-%E6%97%A5%E5%BF%97%E7%9A%84%E7%B1%BB%E5%9E%8B%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">四、Undo 日志的类型与生命周期</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%8F%EF%B8%8F-Undo-Log-%E7%B1%BB%E5%9E%8B%EF%BC%9A"><span class="toc-text">✏️ Undo Log 类型：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%99%BB%EF%B8%8F-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%EF%BC%9A"><span class="toc-text">♻️ 生命周期：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%B8%80%E4%B8%AA%E5%9B%BE%E8%A7%A3%E6%80%BB%E7%BB%93"><span class="toc-text">五、一个图解总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81MVCC-Read-View-%E7%9A%84%E6%80%A7%E8%83%BD%E5%BD%B1%E5%93%8D"><span class="toc-text">六、MVCC &amp; Read View 的性能影响</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%91%8D-%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="toc-text">👍 优点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%91%8E-%E6%BD%9C%E5%9C%A8%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-text">👎 潜在问题：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Innodb%E5%BC%95%E6%93%8EBufferPool%E7%BC%93%E5%AD%98%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-text">Innodb引擎BufferPool缓存机制详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-1-%E4%BB%80%E4%B9%88%E6%98%AF-Buffer-Pool%EF%BC%9F"><span class="toc-text">🧠 1. 什么是 Buffer Pool？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-2-Buffer-Pool-%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">📦 2. Buffer Pool 的结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E9%A1%B5%E9%9D%A2%EF%BC%88Page%EF%BC%89"><span class="toc-text">🔹 页面（Page）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B8-Chunk%EF%BC%88%E5%9D%97%EF%BC%89"><span class="toc-text">🔸 Chunk（块）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B8-Buffer-Pool-Instance%EF%BC%88%E5%A4%9A%E5%AE%9E%E4%BE%8B%EF%BC%89"><span class="toc-text">🔸 Buffer Pool Instance（多实例）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-3-%E6%95%B0%E6%8D%AE%E5%8A%A0%E8%BD%BD%E4%B8%8E%E7%BC%93%E5%AD%98%E8%BF%87%E7%A8%8B"><span class="toc-text">🔁 3. 数据加载与缓存过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8A-4-%E6%9B%BF%E6%8D%A2%E7%AD%96%E7%95%A5%EF%BC%9ALRU-%E4%B8%8E-flush-list"><span class="toc-text">📊 4. 替换策略：LRU 与 flush list</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-LRU%EF%BC%88Least-Recently-Used%EF%BC%89%E9%93%BE%E8%A1%A8"><span class="toc-text">✅ LRU（Least Recently Used）链表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-Flush-List%EF%BC%88%E8%84%8F%E9%A1%B5%E5%88%B7%E6%96%B0%EF%BC%89"><span class="toc-text">✅ Flush List（脏页刷新）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%90-5-%E7%9B%B8%E5%85%B3%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0"><span class="toc-text">🔐 5. 相关核心参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-6-%E5%A6%82%E4%BD%95%E7%9B%91%E6%8E%A7-Buffer-Pool%EF%BC%9F"><span class="toc-text">🧪 6. 如何监控 Buffer Pool？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8-SQL%EF%BC%9A"><span class="toc-text">常用 SQL：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%91%BD%E4%B8%AD%E7%8E%87%EF%BC%9A"><span class="toc-text">计算命中率：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0%EF%B8%8F-7-%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE"><span class="toc-text">🛠️ 7. 调优建议</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redo%E4%B8%8EUndo%E6%97%A5%E5%BF%97%E8%AF%A6%E8%A7%A3"><span class="toc-text">Redo与Undo日志详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3"><span class="toc-text">🎯 一句话理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-Redo-%E6%97%A5%E5%BF%97%EF%BC%9A%E6%8C%81%E4%B9%85%E6%80%A7%E4%BF%9D%E9%9A%9C"><span class="toc-text">🔁 Redo 日志：持久性保障</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%B1-%E4%BB%80%E4%B9%88%E6%98%AF-Redo-%E6%97%A5%E5%BF%97%EF%BC%9F"><span class="toc-text">🧱 什么是 Redo 日志？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%A6-Redo-%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">📦 Redo 的结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%A6-Redo-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">🚦 Redo 工作流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%B0-%E5%8F%82%E6%95%B0"><span class="toc-text">🧰 参数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%8F%AA-Undo-%E6%97%A5%E5%BF%97%EF%BC%9A%E5%9B%9E%E6%BB%9A%E4%B8%8E-MVCC-%E6%A0%B8%E5%BF%83"><span class="toc-text">⏪ Undo 日志：回滚与 MVCC 核心</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%84-%E4%BB%80%E4%B9%88%E6%98%AF-Undo-%E6%97%A5%E5%BF%97%EF%BC%9F"><span class="toc-text">🔄 什么是 Undo 日志？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%A8-Undo-%E7%9A%84%E7%94%A8%E9%80%94"><span class="toc-text">🔨 Undo 的用途</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%A6-Undo-%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-text">📦 Undo 的存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%A6-Undo-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">🚦 Undo 工作流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%83-Redo-vs-Undo%EF%BC%9A%E5%AF%B9%E6%AF%94%E8%A1%A8"><span class="toc-text">🔃 Redo vs Undo：对比表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E5%B4%A9%E6%BA%83%E6%81%A2%E5%A4%8D%E8%BF%87%E7%A8%8B-Redo-Undo-%E5%90%88%E4%BD%9C"><span class="toc-text">🧪 崩溃恢复过程 &#x3D; Redo + Undo 合作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0%EF%B8%8F-%E6%97%A5%E5%BF%97%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE"><span class="toc-text">🛠️ 日志调优建议</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

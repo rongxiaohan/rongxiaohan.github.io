@@ -1,0 +1,922 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Innodb底层原理与Mysq旧志机制深入剖析（一) - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="binlog二进制归档日志原理详解
+🔍 一、什么是 ...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Innodb底层原理与Mysq旧志机制深入剖析（一)</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Innodb底层原理与Mysq旧志机制深入剖析（一)</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 24, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>7199</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h1 id="binlog二进制归档日志原理详解"><a href="#binlog二进制归档日志原理详解" class="headerlink" title="binlog二进制归档日志原理详解"></a><strong>binlog二进制归档日志原理详解</strong></h1><hr>
+<h2 id="🔍-一、什么是-Binlog？"><a href="#🔍-一、什么是-Binlog？" class="headerlink" title="🔍 一、什么是 Binlog？"></a>🔍 一、什么是 Binlog？</h2><p>Binlog（Binary Log）是 MySQL 服务器层生成的一种 <strong>二进制格式的日志文件</strong>，记录了所有对数据库执行 <strong>更改数据的语句或事件</strong>，例如 <code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code> 等。</p>
+<p>注意：</p>
+<ul>
+<li><p><strong>只记录数据更改类语句，不记录 SELECT 语句。</strong></p>
+</li>
+<li><p>Binlog 是逻辑日志（逻辑层的变化），不是物理磁盘块的变化。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧱-二、Binlog-的组成"><a href="#🧱-二、Binlog-的组成" class="headerlink" title="🧱 二、Binlog 的组成"></a>🧱 二、Binlog 的组成</h2><ol>
+<li><p><strong>日志文件（binlog.000001 等）</strong></p>
+<ul>
+<li>存储实际的日志事件，按文件轮转生成。</li>
+</ul>
+</li>
+<li><p><strong>索引文件（<code>mysql-bin.index</code>）</strong></p>
+<ul>
+<li>记录当前所有的 binlog 文件名称，MySQL 用它管理 binlog 文件列表。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="🛠-三、三种-Binlog-格式（事件格式）"><a href="#🛠-三、三种-Binlog-格式（事件格式）" class="headerlink" title="🛠 三、三种 Binlog 格式（事件格式）"></a>🛠 三、三种 Binlog 格式（事件格式）</h2><p>MySQL 支持三种 binlog 格式，记录数据变更的粒度不同：</p>
+<table>
+<thead>
+<tr>
+<th>格式类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>STATEMENT</strong></td>
+<td>基于 SQL 语句的复制，记录执行的 SQL 语句</td>
+</tr>
+<tr>
+<td><strong>ROW</strong></td>
+<td>基于行的复制，记录每一行数据的变化（前&#x2F;后镜像）</td>
+</tr>
+<tr>
+<td><strong>MIXED</strong></td>
+<td>混合模式，根据语句使用场景自动选择 STATEMENT 或 ROW</td>
+</tr>
+</tbody></table>
+<p><strong>对比</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>比较项</th>
+<th>STATEMENT</th>
+<th>ROW</th>
+<th>MIXED</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>日志体积</td>
+<td>小</td>
+<td>大（记录行变更）</td>
+<td>适中</td>
+</tr>
+<tr>
+<td>可读性</td>
+<td>较好</td>
+<td>差（二进制数据）</td>
+<td>一般</td>
+</tr>
+<tr>
+<td>精确性</td>
+<td>可能不一致</td>
+<td>高（无歧义）</td>
+<td>相对较高</td>
+</tr>
+<tr>
+<td>使用场景</td>
+<td>简单业务系统</td>
+<td>高一致性需求、主从结构复杂</td>
+<td>默认模式推荐</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔄-四、Binlog-写入机制（原理）"><a href="#🔄-四、Binlog-写入机制（原理）" class="headerlink" title="🔄 四、Binlog 写入机制（原理）"></a>🔄 四、Binlog 写入机制（原理）</h2><p>MySQL 在执行一条 <strong>更改类 SQL 语句</strong> 时，会遵循以下流程：</p>
+<ol>
+<li><p>SQL 执行前先进入事务（Innodb 引擎）</p>
+</li>
+<li><p>执行 SQL（写内存、写 undo&#x2F;redo）</p>
+</li>
+<li><p>写 binlog（记录数据变化）</p>
+</li>
+<li><p>提交事务（flush binlog + redo 提交）</p>
+</li>
+</ol>
+<p>这就是 MySQL 的 <strong>two-phase commit（两阶段提交）机制</strong>，确保 redo log 和 binlog 写入一致，实现事务的可靠性和数据复制的一致性。</p>
+<hr>
+<h2 id="🔁-五、Binlog-与复制机制的关系"><a href="#🔁-五、Binlog-与复制机制的关系" class="headerlink" title="🔁 五、Binlog 与复制机制的关系"></a>🔁 五、Binlog 与复制机制的关系</h2><p>MySQL 的主从复制，就是基于 binlog 实现的：</p>
+<ol>
+<li><p><strong>主库</strong>：将数据更改写入 binlog。</p>
+</li>
+<li><p><strong>从库 IO 线程</strong>：从主库读取 binlog 写入 relay log。</p>
+</li>
+<li><p><strong>从库 SQL 线程</strong>：读取 relay log 执行相同变更。</p>
+</li>
+</ol>
+<p>Binlog 是主从复制的“源数据”，没有 binlog，从库就无法复刻主库的操作。</p>
+<hr>
+<h2 id="🔐-六、Binlog-的持久性与刷盘策略"><a href="#🔐-六、Binlog-的持久性与刷盘策略" class="headerlink" title="🔐 六、Binlog 的持久性与刷盘策略"></a>🔐 六、Binlog 的持久性与刷盘策略</h2><p>通过参数 <code>sync_binlog</code> 控制 binlog 刷盘行为：</p>
+<table>
+<thead>
+<tr>
+<th>sync_binlog 值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>不强制刷盘，依赖 OS 缓存，性能高风险高</td>
+</tr>
+<tr>
+<td>1（推荐）</td>
+<td>每次写入都同步刷盘，最安全</td>
+</tr>
+<tr>
+<td>&gt;1</td>
+<td>累积若干次写入后再刷盘，性能与安全权衡</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📦-七、Binlog-的轮转与归档"><a href="#📦-七、Binlog-的轮转与归档" class="headerlink" title="📦 七、Binlog 的轮转与归档"></a>📦 七、Binlog 的轮转与归档</h2><ul>
+<li><p>MySQL 会定期轮转 binlog 文件（默认每次重启或大小达到指定值）</p>
+</li>
+<li><p>可以手动执行：<code>FLUSH LOGS</code> 强制创建新的 binlog 文件</p>
+</li>
+<li><p>设置保留策略参数：</p>
+  <figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">expire_logs_days</span> = <span class="hljs-number">7</span><br></code></pre></td></tr></table></figure>
+</li>
+<li><p>也可以通过 <code>PURGE BINARY LOGS TO &#39;binlog.000010&#39;;</code> 删除旧日志</p>
+</li>
+</ul>
+<hr>
+<h2 id="🛠-八、实际应用场景"><a href="#🛠-八、实际应用场景" class="headerlink" title="🛠 八、实际应用场景"></a>🛠 八、实际应用场景</h2><h3 id="✅-数据恢复（Point-in-time-Recovery，PITR）"><a href="#✅-数据恢复（Point-in-time-Recovery，PITR）" class="headerlink" title="✅ 数据恢复（Point-in-time Recovery，PITR）"></a>✅ 数据恢复（Point-in-time Recovery，PITR）</h3><p>通过 binlog + 全量备份，可实现某一时刻的精确恢复。</p>
+<h3 id="✅-主从复制"><a href="#✅-主从复制" class="headerlink" title="✅ 主从复制"></a>✅ 主从复制</h3><p>核心依赖 binlog，同步主库的变更操作。</p>
+<h3 id="✅-数据审计"><a href="#✅-数据审计" class="headerlink" title="✅ 数据审计"></a>✅ 数据审计</h3><p>可通过解析 binlog 获取业务操作记录。</p>
+<h3 id="✅-增量备份"><a href="#✅-增量备份" class="headerlink" title="✅ 增量备份"></a>✅ 增量备份</h3><p>备份系统可以定期拉取 binlog 实现增量数据备份。</p>
+<hr>
+<h2 id="🧰-九、如何查看和解析-Binlog？"><a href="#🧰-九、如何查看和解析-Binlog？" class="headerlink" title="🧰 九、如何查看和解析 Binlog？"></a>🧰 九、如何查看和解析 Binlog？</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 查看 binlog 列表</span><br>mysql&gt; SHOW BINARY LOGS;<br><br><span class="hljs-comment"># 查看 binlog 当前位置</span><br>mysql&gt; SHOW MASTER STATUS;<br><br><span class="hljs-comment"># 解析 binlog 内容（需要 mysqlbinlog 工具）</span><br>mysqlbinlog --no-defaults --base64-output=DECODE-ROWS -v mysql-bin.000001<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧠-十、常见问题解答"><a href="#🧠-十、常见问题解答" class="headerlink" title="🧠 十、常见问题解答"></a>🧠 十、常见问题解答</h2><h3 id="❓-binlog-是每个存储引擎都支持吗？"><a href="#❓-binlog-是每个存储引擎都支持吗？" class="headerlink" title="❓ binlog 是每个存储引擎都支持吗？"></a>❓ binlog 是每个存储引擎都支持吗？</h3><p>不是，<strong>只有 MySQL Server 层生成的 binlog 与存储引擎无关</strong>。但只有支持事务的引擎（如 InnoDB）才能配合 binlog 实现完整的两阶段提交。</p>
+<h3 id="❓-binlog-会影响性能吗？"><a href="#❓-binlog-会影响性能吗？" class="headerlink" title="❓ binlog 会影响性能吗？"></a>❓ binlog 会影响性能吗？</h3><p>会，尤其是 <code>ROW</code> 模式下，日志内容多、刷盘频繁。但开启 binlog 是生产环境强烈建议的做法，性能和可靠性间需权衡。</p>
+<h1 id="删库跑路之数据恢复"><a href="#删库跑路之数据恢复" class="headerlink" title="删库跑路之数据恢复"></a><strong>删库跑路之数据恢复</strong></h1><hr>
+<h2 id="🧨-场景复现：程序员手抖一键-DROP-DATABASE"><a href="#🧨-场景复现：程序员手抖一键-DROP-DATABASE" class="headerlink" title="🧨 场景复现：程序员手抖一键 DROP DATABASE"></a>🧨 场景复现：程序员手抖一键 <code>DROP DATABASE</code></h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">DROP</span> DATABASE prod_db;<br><span class="hljs-comment">-- 或者更狠一点</span><br><span class="hljs-keyword">DELETE</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> <span class="hljs-number">1</span><span class="hljs-operator">=</span><span class="hljs-number">1</span>;<br></code></pre></td></tr></table></figure>
+
+<p>执行完之后，冷汗直冒，领导电话响个不停，群里已经有人@全员说“上线出问题了”。</p>
+<hr>
+<h2 id="🧰-数据恢复能不能搞回来？答案是——看情况！"><a href="#🧰-数据恢复能不能搞回来？答案是——看情况！" class="headerlink" title="🧰 数据恢复能不能搞回来？答案是——看情况！"></a>🧰 数据恢复能不能搞回来？答案是——<strong>看情况！</strong></h2><p>恢复数据的可能性，主要取决于以下几个关键点：</p>
+<hr>
+<h3 id="✅-1-有无备份（全量备份-Binlog）"><a href="#✅-1-有无备份（全量备份-Binlog）" class="headerlink" title="✅ 1. 有无备份（全量备份 + Binlog）"></a>✅ 1. 有无备份（全量备份 + Binlog）</h3><ul>
+<li><strong>最理想情况：</strong><br>  有定期的 <strong>全量备份</strong>（如每日凌晨的 <code>mysqldump</code> &#x2F; 物理备份），配合 <strong>binlog</strong> 做 <strong>增量恢复</strong>，可以完整恢复到误操作前的某一时刻。</li>
+</ul>
+<hr>
+<h3 id="⚙️-2-数据恢复原理图"><a href="#⚙️-2-数据恢复原理图" class="headerlink" title="⚙️ 2. 数据恢复原理图"></a>⚙️ 2. 数据恢复原理图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">[全量备份] + [binlog 增量恢复] → [指定时间点的数据]<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧑‍🔧-实操指南：删库后如何恢复？"><a href="#🧑‍🔧-实操指南：删库后如何恢复？" class="headerlink" title="🧑‍🔧 实操指南：删库后如何恢复？"></a>🧑‍🔧 实操指南：删库后如何恢复？</h2><h3 id="🍱-Step-1：找到最近的全量备份文件"><a href="#🍱-Step-1：找到最近的全量备份文件" class="headerlink" title="🍱 Step 1：找到最近的全量备份文件"></a>🍱 Step 1：找到最近的全量备份文件</h3><p>比如你有一个 2025-05-20 00:00 的备份：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">prod_db_full_2025-05-20.sql<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="📦-Step-2：恢复全量备份"><a href="#📦-Step-2：恢复全量备份" class="headerlink" title="📦 Step 2：恢复全量备份"></a>📦 Step 2：恢复全量备份</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">mysql -u root -p &lt; prod_db_full_2025-05-20.sql<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="🧾-Step-3：找到误操作前的-binlog"><a href="#🧾-Step-3：找到误操作前的-binlog" class="headerlink" title="🧾 Step 3：找到误操作前的 binlog"></a>🧾 Step 3：找到误操作前的 binlog</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SHOW</span> <span class="hljs-type">BINARY</span> LOGS;<br><span class="hljs-keyword">SHOW</span> BINLOG EVENTS <span class="hljs-keyword">IN</span> <span class="hljs-string">&#x27;mysql-bin.000123&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>也可以使用 <code>mysqlbinlog</code> 工具：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">mysqlbinlog --start-datetime=<span class="hljs-string">&quot;2025-05-20 00:00:01&quot;</span> \<br>            --stop-datetime=<span class="hljs-string">&quot;2025-05-20 14:32:10&quot;</span> \<br>            --base64-output=DECODE-ROWS -v \<br>            mysql-bin.000123 &gt; binlog_recovery.sql<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>--stop-datetime</code> 是你删库的那个时间点前几秒！</p>
+</blockquote>
+<hr>
+<h3 id="🔙-Step-4：执行-binlog-recovery-sql-文件"><a href="#🔙-Step-4：执行-binlog-recovery-sql-文件" class="headerlink" title="🔙 Step 4：执行 binlog_recovery.sql 文件"></a>🔙 Step 4：执行 binlog_recovery.sql 文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">mysql -u root -p prod_db &lt; binlog_recovery.sql<br></code></pre></td></tr></table></figure>
+
+<p>这样你就能把删库前的数据<strong>原样复原</strong>。</p>
+<hr>
+<h2 id="❌-没有备份-没开-binlog-GG"><a href="#❌-没有备份-没开-binlog-GG" class="headerlink" title="❌ 没有备份 + 没开 binlog &#x3D; GG"></a>❌ 没有备份 + 没开 binlog &#x3D; GG</h2><p>如果你：</p>
+<ul>
+<li><p>没有任何备份</p>
+</li>
+<li><p>Binlog 没开</p>
+</li>
+<li><p>数据都写在 InnoDB 里，没导出表结构</p>
+</li>
+</ul>
+<p>那基本就只能尝试使用一些 <strong>低级手段</strong> 恢复：</p>
+<h3 id="🩻-硬盘扫描工具（适用于物理文件未覆盖的情况）："><a href="#🩻-硬盘扫描工具（适用于物理文件未覆盖的情况）：" class="headerlink" title="🩻 硬盘扫描工具（适用于物理文件未覆盖的情况）："></a>🩻 硬盘扫描工具（适用于物理文件未覆盖的情况）：</h3><ul>
+<li><p><strong>undrop-for-innodb</strong>（开源）</p>
+</li>
+<li><p><strong>Percona Data Recovery Tool for InnoDB</strong></p>
+</li>
+<li><p>商业恢复工具（价格💰感人）</p>
+</li>
+</ul>
+<p>⚠️ 前提是数据库文件没有被覆盖！否则只能请数据恢复公司出马。</p>
+<hr>
+<h2 id="🧯-最佳实践：如何防止删库跑路事故？"><a href="#🧯-最佳实践：如何防止删库跑路事故？" class="headerlink" title="🧯 最佳实践：如何防止删库跑路事故？"></a>🧯 最佳实践：如何防止删库跑路事故？</h2><ol>
+<li><p>✅ 开启 binlog（强烈推荐）</p>
+</li>
+<li><p>✅ 使用物理备份工具，如 Percona XtraBackup</p>
+</li>
+<li><p>✅ 定期跑 <code>mysqldump</code> 全量+增量备份</p>
+</li>
+<li><p>✅ 权限管控，禁止线上环境使用 <code>root</code></p>
+</li>
+<li><p>✅ 关键命令增加二次确认，结合堡垒机</p>
+</li>
+<li><p>✅ 使用延迟从库（replica 延迟几分钟）作为保险</p>
+</li>
+</ol>
+<hr>
+<h2 id="🎬-小剧场：删库跑路事件复盘流程图"><a href="#🎬-小剧场：删库跑路事件复盘流程图" class="headerlink" title="🎬 小剧场：删库跑路事件复盘流程图"></a>🎬 小剧场：删库跑路事件复盘流程图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">手抖删库 → 冷静 → 查备份 → 恢复全量 → 套用 binlog → 恢复指定时刻 → 起死回生 ✅<br>                          ↘ 没备份+没binlog → 凉凉 💀<br></code></pre></td></tr></table></figure>
+<h1 id="undo-log回滚日志原理详解"><a href="#undo-log回滚日志原理详解" class="headerlink" title="undo log回滚日志原理详解"></a><strong>undo log回滚日志原理详解</strong></h1><h2 id="🎯-一、Undo-Log-是什么？"><a href="#🎯-一、Undo-Log-是什么？" class="headerlink" title="🎯 一、Undo Log 是什么？"></a>🎯 一、Undo Log 是什么？</h2><p>简单来说：</p>
+<blockquote>
+<p><strong>Undo Log 是 InnoDB 存储引擎用来回滚数据的日志</strong>，记录了数据修改前的“<strong>历史版本</strong>”，用于事务回滚和多版本并发控制（MVCC）。</p>
+</blockquote>
+<hr>
+<h2 id="🧠-二、Undo-Log-的作用"><a href="#🧠-二、Undo-Log-的作用" class="headerlink" title="🧠 二、Undo Log 的作用"></a>🧠 二、Undo Log 的作用</h2><h3 id="✳️-1-支持事务回滚（Rollback）"><a href="#✳️-1-支持事务回滚（Rollback）" class="headerlink" title="✳️ 1. 支持事务回滚（Rollback）"></a>✳️ 1. 支持事务回滚（Rollback）</h3><ul>
+<li>当事务执行过程中失败或被手动回滚时，可以通过 undo log 将数据“反向修改”回之前的状态。</li>
+</ul>
+<h3 id="👀-2-支持-MVCC（多版本并发控制）"><a href="#👀-2-支持-MVCC（多版本并发控制）" class="headerlink" title="👀 2. 支持 MVCC（多版本并发控制）"></a>👀 2. 支持 MVCC（多版本并发控制）</h3><ul>
+<li>查询操作（如 <code>SELECT</code>）可以通过 undo log 中的历史版本读到符合其事务隔离级别的数据，实现 <strong>非锁定读（snapshot read）</strong>。</li>
+</ul>
+<hr>
+<h2 id="🛠-三、Undo-Log-的类型"><a href="#🛠-三、Undo-Log-的类型" class="headerlink" title="🛠 三、Undo Log 的类型"></a>🛠 三、Undo Log 的类型</h2><p>Undo log 分为两类：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Insert Undo Log</strong></td>
+<td>记录 <code>INSERT</code> 操作，事务回滚时用来删除记录</td>
+</tr>
+<tr>
+<td><strong>Update Undo Log</strong></td>
+<td>记录 <code>UPDATE</code>、<code>DELETE</code> 操作，用来还原原数据</td>
+</tr>
+</tbody></table>
+<p>举个例子：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">BEGIN</span>;<br><span class="hljs-keyword">UPDATE</span> account <span class="hljs-keyword">SET</span> balance <span class="hljs-operator">=</span> balance <span class="hljs-operator">-</span> <span class="hljs-number">100</span> <span class="hljs-keyword">WHERE</span> id <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;<br></code></pre></td></tr></table></figure>
+
+<p>这时，undo log 会记录 id &#x3D; 1 的旧余额，比如 1000 元。</p>
+<hr>
+<h2 id="🔁-四、Undo-Log-的生命周期"><a href="#🔁-四、Undo-Log-的生命周期" class="headerlink" title="🔁 四、Undo Log 的生命周期"></a>🔁 四、Undo Log 的生命周期</h2><p>Undo log 并不会永久保留，它的生命周期如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">[事务开始] → 生成 Undo Log<br>     ↓<br>[事务提交] → 标记 Undo Log 为“可清除”<br>     ↓<br>[无活跃快照依赖] → Purge 线程清除 Undo Log<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="⚙️-五、Undo-Log-的存储位置（重要）"><a href="#⚙️-五、Undo-Log-的存储位置（重要）" class="headerlink" title="⚙️ 五、Undo Log 的存储位置（重要）"></a>⚙️ 五、Undo Log 的存储位置（重要）</h2><h3 id="🔹-1-早期版本（-5-6）"><a href="#🔹-1-早期版本（-5-6）" class="headerlink" title="🔹 1. 早期版本（&lt; 5.6）"></a>🔹 1. 早期版本（&lt; 5.6）</h3><ul>
+<li><p>Undo log 是 <strong>独立表空间</strong>：<code>ibdata1</code></p>
+</li>
+<li><p>缺点：不支持按表清理，膨胀问题严重</p>
+</li>
+</ul>
+<h3 id="🔹-2-新版本（5-6-）"><a href="#🔹-2-新版本（5-6-）" class="headerlink" title="🔹 2. 新版本（5.6+）"></a>🔹 2. 新版本（5.6+）</h3><ul>
+<li>支持 <code>undo tablespace</code> 独立存储<br>  参数控制：</li>
+</ul>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">innodb_undo_tablespaces</span> = <span class="hljs-number">2</span><br><span class="hljs-attr">innodb_undo_directory</span> = /var/lib/mysql/undo<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>优点：可回收，可监控，更灵活</li>
+</ul>
+<hr>
+<h2 id="📖-六、Undo-Log-的结构"><a href="#📖-六、Undo-Log-的结构" class="headerlink" title="📖 六、Undo Log 的结构"></a>📖 六、Undo Log 的结构</h2><p>每个 undo log 包含：</p>
+<ul>
+<li><p>操作类型（Insert&#x2F;Update&#x2F;Delete）</p>
+</li>
+<li><p>被影响的表、字段</p>
+</li>
+<li><p>行 ID（row_id）</p>
+</li>
+<li><p>旧值（history row image）</p>
+</li>
+<li><p>回滚段信息（segment）</p>
+</li>
+<li><p>创建时间戳（事务 ID）</p>
+</li>
+</ul>
+<p>这些内容就像是“修改前的快照”，用于回滚或供其他事务读取旧版本。</p>
+<hr>
+<h2 id="🔄-七、Undo-Log-与事务提交顺序：两阶段提交"><a href="#🔄-七、Undo-Log-与事务提交顺序：两阶段提交" class="headerlink" title="🔄 七、Undo Log 与事务提交顺序：两阶段提交"></a>🔄 七、Undo Log 与事务提交顺序：两阶段提交</h2><p>InnoDB 使用两阶段提交保障 binlog 和 redo&#x2F;undo log 的一致性：</p>
+<ol>
+<li><p>写 <strong>Undo log</strong></p>
+</li>
+<li><p>写 <strong>Redo log prepare</strong></p>
+</li>
+<li><p>写 <strong>Binlog</strong></p>
+</li>
+<li><p>写 <strong>Redo log commit</strong></p>
+</li>
+<li><p>提交事务</p>
+</li>
+</ol>
+<p>这样，即便崩溃恢复，仍能通过 undo 恢复一致性。</p>
+<hr>
+<h2 id="🔍-八、Undo-Log-与-MVCC-的联动"><a href="#🔍-八、Undo-Log-与-MVCC-的联动" class="headerlink" title="🔍 八、Undo Log 与 MVCC 的联动"></a>🔍 八、Undo Log 与 MVCC 的联动</h2><p>当你执行如下查询：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> account <span class="hljs-keyword">WHERE</span> id <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>InnoDB 会读取当前版本的记录</p>
+</li>
+<li><p>如果当前版本不可见（如被另一个事务修改），就会通过 undo log 回溯旧版本</p>
+</li>
+<li><p>判断可见性依赖事务版本号（transaction_id）</p>
+</li>
+</ul>
+<p>这样就能实现 <strong>非阻塞读</strong>、高并发的一致性控制。</p>
+<hr>
+<h2 id="🧹-九、Undo-Log-清理（Purge）"><a href="#🧹-九、Undo-Log-清理（Purge）" class="headerlink" title="🧹 九、Undo Log 清理（Purge）"></a>🧹 九、Undo Log 清理（Purge）</h2><p>Undo log 并不会立刻删除，原因如下：</p>
+<ul>
+<li><p>可能还有事务在“读旧数据”</p>
+</li>
+<li><p>必须等所有依赖它的快照“结束”</p>
+</li>
+</ul>
+<p>由后台线程 <strong>Purge</strong> 来异步清除：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">show engine innodb status\G<br>-- 可查看 purge 进度<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="⚠️-十、常见问题"><a href="#⚠️-十、常见问题" class="headerlink" title="⚠️ 十、常见问题"></a>⚠️ 十、常见问题</h2><h3 id="❓-Undo-log-会占用很多空间吗？"><a href="#❓-Undo-log-会占用很多空间吗？" class="headerlink" title="❓ Undo log 会占用很多空间吗？"></a>❓ Undo log 会占用很多空间吗？</h3><p>是的，如果长事务不提交，或者大量写操作积压，undo log 会迅速膨胀，影响性能。</p>
+<p>✅ 建议：</p>
+<ul>
+<li><p>避免长事务</p>
+</li>
+<li><p>控制 binlog format，减少不必要的行记录</p>
+</li>
+<li><p>配置自动清理 undo 的参数：</p>
+</li>
+</ul>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs ini">innodb_max_undo_log_size<br>innodb_purge_threads<br><span class="hljs-attr">innodb_undo_log_truncate</span> = <span class="hljs-literal">ON</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧬-十一、Undo-Redo-Binlog-三者关系"><a href="#🧬-十一、Undo-Redo-Binlog-三者关系" class="headerlink" title="🧬 十一、Undo + Redo + Binlog 三者关系"></a>🧬 十一、Undo + Redo + Binlog 三者关系</h2><table>
+<thead>
+<tr>
+<th>日志类型</th>
+<th>内容</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Undo Log</td>
+<td>修改前数据快照</td>
+<td>支持回滚、MVCC</td>
+</tr>
+<tr>
+<td>Redo Log</td>
+<td>修改后的物理页变更日志</td>
+<td>崩溃恢复</td>
+</tr>
+<tr>
+<td>Binlog</td>
+<td>逻辑 SQL &#x2F; 行变更事件</td>
+<td>复制、数据恢复</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>三者配合，构成 InnoDB 最坚固的事务机制铁三角 💪</p>
+</blockquote>
+<hr>
+<h1 id="错误日志与通用查询日志详解"><a href="#错误日志与通用查询日志详解" class="headerlink" title="错误日志与通用查询日志详解"></a><strong>错误日志与通用查询日志详解</strong></h1><hr>
+<h2 id="📕-一、错误日志（Error-Log）"><a href="#📕-一、错误日志（Error-Log）" class="headerlink" title="📕 一、错误日志（Error Log）"></a>📕 一、错误日志（Error Log）</h2><h3 id="✅-定义"><a href="#✅-定义" class="headerlink" title="✅ 定义"></a>✅ 定义</h3><blockquote>
+<p>错误日志记录了 MySQL 在运行过程中遇到的各种 <strong>错误、警告、启动、关闭</strong> 等关键信息。</p>
+</blockquote>
+<p>它是 DBA 诊断数据库问题的第一站！</p>
+<hr>
+<h3 id="🧠-包含内容"><a href="#🧠-包含内容" class="headerlink" title="🧠 包含内容"></a>🧠 包含内容</h3><ul>
+<li><p>启动&#x2F;关闭信息</p>
+</li>
+<li><p>插件加载失败</p>
+</li>
+<li><p>连接错误</p>
+</li>
+<li><p>崩溃信息（core dump、断言失败）</p>
+</li>
+<li><p>主从复制报错</p>
+</li>
+<li><p>日志轮转、参数变更</p>
+</li>
+<li><p>权限错误、认证失败等</p>
+</li>
+</ul>
+<hr>
+<h3 id="📂-日志文件在哪？"><a href="#📂-日志文件在哪？" class="headerlink" title="📂 日志文件在哪？"></a>📂 日志文件在哪？</h3><p>取决于配置方式，常见路径：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">/var/log/mysql/error.log<br></code></pre></td></tr></table></figure>
+
+<h3 id="查看方式："><a href="#查看方式：" class="headerlink" title="查看方式："></a>查看方式：</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">tail</span> -f /var/log/mysql/error.log<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="🔧-配置方式"><a href="#🔧-配置方式" class="headerlink" title="🔧 配置方式"></a>🔧 配置方式</h3><p>MySQL 8+ 默认使用 <code>log_error</code> 控制路径：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-section">[mysqld]</span><br><span class="hljs-attr">log_error</span> = /var/log/mysql/error.log<br></code></pre></td></tr></table></figure>
+
+<p>也可以设置日志级别（仅 MySQL 8.0+ 支持）：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-attr">log_error_verbosity</span> = <span class="hljs-number">3</span><br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>等级</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>只记录错误（Error）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>错误 + 警告（Warning）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>全部（错误 + 警告 + 提示信息）</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="💡-应用场景"><a href="#💡-应用场景" class="headerlink" title="💡 应用场景"></a>💡 应用场景</h3><ul>
+<li><p>MySQL 启动不了？看它！</p>
+</li>
+<li><p>主从复制断了？看它！</p>
+</li>
+<li><p>权限设置失误？看它！</p>
+</li>
+<li><p>被黑客暴力破解爆破？也能看到连接失败日志！</p>
+</li>
+</ul>
+<hr>
+<h2 id="📘-二、通用查询日志（General-Query-Log）"><a href="#📘-二、通用查询日志（General-Query-Log）" class="headerlink" title="📘 二、通用查询日志（General Query Log）"></a>📘 二、通用查询日志（General Query Log）</h2><h3 id="✅-定义-1"><a href="#✅-定义-1" class="headerlink" title="✅ 定义"></a>✅ 定义</h3><blockquote>
+<p>General Log 是 MySQL 捕捉 <strong>所有客户端发来的 SQL 语句（无论是否执行成功）</strong> 的日志。</p>
+</blockquote>
+<p>它就像“数据库的行车记录仪”，全程无死角记录谁发来了什么 SQL。</p>
+<hr>
+<h3 id="🔎-包含内容"><a href="#🔎-包含内容" class="headerlink" title="🔎 包含内容"></a>🔎 包含内容</h3><ul>
+<li><p>连接建立与断开</p>
+</li>
+<li><p>身份认证信息</p>
+</li>
+<li><p>所有 SQL 语句（不论成功与否）</p>
+</li>
+</ul>
+<p>比如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">2025-05-24T12:34:56     123 Connect  user@host on test<br>123 Query SELECT * FROM user<br>123 Quit<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="⚠️-注意事项："><a href="#⚠️-注意事项：" class="headerlink" title="⚠️ 注意事项："></a>⚠️ 注意事项：</h3><ul>
+<li><p><strong>性能影响大！</strong>：因为记录所有 SQL，生产环境中 <strong>通常不开启</strong>。</p>
+</li>
+<li><p>开启后可用于：</p>
+<ul>
+<li><p>审计访问行为</p>
+</li>
+<li><p>分析慢 SQL</p>
+</li>
+<li><p>调试应用请求</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="🛠-启用方法"><a href="#🛠-启用方法" class="headerlink" title="🛠 启用方法"></a>🛠 启用方法</h3><p>可以临时启用：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SET</span> <span class="hljs-keyword">global</span> general_log <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;<br><span class="hljs-keyword">SET</span> <span class="hljs-keyword">global</span> general_log_file <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;/var/log/mysql/general.log&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>查看是否开启：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SHOW</span> VARIABLES <span class="hljs-keyword">LIKE</span> <span class="hljs-string">&#x27;general_log&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>配置文件永久启用（不推荐生产）：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-section">[mysqld]</span><br><span class="hljs-attr">general_log</span> = <span class="hljs-number">1</span><br><span class="hljs-attr">general_log_file</span> = /var/log/mysql/general.log<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💡-使用场景"><a href="#💡-使用场景" class="headerlink" title="💡 使用场景"></a>💡 使用场景</h3><ul>
+<li><p><strong>开发环境调试：</strong> 看看 ORM 框架到底执行了啥 SQL</p>
+</li>
+<li><p><strong>SQL 审计：</strong> 排查谁执行了奇怪的 <code>DROP</code> 操作</p>
+</li>
+<li><p><strong>自动化测试验证：</strong> 捕捉所有 SQL 请求是否合规</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧾-错误日志-vs-通用查询日志-对比一览"><a href="#🧾-错误日志-vs-通用查询日志-对比一览" class="headerlink" title="🧾 错误日志 vs 通用查询日志 对比一览"></a>🧾 错误日志 vs 通用查询日志 对比一览</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>错误日志（Error Log）</th>
+<th>通用查询日志（General Log）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内容</td>
+<td>错误、警告、启动&#x2F;关闭信息等</td>
+<td>所有连接和 SQL 请求</td>
+</tr>
+<tr>
+<td>默认开启</td>
+<td>✅（默认开启）</td>
+<td>❌（默认关闭）</td>
+</tr>
+<tr>
+<td>影响性能</td>
+<td>较小</td>
+<td>较大（大量 SQL 写磁盘）</td>
+</tr>
+<tr>
+<td>使用场景</td>
+<td>故障排查、复制错误、崩溃分析</td>
+<td>SQL 审计、调试、记录所有请求</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📦-bonus：它俩和其他日志的关系？"><a href="#📦-bonus：它俩和其他日志的关系？" class="headerlink" title="📦 bonus：它俩和其他日志的关系？"></a>📦 bonus：它俩和其他日志的关系？</h2><table>
+<thead>
+<tr>
+<th>日志类型</th>
+<th>主要作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Error Log</td>
+<td>系统级错误、警告信息</td>
+</tr>
+<tr>
+<td>General Log</td>
+<td>所有连接和 SQL</td>
+</tr>
+<tr>
+<td>Slow Query Log</td>
+<td>慢 SQL 分析</td>
+</tr>
+<tr>
+<td>Binlog</td>
+<td>数据变更逻辑（用于复制和恢复）</td>
+</tr>
+<tr>
+<td>Redo &#x2F; Undo Log</td>
+<td>InnoDB 层事务实现，非 Server 级别</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/24/Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;24&#x2F;Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;24&#x2F;Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mysql/" rel="tag">Mysql</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2024/05/24/Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%B8%80)/"><i class="iconfont iconleft"></i>Innodb底层原理与Mysq旧志机制深入剖析（一)</a>
+    <a href="/2024/05/24/Mysql%E9%94%81%E6%9C%BA%E5%88%B6%E4%B8%8E%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5%E4%BB%A5%E5%8F%8AMVCC%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90/">Mysql锁机制与优化实践以及MVCC底层原理剖析<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#binlog%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%BD%92%E6%A1%A3%E6%97%A5%E5%BF%97%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3"><span class="toc-text">binlog二进制归档日志原理详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%8D-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-Binlog%EF%BC%9F"><span class="toc-text">🔍 一、什么是 Binlog？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-%E4%BA%8C%E3%80%81Binlog-%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-text">🧱 二、Binlog 的组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E4%B8%89%E3%80%81%E4%B8%89%E7%A7%8D-Binlog-%E6%A0%BC%E5%BC%8F%EF%BC%88%E4%BA%8B%E4%BB%B6%E6%A0%BC%E5%BC%8F%EF%BC%89"><span class="toc-text">🛠 三、三种 Binlog 格式（事件格式）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E5%9B%9B%E3%80%81Binlog-%E5%86%99%E5%85%A5%E6%9C%BA%E5%88%B6%EF%BC%88%E5%8E%9F%E7%90%86%EF%BC%89"><span class="toc-text">🔄 四、Binlog 写入机制（原理）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E4%BA%94%E3%80%81Binlog-%E4%B8%8E%E5%A4%8D%E5%88%B6%E6%9C%BA%E5%88%B6%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">🔁 五、Binlog 与复制机制的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%90-%E5%85%AD%E3%80%81Binlog-%E7%9A%84%E6%8C%81%E4%B9%85%E6%80%A7%E4%B8%8E%E5%88%B7%E7%9B%98%E7%AD%96%E7%95%A5"><span class="toc-text">🔐 六、Binlog 的持久性与刷盘策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%B8%83%E3%80%81Binlog-%E7%9A%84%E8%BD%AE%E8%BD%AC%E4%B8%8E%E5%BD%92%E6%A1%A3"><span class="toc-text">📦 七、Binlog 的轮转与归档</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E5%85%AB%E3%80%81%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">🛠 八、实际应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D%EF%BC%88Point-in-time-Recovery%EF%BC%8CPITR%EF%BC%89"><span class="toc-text">✅ 数据恢复（Point-in-time Recovery，PITR）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="toc-text">✅ 主从复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%95%B0%E6%8D%AE%E5%AE%A1%E8%AE%A1"><span class="toc-text">✅ 数据审计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%A2%9E%E9%87%8F%E5%A4%87%E4%BB%BD"><span class="toc-text">✅ 增量备份</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B0-%E4%B9%9D%E3%80%81%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E5%92%8C%E8%A7%A3%E6%9E%90-Binlog%EF%BC%9F"><span class="toc-text">🧰 九、如何查看和解析 Binlog？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E5%8D%81%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%A7%A3%E7%AD%94"><span class="toc-text">🧠 十、常见问题解答</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%93-binlog-%E6%98%AF%E6%AF%8F%E4%B8%AA%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E9%83%BD%E6%94%AF%E6%8C%81%E5%90%97%EF%BC%9F"><span class="toc-text">❓ binlog 是每个存储引擎都支持吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%93-binlog-%E4%BC%9A%E5%BD%B1%E5%93%8D%E6%80%A7%E8%83%BD%E5%90%97%EF%BC%9F"><span class="toc-text">❓ binlog 会影响性能吗？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%A0%E5%BA%93%E8%B7%91%E8%B7%AF%E4%B9%8B%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D"><span class="toc-text">删库跑路之数据恢复</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A8-%E5%9C%BA%E6%99%AF%E5%A4%8D%E7%8E%B0%EF%BC%9A%E7%A8%8B%E5%BA%8F%E5%91%98%E6%89%8B%E6%8A%96%E4%B8%80%E9%94%AE-DROP-DATABASE"><span class="toc-text">🧨 场景复现：程序员手抖一键 DROP DATABASE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B0-%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D%E8%83%BD%E4%B8%8D%E8%83%BD%E6%90%9E%E5%9B%9E%E6%9D%A5%EF%BC%9F%E7%AD%94%E6%A1%88%E6%98%AF%E2%80%94%E2%80%94%E7%9C%8B%E6%83%85%E5%86%B5%EF%BC%81"><span class="toc-text">🧰 数据恢复能不能搞回来？答案是——看情况！</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-1-%E6%9C%89%E6%97%A0%E5%A4%87%E4%BB%BD%EF%BC%88%E5%85%A8%E9%87%8F%E5%A4%87%E4%BB%BD-Binlog%EF%BC%89"><span class="toc-text">✅ 1. 有无备份（全量备份 + Binlog）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-2-%E6%95%B0%E6%8D%AE%E6%81%A2%E5%A4%8D%E5%8E%9F%E7%90%86%E5%9B%BE"><span class="toc-text">⚙️ 2. 数据恢复原理图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%91%E2%80%8D%F0%9F%94%A7-%E5%AE%9E%E6%93%8D%E6%8C%87%E5%8D%97%EF%BC%9A%E5%88%A0%E5%BA%93%E5%90%8E%E5%A6%82%E4%BD%95%E6%81%A2%E5%A4%8D%EF%BC%9F"><span class="toc-text">🧑‍🔧 实操指南：删库后如何恢复？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8D%B1-Step-1%EF%BC%9A%E6%89%BE%E5%88%B0%E6%9C%80%E8%BF%91%E7%9A%84%E5%85%A8%E9%87%8F%E5%A4%87%E4%BB%BD%E6%96%87%E4%BB%B6"><span class="toc-text">🍱 Step 1：找到最近的全量备份文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%A6-Step-2%EF%BC%9A%E6%81%A2%E5%A4%8D%E5%85%A8%E9%87%8F%E5%A4%87%E4%BB%BD"><span class="toc-text">📦 Step 2：恢复全量备份</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%BE-Step-3%EF%BC%9A%E6%89%BE%E5%88%B0%E8%AF%AF%E6%93%8D%E4%BD%9C%E5%89%8D%E7%9A%84-binlog"><span class="toc-text">🧾 Step 3：找到误操作前的 binlog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%99-Step-4%EF%BC%9A%E6%89%A7%E8%A1%8C-binlog-recovery-sql-%E6%96%87%E4%BB%B6"><span class="toc-text">🔙 Step 4：执行 binlog_recovery.sql 文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9D%8C-%E6%B2%A1%E6%9C%89%E5%A4%87%E4%BB%BD-%E6%B2%A1%E5%BC%80-binlog-GG"><span class="toc-text">❌ 没有备份 + 没开 binlog &#x3D; GG</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A9%BB-%E7%A1%AC%E7%9B%98%E6%89%AB%E6%8F%8F%E5%B7%A5%E5%85%B7%EF%BC%88%E9%80%82%E7%94%A8%E4%BA%8E%E7%89%A9%E7%90%86%E6%96%87%E4%BB%B6%E6%9C%AA%E8%A6%86%E7%9B%96%E7%9A%84%E6%83%85%E5%86%B5%EF%BC%89%EF%BC%9A"><span class="toc-text">🩻 硬盘扫描工具（适用于物理文件未覆盖的情况）：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AF-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9A%E5%A6%82%E4%BD%95%E9%98%B2%E6%AD%A2%E5%88%A0%E5%BA%93%E8%B7%91%E8%B7%AF%E4%BA%8B%E6%95%85%EF%BC%9F"><span class="toc-text">🧯 最佳实践：如何防止删库跑路事故？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AC-%E5%B0%8F%E5%89%A7%E5%9C%BA%EF%BC%9A%E5%88%A0%E5%BA%93%E8%B7%91%E8%B7%AF%E4%BA%8B%E4%BB%B6%E5%A4%8D%E7%9B%98%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">🎬 小剧场：删库跑路事件复盘流程图</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#undo-log%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3"><span class="toc-text">undo log回滚日志原理详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E4%B8%80%E3%80%81Undo-Log-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">🎯 一、Undo Log 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%BA%8C%E3%80%81Undo-Log-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">🧠 二、Undo Log 的作用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%B3%EF%B8%8F-1-%E6%94%AF%E6%8C%81%E4%BA%8B%E5%8A%A1%E5%9B%9E%E6%BB%9A%EF%BC%88Rollback%EF%BC%89"><span class="toc-text">✳️ 1. 支持事务回滚（Rollback）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%91%80-2-%E6%94%AF%E6%8C%81-MVCC%EF%BC%88%E5%A4%9A%E7%89%88%E6%9C%AC%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%EF%BC%89"><span class="toc-text">👀 2. 支持 MVCC（多版本并发控制）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E4%B8%89%E3%80%81Undo-Log-%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-text">🛠 三、Undo Log 的类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E5%9B%9B%E3%80%81Undo-Log-%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">🔁 四、Undo Log 的生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%BA%94%E3%80%81Undo-Log-%E7%9A%84%E5%AD%98%E5%82%A8%E4%BD%8D%E7%BD%AE%EF%BC%88%E9%87%8D%E8%A6%81%EF%BC%89"><span class="toc-text">⚙️ 五、Undo Log 的存储位置（重要）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-1-%E6%97%A9%E6%9C%9F%E7%89%88%E6%9C%AC%EF%BC%88-5-6%EF%BC%89"><span class="toc-text">🔹 1. 早期版本（&lt; 5.6）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-2-%E6%96%B0%E7%89%88%E6%9C%AC%EF%BC%885-6-%EF%BC%89"><span class="toc-text">🔹 2. 新版本（5.6+）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%96-%E5%85%AD%E3%80%81Undo-Log-%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">📖 六、Undo Log 的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E4%B8%83%E3%80%81Undo-Log-%E4%B8%8E%E4%BA%8B%E5%8A%A1%E6%8F%90%E4%BA%A4%E9%A1%BA%E5%BA%8F%EF%BC%9A%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="toc-text">🔄 七、Undo Log 与事务提交顺序：两阶段提交</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%8D-%E5%85%AB%E3%80%81Undo-Log-%E4%B8%8E-MVCC-%E7%9A%84%E8%81%94%E5%8A%A8"><span class="toc-text">🔍 八、Undo Log 与 MVCC 的联动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B9-%E4%B9%9D%E3%80%81Undo-Log-%E6%B8%85%E7%90%86%EF%BC%88Purge%EF%BC%89"><span class="toc-text">🧹 九、Undo Log 清理（Purge）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%A0%EF%B8%8F-%E5%8D%81%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-text">⚠️ 十、常见问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%93-Undo-log-%E4%BC%9A%E5%8D%A0%E7%94%A8%E5%BE%88%E5%A4%9A%E7%A9%BA%E9%97%B4%E5%90%97%EF%BC%9F"><span class="toc-text">❓ Undo log 会占用很多空间吗？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AC-%E5%8D%81%E4%B8%80%E3%80%81Undo-Redo-Binlog-%E4%B8%89%E8%80%85%E5%85%B3%E7%B3%BB"><span class="toc-text">🧬 十一、Undo + Redo + Binlog 三者关系</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97%E4%B8%8E%E9%80%9A%E7%94%A8%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97%E8%AF%A6%E8%A7%A3"><span class="toc-text">错误日志与通用查询日志详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%95-%E4%B8%80%E3%80%81%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97%EF%BC%88Error-Log%EF%BC%89"><span class="toc-text">📕 一、错误日志（Error Log）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%AE%9A%E4%B9%89"><span class="toc-text">✅ 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A0-%E5%8C%85%E5%90%AB%E5%86%85%E5%AE%B9"><span class="toc-text">🧠 包含内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%82-%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%9C%A8%E5%93%AA%EF%BC%9F"><span class="toc-text">📂 日志文件在哪？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%96%B9%E5%BC%8F%EF%BC%9A"><span class="toc-text">查看方式：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%A7-%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F"><span class="toc-text">🔧 配置方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">💡 应用场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%98-%E4%BA%8C%E3%80%81%E9%80%9A%E7%94%A8%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97%EF%BC%88General-Query-Log%EF%BC%89"><span class="toc-text">📘 二、通用查询日志（General Query Log）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%AE%9A%E4%B9%89-1"><span class="toc-text">✅ 定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%8E-%E5%8C%85%E5%90%AB%E5%86%85%E5%AE%B9"><span class="toc-text">🔎 包含内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9A%A0%EF%B8%8F-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%EF%BC%9A"><span class="toc-text">⚠️ 注意事项：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9B%A0-%E5%90%AF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-text">🛠 启用方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">💡 使用场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%BE-%E9%94%99%E8%AF%AF%E6%97%A5%E5%BF%97-vs-%E9%80%9A%E7%94%A8%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97-%E5%AF%B9%E6%AF%94%E4%B8%80%E8%A7%88"><span class="toc-text">🧾 错误日志 vs 通用查询日志 对比一览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-bonus%EF%BC%9A%E5%AE%83%E4%BF%A9%E5%92%8C%E5%85%B6%E4%BB%96%E6%97%A5%E5%BF%97%E7%9A%84%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="toc-text">📦 bonus：它俩和其他日志的关系？</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

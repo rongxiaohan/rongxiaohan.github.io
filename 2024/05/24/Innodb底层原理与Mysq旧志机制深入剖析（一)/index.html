@@ -1,0 +1,816 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Innodb底层原理与Mysq旧志机制深入剖析（一) - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="MySQL的内部组件结构详解
+🧱 MySQL 的内部...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Innodb底层原理与Mysq旧志机制深入剖析（一)</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Innodb底层原理与Mysq旧志机制深入剖析（一)</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 24, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>5647</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h1 id="MySQL的内部组件结构详解"><a href="#MySQL的内部组件结构详解" class="headerlink" title="MySQL的内部组件结构详解"></a><strong>MySQL的内部组件结构详解</strong></h1><hr>
+<h2 id="🧱-MySQL-的内部组件结构图（逻辑上分为三层）："><a href="#🧱-MySQL-的内部组件结构图（逻辑上分为三层）：" class="headerlink" title="🧱 MySQL 的内部组件结构图（逻辑上分为三层）："></a>🧱 MySQL 的内部组件结构图（逻辑上分为三层）：</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">+----------------------------+<br>|       客户端连接层         |<br>+----------------------------+<br>|       SQL 层（解析与优化）|<br>+----------------------------+<br>|     存储引擎层（InnoDB）  |<br>+----------------------------+<br>|       系统文件与操作系统   |<br>+----------------------------+<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔌-一、连接层（Connection-Layer）"><a href="#🔌-一、连接层（Connection-Layer）" class="headerlink" title="🔌 一、连接层（Connection Layer）"></a>🔌 一、连接层（Connection Layer）</h2><p>这个层主要负责：</p>
+<ul>
+<li><p><strong>连接管理</strong>：如连接线程管理、线程池、验证登录（用户名&#x2F;密码）等。</p>
+</li>
+<li><p><strong>连接缓存与权限校验</strong>：比如通过连接缓存池复用线程，提升连接性能。</p>
+</li>
+<li><p><strong>网络通信协议</strong>：如 MySQL 的客户端协议，处理命令解析如 <code>SELECT</code>、<code>INSERT</code> 等。</p>
+</li>
+</ul>
+<p>➡️ 典型组件：</p>
+<ul>
+<li><p><code>Connection Handler</code></p>
+</li>
+<li><p><code>Thread Management</code></p>
+</li>
+<li><p><code>Parser Protocol</code></p>
+</li>
+<li><p><code>Authentication</code></p>
+</li>
+</ul>
+<hr>
+<h2 id="📖-二、SQL-层（SQL-Layer）"><a href="#📖-二、SQL-层（SQL-Layer）" class="headerlink" title="📖 二、SQL 层（SQL Layer）"></a>📖 二、SQL 层（SQL Layer）</h2><p>这是最核心的“关系型”数据库功能实现层，负责：</p>
+<h3 id="1-查询解析（Parser）"><a href="#1-查询解析（Parser）" class="headerlink" title="1. 查询解析（Parser）"></a>1. <strong>查询解析（Parser）</strong></h3><ul>
+<li><p>将 SQL 字符串转换为解析树（Parse Tree）</p>
+</li>
+<li><p>检查语法和词法正确性</p>
+</li>
+</ul>
+<h3 id="2-查询优化器（Optimizer）"><a href="#2-查询优化器（Optimizer）" class="headerlink" title="2. 查询优化器（Optimizer）"></a>2. <strong>查询优化器（Optimizer）</strong></h3><ul>
+<li><p>判断使用哪个索引、表连接顺序等</p>
+</li>
+<li><p>优化查询计划（生成执行计划）</p>
+</li>
+</ul>
+<h3 id="3-查询执行器（Executor）"><a href="#3-查询执行器（Executor）" class="headerlink" title="3. 查询执行器（Executor）"></a>3. <strong>查询执行器（Executor）</strong></h3><ul>
+<li>真正执行 SQL 语句的模块，调用存储引擎 API 读取数据</li>
+</ul>
+<p>➡️ 典型组件：</p>
+<ul>
+<li><p><code>Parser</code>：词法分析、语法分析</p>
+</li>
+<li><p><code>Optimizer</code>：成本估算、查询计划生成</p>
+</li>
+<li><p><code>Executor</code>：语句执行调度</p>
+</li>
+<li><p><code>Query Cache（已废弃）</code>：曾用于缓存查询结果</p>
+</li>
+</ul>
+<hr>
+<h2 id="💾-三、存储引擎层（Storage-Engine-Layer）"><a href="#💾-三、存储引擎层（Storage-Engine-Layer）" class="headerlink" title="💾 三、存储引擎层（Storage Engine Layer）"></a>💾 三、存储引擎层（Storage Engine Layer）</h2><p>这是数据存储的“插件式”架构，每种存储引擎可以有不同实现。</p>
+<h3 id="常见存储引擎："><a href="#常见存储引擎：" class="headerlink" title="常见存储引擎："></a>常见存储引擎：</h3><table>
+<thead>
+<tr>
+<th>存储引擎</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>InnoDB</strong></td>
+<td>支持事务、行级锁、崩溃恢复、外键</td>
+</tr>
+<tr>
+<td><strong>MyISAM</strong></td>
+<td>不支持事务，支持表级锁，读写性能高（老系统中常见）</td>
+</tr>
+<tr>
+<td><strong>Memory</strong></td>
+<td>把数据存在内存中，速度极快，重启丢失</td>
+</tr>
+<tr>
+<td><strong>Archive</strong></td>
+<td>适合归档数据，支持高压缩</td>
+</tr>
+<tr>
+<td><strong>CSV</strong></td>
+<td>把表作为CSV文件存储，适合导入导出</td>
+</tr>
+</tbody></table>
+<h3 id="InnoDB-引擎（最常用）："><a href="#InnoDB-引擎（最常用）：" class="headerlink" title="InnoDB 引擎（最常用）："></a>InnoDB 引擎（最常用）：</h3><h4 id="内部模块包括："><a href="#内部模块包括：" class="headerlink" title="内部模块包括："></a>内部模块包括：</h4><ul>
+<li><p><strong>Buffer Pool</strong>：缓存数据页（类似于数据库的内存）</p>
+</li>
+<li><p><strong>Redo Log</strong>：物理日志，支持崩溃恢复</p>
+</li>
+<li><p><strong>Undo Log</strong>：逻辑日志，用于事务回滚、MVCC</p>
+</li>
+<li><p><strong>Change Buffer</strong>：写优化缓冲，减少随机 I&#x2F;O</p>
+</li>
+<li><p><strong>Doublewrite Buffer</strong>：防止部分页写入失败（防止数据损坏）</p>
+</li>
+<li><p><strong>Adaptive Hash Index</strong>：提高特定场景下的查询性能</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔧-四、系统层（OS-层）"><a href="#🔧-四、系统层（OS-层）" class="headerlink" title="🔧 四、系统层（OS 层）"></a>🔧 四、系统层（OS 层）</h2><p>底层通过操作系统调用读写数据文件，管理磁盘空间、锁、缓存、线程等资源。</p>
+<p>➡️ 对应的文件包括：</p>
+<ul>
+<li><p><code>.ibd</code>：每张表的数据和索引（InnoDB 独立表空间）</p>
+</li>
+<li><p><code>ibdata1</code>：系统表空间（旧版中多个表共享的表空间）</p>
+</li>
+<li><p><code>*.frm</code>：表结构定义（5.7及之前版本）</p>
+</li>
+<li><p><code>*.ib_logfile0/1</code>：Redo Log 文件</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔄-五、其他关键组件"><a href="#🔄-五、其他关键组件" class="headerlink" title="🔄 五、其他关键组件"></a>🔄 五、其他关键组件</h2><table>
+<thead>
+<tr>
+<th>组件名</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>事务管理器（Transaction Manager）</strong></td>
+<td>提供 ACID 支持，管理 Undo、Redo 日志</td>
+</tr>
+<tr>
+<td><strong>锁管理器（Lock Manager）</strong></td>
+<td>支持行锁、表锁，协调并发控制</td>
+</tr>
+<tr>
+<td><strong>日志系统（Log System）</strong></td>
+<td>包括 redo log、binlog、slow log 等</td>
+</tr>
+<tr>
+<td><strong>复制系统（Replication）</strong></td>
+<td>主从同步、GTID、Binlog 复制</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔁-执行流程（简化版）"><a href="#🔁-执行流程（简化版）" class="headerlink" title="🔁 执行流程（简化版）"></a>🔁 执行流程（简化版）</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">客户端 -&gt; 连接层验证 -&gt; SQL 解析与优化 -&gt; 查询执行器 -&gt; 存储引擎读取/写入 -&gt; 返回结果<br></code></pre></td></tr></table></figure>
+<h1 id="Innodb存储引擎底层原理剖析"><a href="#Innodb存储引擎底层原理剖析" class="headerlink" title="Innodb存储引擎底层原理剖析"></a><strong>Innodb存储引擎底层原理剖析</strong></h1><hr>
+<h2 id="🚧-一、InnoDB-存储引擎的核心结构图"><a href="#🚧-一、InnoDB-存储引擎的核心结构图" class="headerlink" title="🚧 一、InnoDB 存储引擎的核心结构图"></a>🚧 一、InnoDB 存储引擎的核心结构图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">+----------------------------+<br>|    SQL 执行器调用存储引擎   |<br>+----------------------------+<br>|       InnoDB API 层        |<br>+----------------------------+<br>|  Buffer Pool / Lock / MVCC |<br>|     Log System / IO        |<br>+----------------------------+<br>|      File System (ibd)     |<br>+----------------------------+<br>|       操作系统 / 硬盘       |<br>+----------------------------+<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧩-二、InnoDB-的关键子系统剖析"><a href="#🧩-二、InnoDB-的关键子系统剖析" class="headerlink" title="🧩 二、InnoDB 的关键子系统剖析"></a>🧩 二、InnoDB 的关键子系统剖析</h2><hr>
+<h3 id="1️⃣-Buffer-Pool-缓冲池（内存中的数据库）"><a href="#1️⃣-Buffer-Pool-缓冲池（内存中的数据库）" class="headerlink" title="1️⃣ Buffer Pool 缓冲池（内存中的数据库）"></a>1️⃣ Buffer Pool 缓冲池（内存中的数据库）</h3><h4 id="📌-功能："><a href="#📌-功能：" class="headerlink" title="📌 功能："></a>📌 功能：</h4><ul>
+<li><p>缓存磁盘中的<strong>数据页（Data Page）</strong>、<strong>索引页（Index Page）</strong>、<strong>Undo 页</strong>等。</p>
+</li>
+<li><p>读写操作尽量走内存，提升性能。</p>
+</li>
+</ul>
+<h4 id="✅-特点："><a href="#✅-特点：" class="headerlink" title="✅ 特点："></a>✅ 特点：</h4><ul>
+<li><p>LRU 算法管理热页（Least Recently Used）</p>
+</li>
+<li><p>分为 <strong>Free、Clean、Dirty</strong> 三种页状态</p>
+</li>
+<li><p>脏页由后台线程定期刷盘（checkpoint）</p>
+</li>
+</ul>
+<hr>
+<h3 id="2️⃣-Redo-Log（重做日志）"><a href="#2️⃣-Redo-Log（重做日志）" class="headerlink" title="2️⃣ Redo Log（重做日志）"></a>2️⃣ Redo Log（重做日志）</h3><h4 id="📌-功能：-1"><a href="#📌-功能：-1" class="headerlink" title="📌 功能："></a>📌 功能：</h4><ul>
+<li><p>保证<strong>崩溃恢复（Crash Recovery）</strong></p>
+</li>
+<li><p>写操作先写 redo log，再写数据页（WAL：Write-Ahead Logging）</p>
+</li>
+</ul>
+<h4 id="✅-特点：-1"><a href="#✅-特点：-1" class="headerlink" title="✅ 特点："></a>✅ 特点：</h4><ul>
+<li><p>物理日志（记录对页的物理更改）</p>
+</li>
+<li><p>顺序写入，性能高</p>
+</li>
+<li><p>包含两个文件：<code>ib_logfile0</code> &#x2F; <code>ib_logfile1</code></p>
+</li>
+</ul>
+<h4 id="🔁-作用流程："><a href="#🔁-作用流程：" class="headerlink" title="🔁 作用流程："></a>🔁 作用流程：</h4><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">事务开始 -&gt; 内存页更新 -&gt; Redo Log 记录 -&gt; 提交 -&gt; 后台异步刷脏页<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3️⃣-Undo-Log（回滚日志）"><a href="#3️⃣-Undo-Log（回滚日志）" class="headerlink" title="3️⃣ Undo Log（回滚日志）"></a>3️⃣ Undo Log（回滚日志）</h3><h4 id="📌-功能：-2"><a href="#📌-功能：-2" class="headerlink" title="📌 功能："></a>📌 功能：</h4><ul>
+<li><p>支持事务<strong>回滚</strong></p>
+</li>
+<li><p>实现 <strong>MVCC（多版本并发控制）</strong>：生成旧版本快照</p>
+</li>
+<li><p>与 redo log 相反，是<strong>逻辑日志</strong>，记录 “做了什么”</p>
+</li>
+</ul>
+<h4 id="✅-存储位置："><a href="#✅-存储位置：" class="headerlink" title="✅ 存储位置："></a>✅ 存储位置：</h4><ul>
+<li>存储在系统表空间（ibdata）或 Undo 表空间中</li>
+</ul>
+<hr>
+<h3 id="4️⃣-Doublewrite-Buffer（双写缓冲）"><a href="#4️⃣-Doublewrite-Buffer（双写缓冲）" class="headerlink" title="4️⃣ Doublewrite Buffer（双写缓冲）"></a>4️⃣ Doublewrite Buffer（双写缓冲）</h3><h4 id="📌-功能：-3"><a href="#📌-功能：-3" class="headerlink" title="📌 功能："></a>📌 功能：</h4><ul>
+<li>防止“部分页写失败”导致数据页损坏（Partial Write）</li>
+</ul>
+<h4 id="✅-原理："><a href="#✅-原理：" class="headerlink" title="✅ 原理："></a>✅ 原理：</h4><ol>
+<li><p>脏页先写入 doublewrite buffer（内存）</p>
+</li>
+<li><p>再刷到磁盘的 doublewrite 区域（文件中间位置）</p>
+</li>
+<li><p>成功后再写入数据文件的真实位置</p>
+</li>
+</ol>
+<blockquote>
+<p>比起直接写入页，双写虽然多了一步，但换来数据可靠性</p>
+</blockquote>
+<hr>
+<h3 id="5️⃣-Change-Buffer（变更缓冲）"><a href="#5️⃣-Change-Buffer（变更缓冲）" class="headerlink" title="5️⃣ Change Buffer（变更缓冲）"></a>5️⃣ Change Buffer（变更缓冲）</h3><h4 id="📌-功能：-4"><a href="#📌-功能：-4" class="headerlink" title="📌 功能："></a>📌 功能：</h4><ul>
+<li>加速非唯一二级索引的写操作（Insert&#x2F;Update&#x2F;Delete）</li>
+</ul>
+<h4 id="✅-原理：-1"><a href="#✅-原理：-1" class="headerlink" title="✅ 原理："></a>✅ 原理：</h4><ul>
+<li><p>修改先缓存在 Change Buffer（Buffer Pool 内）</p>
+</li>
+<li><p>在后台 Merge 时批量应用，减少随机 IO</p>
+</li>
+</ul>
+<hr>
+<h3 id="6️⃣-自适应哈希索引（AHI）"><a href="#6️⃣-自适应哈希索引（AHI）" class="headerlink" title="6️⃣ 自适应哈希索引（AHI）"></a>6️⃣ 自适应哈希索引（AHI）</h3><h4 id="📌-功能：-5"><a href="#📌-功能：-5" class="headerlink" title="📌 功能："></a>📌 功能：</h4><ul>
+<li>根据访问频率自动把热数据页变成 Hash 索引，加快查询</li>
+</ul>
+<h4 id="✅-特点：-2"><a href="#✅-特点：-2" class="headerlink" title="✅ 特点："></a>✅ 特点：</h4><ul>
+<li><p>动态生成，不是建表时手动创建</p>
+</li>
+<li><p>用于替代 B+Tree 的部分范围查找</p>
+</li>
+</ul>
+<hr>
+<h3 id="7️⃣-锁管理（Locking）"><a href="#7️⃣-锁管理（Locking）" class="headerlink" title="7️⃣ 锁管理（Locking）"></a>7️⃣ 锁管理（Locking）</h3><h4 id="📌-支持："><a href="#📌-支持：" class="headerlink" title="📌 支持："></a>📌 支持：</h4><ul>
+<li><p><strong>行级锁（Record Lock）</strong></p>
+</li>
+<li><p><strong>间隙锁（Gap Lock）</strong></p>
+</li>
+<li><p><strong>临键锁（Next-Key Lock）</strong> → Record Lock + Gap Lock</p>
+</li>
+</ul>
+<h4 id="✅-应用场景："><a href="#✅-应用场景：" class="headerlink" title="✅ 应用场景："></a>✅ 应用场景：</h4><ul>
+<li><p>防止幻读（Phantom Read）</p>
+</li>
+<li><p>实现一致性读（可重复读、串行化）</p>
+</li>
+</ul>
+<hr>
+<h3 id="8️⃣-事务系统（Transaction-System）"><a href="#8️⃣-事务系统（Transaction-System）" class="headerlink" title="8️⃣ 事务系统（Transaction System）"></a>8️⃣ 事务系统（Transaction System）</h3><h4 id="📌-支持-ACID："><a href="#📌-支持-ACID：" class="headerlink" title="📌 支持 ACID："></a>📌 支持 ACID：</h4><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>实现方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A 原子性</td>
+<td>Undo Log 回滚</td>
+</tr>
+<tr>
+<td>C 一致性</td>
+<td>外键、事务控制</td>
+</tr>
+<tr>
+<td>I 隔离性</td>
+<td>MVCC + 锁机制</td>
+</tr>
+<tr>
+<td>D 持久性</td>
+<td>Redo Log</td>
+</tr>
+</tbody></table>
+<h4 id="🔍-MVCC-实现："><a href="#🔍-MVCC-实现：" class="headerlink" title="🔍 MVCC 实现："></a>🔍 MVCC 实现：</h4><ul>
+<li><p>每行记录附带两个隐藏列：</p>
+<ul>
+<li><p><code>trx_id</code>：最后一次修改该行的事务 ID</p>
+</li>
+<li><p><code>roll_pointer</code>：指向 Undo Log 的旧版本记录</p>
+</li>
+</ul>
+</li>
+<li><p>不同事务根据<strong>Read View</strong>决定是否能看到某版本数据</p>
+</li>
+</ul>
+<hr>
+<h2 id="📦-三、InnoDB-表空间结构"><a href="#📦-三、InnoDB-表空间结构" class="headerlink" title="📦 三、InnoDB 表空间结构"></a>📦 三、InnoDB 表空间结构</h2><p>每个表默认使用单独表空间（<code>.ibd</code> 文件）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">逻辑结构：表 → 表空间 → 段（Segment）→ 区（Extent）→ 页（Page）→ 行（Row）<br></code></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>单位</th>
+<th>大小</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>页 Page</td>
+<td>16KB</td>
+</tr>
+<tr>
+<td>区 Extent</td>
+<td>64 页 &#x3D; 1MB</td>
+</tr>
+<tr>
+<td>段 Segment</td>
+<td>同类型页的集合（如数据段、索引段）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔄-四、InnoDB-执行流程示意图"><a href="#🔄-四、InnoDB-执行流程示意图" class="headerlink" title="🔄 四、InnoDB 执行流程示意图"></a>🔄 四、InnoDB 执行流程示意图</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">SQL语句 → SQL执行器 → InnoDB接口 → Buffer Pool<br>                              ↓<br>                    Redo Log / Undo Log<br>                              ↓<br>                       Flush Page → File<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧠-总结金句："><a href="#🧠-总结金句：" class="headerlink" title="🧠 总结金句："></a>🧠 总结金句：</h2><blockquote>
+<p>InnoDB 就是一套带有 MVCC、缓存系统、事务管理器、日志系统、写优化引擎的“小型数据库操作系统”，它跑在 MySQL 里，但几乎独立承担了所有数据可靠性与高并发的职责。</p>
+</blockquote>
+<h1 id="Redo-log重做日志原理详解"><a href="#Redo-log重做日志原理详解" class="headerlink" title="Redo log重做日志原理详解"></a><strong>Redo log重做日志原理详解</strong></h1><hr>
+<h2 id="🧾-一、什么是-Redo-Log？"><a href="#🧾-一、什么是-Redo-Log？" class="headerlink" title="🧾 一、什么是 Redo Log？"></a>🧾 一、什么是 Redo Log？</h2><p>Redo Log 是一种 <strong>物理日志</strong>，记录的是对 <strong>数据页（Page）物理更改的操作</strong>，而不是逻辑 SQL（逻辑日志是 binlog）。</p>
+<h3 id="✅-主要用途："><a href="#✅-主要用途：" class="headerlink" title="✅ 主要用途："></a>✅ 主要用途：</h3><ul>
+<li><p><strong>崩溃恢复</strong>：MySQL 在宕机后可通过 Redo Log 进行数据页恢复</p>
+</li>
+<li><p><strong>提高性能</strong>：写操作不用每次都刷数据页到磁盘，而是先写 Redo Log（顺序写）</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔁-二、Redo-Log-的核心机制"><a href="#🔁-二、Redo-Log-的核心机制" class="headerlink" title="🔁 二、Redo Log 的核心机制"></a>🔁 二、Redo Log 的核心机制</h2><h3 id="🔄-WAL（Write-Ahead-Logging）机制"><a href="#🔄-WAL（Write-Ahead-Logging）机制" class="headerlink" title="🔄 WAL（Write-Ahead Logging）机制"></a>🔄 WAL（Write-Ahead Logging）机制</h3><p>WAL 是 Redo Log 的基础原则：</p>
+<blockquote>
+<p><strong>先写日志，再写数据页</strong>，确保宕机时日志可以“重做”数据修改。</p>
+</blockquote>
+<hr>
+<h3 id="⛓-三、Redo-Log-写入的生命周期"><a href="#⛓-三、Redo-Log-写入的生命周期" class="headerlink" title="⛓ 三、Redo Log 写入的生命周期"></a>⛓ 三、Redo Log 写入的生命周期</h3><p>假设我们执行一条 SQL：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">UPDATE</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">SET</span> name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Alice&#x27;</span> <span class="hljs-keyword">WHERE</span> id <span class="hljs-operator">=</span> <span class="hljs-number">1</span>;<br></code></pre></td></tr></table></figure>
+
+<p>Redo Log 的执行流程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">1. 修改 Buffer Pool 中的数据页（Page）<br>2. 生成 Redo Log 日志（记录修改内容）<br>3. 写入 Redo Log Buffer（内存）<br>4. 调用 fsync() 刷到 Redo Log 文件（磁盘）<br>5. 事务提交（COMMIT）<br>6. 后台慢慢刷新 Buffer Pool 中的脏页<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📦-四、Redo-Log-的结构组成"><a href="#📦-四、Redo-Log-的结构组成" class="headerlink" title="📦 四、Redo Log 的结构组成"></a>📦 四、Redo Log 的结构组成</h2><h3 id="🧠-1-Redo-Log-Buffer（内存缓存）"><a href="#🧠-1-Redo-Log-Buffer（内存缓存）" class="headerlink" title="🧠 1. Redo Log Buffer（内存缓存）"></a>🧠 1. Redo Log Buffer（内存缓存）</h3><ul>
+<li><p>位于内存中</p>
+</li>
+<li><p>事务执行期间写入日志</p>
+</li>
+<li><p><strong>提交事务前必须 flush 到磁盘</strong></p>
+</li>
+</ul>
+<h3 id="💽-2-Redo-Log-文件组（ib-logfile0-ib-logfile1）"><a href="#💽-2-Redo-Log-文件组（ib-logfile0-ib-logfile1）" class="headerlink" title="💽 2. Redo Log 文件组（ib_logfile0 &#x2F; ib_logfile1）"></a>💽 2. Redo Log 文件组（ib_logfile0 &#x2F; ib_logfile1）</h3><ul>
+<li><p>位于磁盘，循环写</p>
+</li>
+<li><p>默认两个文件，每个大小可配置（如 48MB）</p>
+</li>
+<li><p><strong>顺序写入，写满之后覆盖最早的内容</strong></p>
+</li>
+</ul>
+<hr>
+<h2 id="🔐-五、Redo-Log-的写入模式（刷盘策略）"><a href="#🔐-五、Redo-Log-的写入模式（刷盘策略）" class="headerlink" title="🔐 五、Redo Log 的写入模式（刷盘策略）"></a>🔐 五、Redo Log 的写入模式（刷盘策略）</h2><p>由参数 <code>innodb_flush_log_at_trx_commit</code> 控制，取值如下：</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>含义</th>
+<th>安全性</th>
+<th>性能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>每秒写入文件并刷盘</td>
+<td>🚨 有数据丢失风险</td>
+<td>⚡ 高</td>
+</tr>
+<tr>
+<td>1</td>
+<td>每次提交都写入并刷盘（默认）</td>
+<td>✅ 最安全</td>
+<td>🐢 慢</td>
+</tr>
+<tr>
+<td>2</td>
+<td>每次提交写入文件，1秒刷盘</td>
+<td>⚠️ 有丢失可能</td>
+<td>⚖️ 平衡</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧩-六、Redo-Log-的条目结构（简化）"><a href="#🧩-六、Redo-Log-的条目结构（简化）" class="headerlink" title="🧩 六、Redo Log 的条目结构（简化）"></a>🧩 六、Redo Log 的条目结构（简化）</h2><p>Redo Log 实际是一个按序存储的“操作记录”，每条记录大致包括：</p>
+<ul>
+<li><p><strong>LSN</strong>（Log Sequence Number）：全局递增的日志编号</p>
+</li>
+<li><p><strong>PageID</strong>：页编号（表示修改的是哪个页）</p>
+</li>
+<li><p><strong>偏移量 &amp; 操作</strong>：页内的修改位置和操作类型</p>
+</li>
+<li><p><strong>数据内容</strong>：修改的数据</p>
+</li>
+</ul>
+<p>这些日志记录的数据页最终也会被刷新到数据文件中（<code>.ibd</code>）。</p>
+<hr>
+<h2 id="🔄-七、如何恢复数据：Crash-Recovery-流程"><a href="#🔄-七、如何恢复数据：Crash-Recovery-流程" class="headerlink" title="🔄 七、如何恢复数据：Crash Recovery 流程"></a>🔄 七、如何恢复数据：Crash Recovery 流程</h2><p>当 MySQL 意外宕机后，重启时会执行崩溃恢复（Crash Recovery）：</p>
+<ol>
+<li><p><strong>扫描 Redo Log 文件</strong></p>
+</li>
+<li><p><strong>找到未刷盘的脏页对应的操作日志</strong></p>
+</li>
+<li><p><strong>重新“重做”日志里的操作，恢复数据页</strong></p>
+</li>
+</ol>
+<blockquote>
+<p>因为我们先写了日志，所以我们可以从日志“重做”数据。</p>
+</blockquote>
+<hr>
+<h2 id="🔁-八、Redo-Log-与-Binlog-的对比"><a href="#🔁-八、Redo-Log-与-Binlog-的对比" class="headerlink" title="🔁 八、Redo Log 与 Binlog 的对比"></a>🔁 八、Redo Log 与 Binlog 的对比</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>Redo Log (InnoDB)</th>
+<th>Binlog (MySQL Server)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>级别</td>
+<td>存储引擎</td>
+<td>MySQL 层</td>
+</tr>
+<tr>
+<td>类型</td>
+<td>物理日志</td>
+<td>逻辑日志（SQL&#x2F;Row）</td>
+</tr>
+<tr>
+<td>写入时机</td>
+<td>每次数据页修改</td>
+<td>事务提交时</td>
+</tr>
+<tr>
+<td>恢复作用</td>
+<td>崩溃恢复（Crash Recovery）</td>
+<td>主从复制、PITR</td>
+</tr>
+<tr>
+<td>文件循环</td>
+<td>是</td>
+<td>否</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧠-总结一句话："><a href="#🧠-总结一句话：" class="headerlink" title="🧠 总结一句话："></a>🧠 总结一句话：</h2><blockquote>
+<p><strong>Redo Log 是 MySQL 的时间回溯神器</strong>，通过物理级别的“操作录像带”，即使数据库中途晕倒，它也能从地上爬起来继续干活。</p>
+</blockquote>
+<hr>
+<h2 id="🧪-Bonus：深入调试时可用命令"><a href="#🧪-Bonus：深入调试时可用命令" class="headerlink" title="🧪 Bonus：深入调试时可用命令"></a>🧪 Bonus：深入调试时可用命令</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">SHOW ENGINE INNODB STATUS\G<br></code></pre></td></tr></table></figure>
+
+<p>可以查看当前 LSN、日志写入位置、刷盘状态等。</p>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/24/Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%B8%80)/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;24&#x2F;Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%B8%80)&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;24&#x2F;Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%B8%80)&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mysql/" rel="tag">Mysql</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/05/24/Innodb%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E4%B8%8EMysq%E6%97%A7%E5%BF%97%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%EF%BC%88%E4%BA%8C%EF%BC%89/">Innodb底层原理与Mysq旧志机制深入剖析（一)<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#MySQL%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%84%E4%BB%B6%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3"><span class="toc-text">MySQL的内部组件结构详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-MySQL-%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%84%E4%BB%B6%E7%BB%93%E6%9E%84%E5%9B%BE%EF%BC%88%E9%80%BB%E8%BE%91%E4%B8%8A%E5%88%86%E4%B8%BA%E4%B8%89%E5%B1%82%EF%BC%89%EF%BC%9A"><span class="toc-text">🧱 MySQL 的内部组件结构图（逻辑上分为三层）：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%8C-%E4%B8%80%E3%80%81%E8%BF%9E%E6%8E%A5%E5%B1%82%EF%BC%88Connection-Layer%EF%BC%89"><span class="toc-text">🔌 一、连接层（Connection Layer）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%96-%E4%BA%8C%E3%80%81SQL-%E5%B1%82%EF%BC%88SQL-Layer%EF%BC%89"><span class="toc-text">📖 二、SQL 层（SQL Layer）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9F%A5%E8%AF%A2%E8%A7%A3%E6%9E%90%EF%BC%88Parser%EF%BC%89"><span class="toc-text">1. 查询解析（Parser）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E5%99%A8%EF%BC%88Optimizer%EF%BC%89"><span class="toc-text">2. 查询优化器（Optimizer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%9F%A5%E8%AF%A2%E6%89%A7%E8%A1%8C%E5%99%A8%EF%BC%88Executor%EF%BC%89"><span class="toc-text">3. 查询执行器（Executor）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%BE-%E4%B8%89%E3%80%81%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%B1%82%EF%BC%88Storage-Engine-Layer%EF%BC%89"><span class="toc-text">💾 三、存储引擎层（Storage Engine Layer）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%EF%BC%9A"><span class="toc-text">常见存储引擎：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#InnoDB-%E5%BC%95%E6%93%8E%EF%BC%88%E6%9C%80%E5%B8%B8%E7%94%A8%EF%BC%89%EF%BC%9A"><span class="toc-text">InnoDB 引擎（最常用）：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%A7-%E5%9B%9B%E3%80%81%E7%B3%BB%E7%BB%9F%E5%B1%82%EF%BC%88OS-%E5%B1%82%EF%BC%89"><span class="toc-text">🔧 四、系统层（OS 层）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E4%BA%94%E3%80%81%E5%85%B6%E4%BB%96%E5%85%B3%E9%94%AE%E7%BB%84%E4%BB%B6"><span class="toc-text">🔄 五、其他关键组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%EF%BC%88%E7%AE%80%E5%8C%96%E7%89%88%EF%BC%89"><span class="toc-text">🔁 执行流程（简化版）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E5%89%96%E6%9E%90"><span class="toc-text">Innodb存储引擎底层原理剖析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%A7-%E4%B8%80%E3%80%81InnoDB-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E7%9A%84%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%84%E5%9B%BE"><span class="toc-text">🚧 一、InnoDB 存储引擎的核心结构图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%BA%8C%E3%80%81InnoDB-%E7%9A%84%E5%85%B3%E9%94%AE%E5%AD%90%E7%B3%BB%E7%BB%9F%E5%89%96%E6%9E%90"><span class="toc-text">🧩 二、InnoDB 的关键子系统剖析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-Buffer-Pool-%E7%BC%93%E5%86%B2%E6%B1%A0%EF%BC%88%E5%86%85%E5%AD%98%E4%B8%AD%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%89"><span class="toc-text">1️⃣ Buffer Pool 缓冲池（内存中的数据库）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-Redo-Log%EF%BC%88%E9%87%8D%E5%81%9A%E6%97%A5%E5%BF%97%EF%BC%89"><span class="toc-text">2️⃣ Redo Log（重做日志）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-Undo-Log%EF%BC%88%E5%9B%9E%E6%BB%9A%E6%97%A5%E5%BF%97%EF%BC%89"><span class="toc-text">3️⃣ Undo Log（回滚日志）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-Doublewrite-Buffer%EF%BC%88%E5%8F%8C%E5%86%99%E7%BC%93%E5%86%B2%EF%BC%89"><span class="toc-text">4️⃣ Doublewrite Buffer（双写缓冲）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-Change-Buffer%EF%BC%88%E5%8F%98%E6%9B%B4%E7%BC%93%E5%86%B2%EF%BC%89"><span class="toc-text">5️⃣ Change Buffer（变更缓冲）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%EF%B8%8F%E2%83%A3-%E8%87%AA%E9%80%82%E5%BA%94%E5%93%88%E5%B8%8C%E7%B4%A2%E5%BC%95%EF%BC%88AHI%EF%BC%89"><span class="toc-text">6️⃣ 自适应哈希索引（AHI）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7%EF%B8%8F%E2%83%A3-%E9%94%81%E7%AE%A1%E7%90%86%EF%BC%88Locking%EF%BC%89"><span class="toc-text">7️⃣ 锁管理（Locking）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8%EF%B8%8F%E2%83%A3-%E4%BA%8B%E5%8A%A1%E7%B3%BB%E7%BB%9F%EF%BC%88Transaction-System%EF%BC%89"><span class="toc-text">8️⃣ 事务系统（Transaction System）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%B8%89%E3%80%81InnoDB-%E8%A1%A8%E7%A9%BA%E9%97%B4%E7%BB%93%E6%9E%84"><span class="toc-text">📦 三、InnoDB 表空间结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E5%9B%9B%E3%80%81InnoDB-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-text">🔄 四、InnoDB 执行流程示意图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E6%80%BB%E7%BB%93%E9%87%91%E5%8F%A5%EF%BC%9A"><span class="toc-text">🧠 总结金句：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Redo-log%E9%87%8D%E5%81%9A%E6%97%A5%E5%BF%97%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3"><span class="toc-text">Redo log重做日志原理详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%BE-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-Redo-Log%EF%BC%9F"><span class="toc-text">🧾 一、什么是 Redo Log？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%B8%BB%E8%A6%81%E7%94%A8%E9%80%94%EF%BC%9A"><span class="toc-text">✅ 主要用途：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E4%BA%8C%E3%80%81Redo-Log-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6"><span class="toc-text">🔁 二、Redo Log 的核心机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%84-WAL%EF%BC%88Write-Ahead-Logging%EF%BC%89%E6%9C%BA%E5%88%B6"><span class="toc-text">🔄 WAL（Write-Ahead Logging）机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9B%93-%E4%B8%89%E3%80%81Redo-Log-%E5%86%99%E5%85%A5%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">⛓ 三、Redo Log 写入的生命周期</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E5%9B%9B%E3%80%81Redo-Log-%E7%9A%84%E7%BB%93%E6%9E%84%E7%BB%84%E6%88%90"><span class="toc-text">📦 四、Redo Log 的结构组成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A0-1-Redo-Log-Buffer%EF%BC%88%E5%86%85%E5%AD%98%E7%BC%93%E5%AD%98%EF%BC%89"><span class="toc-text">🧠 1. Redo Log Buffer（内存缓存）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%BD-2-Redo-Log-%E6%96%87%E4%BB%B6%E7%BB%84%EF%BC%88ib-logfile0-ib-logfile1%EF%BC%89"><span class="toc-text">💽 2. Redo Log 文件组（ib_logfile0 &#x2F; ib_logfile1）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%90-%E4%BA%94%E3%80%81Redo-Log-%E7%9A%84%E5%86%99%E5%85%A5%E6%A8%A1%E5%BC%8F%EF%BC%88%E5%88%B7%E7%9B%98%E7%AD%96%E7%95%A5%EF%BC%89"><span class="toc-text">🔐 五、Redo Log 的写入模式（刷盘策略）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E5%85%AD%E3%80%81Redo-Log-%E7%9A%84%E6%9D%A1%E7%9B%AE%E7%BB%93%E6%9E%84%EF%BC%88%E7%AE%80%E5%8C%96%EF%BC%89"><span class="toc-text">🧩 六、Redo Log 的条目结构（简化）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E4%B8%83%E3%80%81%E5%A6%82%E4%BD%95%E6%81%A2%E5%A4%8D%E6%95%B0%E6%8D%AE%EF%BC%9ACrash-Recovery-%E6%B5%81%E7%A8%8B"><span class="toc-text">🔄 七、如何恢复数据：Crash Recovery 流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E5%85%AB%E3%80%81Redo-Log-%E4%B8%8E-Binlog-%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-text">🔁 八、Redo Log 与 Binlog 的对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E6%80%BB%E7%BB%93%E4%B8%80%E5%8F%A5%E8%AF%9D%EF%BC%9A"><span class="toc-text">🧠 总结一句话：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-Bonus%EF%BC%9A%E6%B7%B1%E5%85%A5%E8%B0%83%E8%AF%95%E6%97%B6%E5%8F%AF%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-text">🧪 Bonus：深入调试时可用命令</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
