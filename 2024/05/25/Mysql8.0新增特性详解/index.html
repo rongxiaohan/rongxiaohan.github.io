@@ -1,0 +1,526 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Mysql8.0新增特性详解 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="新增特性
+🚀 一、SQL &amp; 表达能力增强1...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Mysql8.0新增特性详解</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Mysql8.0新增特性详解</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 25, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2311</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h1 id="新增特性"><a href="#新增特性" class="headerlink" title="新增特性"></a><strong>新增特性</strong></h1><hr>
+<h2 id="🚀-一、SQL-表达能力增强"><a href="#🚀-一、SQL-表达能力增强" class="headerlink" title="🚀 一、SQL &amp; 表达能力增强"></a>🚀 一、SQL &amp; 表达能力增强</h2><h3 id="1-窗口函数（Window-Functions）"><a href="#1-窗口函数（Window-Functions）" class="headerlink" title="1. 窗口函数（Window Functions）"></a>1. <strong>窗口函数（Window Functions）</strong></h3><p>支持 <code>OVER</code> 子句：如 <code>ROW_NUMBER()</code>、<code>RANK()</code>、<code>DENSE_RANK()</code>、<code>LEAD()</code>、<code>LAG()</code> 等。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> emp_id, salary, <span class="hljs-built_in">RANK</span>() <span class="hljs-keyword">OVER</span> (<span class="hljs-keyword">PARTITION</span> <span class="hljs-keyword">BY</span> dept_id <span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> salary <span class="hljs-keyword">DESC</span>) <span class="hljs-keyword">AS</span> rank_in_dept<br><span class="hljs-keyword">FROM</span> employees;<br></code></pre></td></tr></table></figure>
+
+<p>📌 <strong>用途</strong>：分组排名、同组统计，不再需要复杂子查询。</p>
+<hr>
+<h3 id="2-公共表表达式（CTE-WITH-子句）"><a href="#2-公共表表达式（CTE-WITH-子句）" class="headerlink" title="2. 公共表表达式（CTE &#x2F; WITH 子句）"></a>2. <strong>公共表表达式（CTE &#x2F; WITH 子句）</strong></h3><p>支持递归和非递归 CTE，增强了 SQL 的模块化与可读性。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">WITH</span> <span class="hljs-keyword">RECURSIVE</span> cte <span class="hljs-keyword">AS</span> (<br>  <span class="hljs-keyword">SELECT</span> <span class="hljs-number">1</span> <span class="hljs-keyword">AS</span> n<br>  <span class="hljs-keyword">UNION</span> <span class="hljs-keyword">ALL</span><br>  <span class="hljs-keyword">SELECT</span> n <span class="hljs-operator">+</span> <span class="hljs-number">1</span> <span class="hljs-keyword">FROM</span> cte <span class="hljs-keyword">WHERE</span> n <span class="hljs-operator">&lt;</span> <span class="hljs-number">5</span><br>)<br><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> cte;<br></code></pre></td></tr></table></figure>
+
+<p>📌 <strong>用途</strong>：组织层级、树形结构遍历。</p>
+<hr>
+<h3 id="3-默认表达式和-INVISIBLE-列"><a href="#3-默认表达式和-INVISIBLE-列" class="headerlink" title="3. 默认表达式和 INVISIBLE 列"></a>3. <strong>默认表达式和 INVISIBLE 列</strong></h3><ul>
+<li><p>支持列默认值为表达式，如 <code>DEFAULT (UUID())</code></p>
+</li>
+<li><p>隐藏列（<code>INVISIBLE</code>）：对应用透明，不暴露于 <code>SELECT *</code>。</p>
+</li>
+</ul>
+<hr>
+<h3 id="4-CHECK-约束"><a href="#4-CHECK-约束" class="headerlink" title="4. CHECK 约束"></a>4. <strong>CHECK 约束</strong></h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> t (<br>  age <span class="hljs-type">INT</span> <span class="hljs-keyword">CHECK</span> (age <span class="hljs-operator">&gt;=</span> <span class="hljs-number">0</span> <span class="hljs-keyword">AND</span> age <span class="hljs-operator">&lt;=</span> <span class="hljs-number">150</span>)<br>);<br></code></pre></td></tr></table></figure>
+
+<p>📌 <strong>之前版本忽略 CHECK 子句，现在强制生效。</strong></p>
+<hr>
+<h2 id="⚡-二、性能与可扩展性提升"><a href="#⚡-二、性能与可扩展性提升" class="headerlink" title="⚡ 二、性能与可扩展性提升"></a>⚡ 二、性能与可扩展性提升</h2><h3 id="1-更强的-InnoDB-引擎"><a href="#1-更强的-InnoDB-引擎" class="headerlink" title="1. 更强的 InnoDB 引擎"></a>1. <strong>更强的 InnoDB 引擎</strong></h3><ul>
+<li><p>原生支持 <strong>Atomic DDL（原子表结构变更）</strong></p>
+</li>
+<li><p>Undo Tablespace 独立管理、自动清理</p>
+</li>
+<li><p>更高效的 <strong>自适应哈希索引</strong> 和 buffer pool 并发度</p>
+</li>
+<li><p>表空间 <code>ENCRYPTION</code> 支持动态加密</p>
+</li>
+</ul>
+<hr>
+<h3 id="2-历史数据闪回（UNDO-历史快照）"><a href="#2-历史数据闪回（UNDO-历史快照）" class="headerlink" title="2. 历史数据闪回（UNDO 历史快照）"></a>2. <strong>历史数据闪回（UNDO 历史快照）</strong></h3><p>结合 <code>TRANSACTION READ ONLY WITH CONSISTENT SNAPSHOT</code> 实现数据时点读取，支持增强的数据恢复能力。</p>
+<hr>
+<h3 id="3-更快的-DDL-操作"><a href="#3-更快的-DDL-操作" class="headerlink" title="3. 更快的 DDL 操作"></a>3. <strong>更快的 DDL 操作</strong></h3><ul>
+<li><p>支持 <code>INSTANT ADD COLUMN</code>，秒级添加列。</p>
+</li>
+<li><p><code>ALTER TABLE ... DROP COLUMN</code> 性能更优。</p>
+</li>
+<li><p>不再大范围复制数据页，效率大提升。</p>
+</li>
+</ul>
+<hr>
+<h2 id="📦-三、JSON-支持增强"><a href="#📦-三、JSON-支持增强" class="headerlink" title="📦 三、JSON 支持增强"></a>📦 三、JSON 支持增强</h2><p>MySQL 5.7 引入 JSON 类型，8.0 将其升级为“一等公民”：</p>
+<table>
+<thead>
+<tr>
+<th>新函数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-&gt;&gt;</code></td>
+<td>提取并自动转为文本</td>
+</tr>
+<tr>
+<td><code>JSON_TABLE()</code></td>
+<td>把 JSON 转换为关系型表，极强！</td>
+</tr>
+<tr>
+<td><code>JSON_ARRAYAGG()</code> &#x2F; <code>JSON_OBJECTAGG()</code></td>
+<td>类似 GROUP_CONCAT，用于 JSON 聚合</td>
+</tr>
+<tr>
+<td><code>IS JSON</code></td>
+<td>判断字段是否为合法 JSON</td>
+</tr>
+<tr>
+<td><code>JSON_SCHEMA_VALID()</code></td>
+<td>校验 JSON 是否符合 schema</td>
+</tr>
+</tbody></table>
+<p>📌 <strong>适用场景</strong>：NoSQL 混合、配置表、消息结构存储。</p>
+<hr>
+<h2 id="🔐-四、安全增强"><a href="#🔐-四、安全增强" class="headerlink" title="🔐 四、安全增强"></a>🔐 四、安全增强</h2><h3 id="1-默认使用-caching-sha2-password-插件"><a href="#1-默认使用-caching-sha2-password-插件" class="headerlink" title="1. 默认使用 caching_sha2_password 插件"></a>1. <strong>默认使用 caching_sha2_password 插件</strong></h3><p>更安全、更现代的密码加密方式，取代 <code>mysql_native_password</code>。</p>
+<h3 id="2-支持角色（ROLES）管理"><a href="#2-支持角色（ROLES）管理" class="headerlink" title="2. 支持角色（ROLES）管理"></a>2. <strong>支持角色（ROLES）管理</strong></h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">CREATE</span> ROLE read_only;<br><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">SELECT</span> <span class="hljs-keyword">ON</span> db.<span class="hljs-operator">*</span> <span class="hljs-keyword">TO</span> read_only;<br><span class="hljs-keyword">GRANT</span> read_only <span class="hljs-keyword">TO</span> <span class="hljs-string">&#x27;user&#x27;</span>@<span class="hljs-string">&#x27;host&#x27;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>📌 <strong>权限集中管理更方便。</strong></p>
+<h3 id="3-支持密码历史、过期策略"><a href="#3-支持密码历史、过期策略" class="headerlink" title="3. 支持密码历史、过期策略"></a>3. <strong>支持密码历史、过期策略</strong></h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">USER</span> <span class="hljs-string">&#x27;user&#x27;</span>@<span class="hljs-string">&#x27;%&#x27;</span> PASSWORD EXPIRE <span class="hljs-type">INTERVAL</span> <span class="hljs-number">90</span> <span class="hljs-keyword">DAY</span>;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📊-五、可观测性增强（DBA-福音）"><a href="#📊-五、可观测性增强（DBA-福音）" class="headerlink" title="📊 五、可观测性增强（DBA 福音）"></a>📊 五、可观测性增强（DBA 福音）</h2><h3 id="1-Performance-Schema-INFORMATION-SCHEMA-扩展"><a href="#1-Performance-Schema-INFORMATION-SCHEMA-扩展" class="headerlink" title="1. Performance Schema &#x2F; INFORMATION_SCHEMA 扩展"></a>1. <strong>Performance Schema &#x2F; INFORMATION_SCHEMA 扩展</strong></h3><ul>
+<li><p>新增多张表，统计更细化（如 <code>io_latency</code>、<code>user_statistics</code>）</p>
+</li>
+<li><p>更丰富的 Wait&#x2F;Lock 分析</p>
+</li>
+</ul>
+<h3 id="2-系统变量动态修改"><a href="#2-系统变量动态修改" class="headerlink" title="2. 系统变量动态修改"></a>2. <strong>系统变量动态修改</strong></h3><p>很多变量可 <code>SET GLOBAL</code> 修改，无需重启。</p>
+<h3 id="3-重做日志（redo-log）支持压缩"><a href="#3-重做日志（redo-log）支持压缩" class="headerlink" title="3. 重做日志（redo log）支持压缩"></a>3. <strong>重做日志（redo log）支持压缩</strong></h3><p>降低 IO 压力，写入更快。</p>
+<hr>
+<h2 id="🌍-六、GIS（地理空间）支持增强"><a href="#🌍-六、GIS（地理空间）支持增强" class="headerlink" title="🌍 六、GIS（地理空间）支持增强"></a>🌍 六、GIS（地理空间）支持增强</h2><ul>
+<li><p>支持更精确的空间计算（ST_ 前缀函数）</p>
+</li>
+<li><p>支持 R-Tree 索引</p>
+</li>
+<li><p>更好兼容 OpenGIS 标准</p>
+</li>
+</ul>
+<hr>
+<h2 id="⚙-七、复制与高可用增强"><a href="#⚙-七、复制与高可用增强" class="headerlink" title="⚙ 七、复制与高可用增强"></a>⚙ 七、复制与高可用增强</h2><h3 id="1-GTID-支持更完善"><a href="#1-GTID-支持更完善" class="headerlink" title="1. GTID 支持更完善"></a>1. <strong>GTID 支持更完善</strong></h3><p>跨版本&#x2F;重启后自动维护一致性。</p>
+<h3 id="2-组复制（Group-Replication）"><a href="#2-组复制（Group-Replication）" class="headerlink" title="2. 组复制（Group Replication）"></a>2. <strong>组复制（Group Replication）</strong></h3><p>支持自动主选举，结合 InnoDB Cluster 实现自动 Failover。</p>
+<hr>
+<h2 id="🧪-八、开发者体验提升"><a href="#🧪-八、开发者体验提升" class="headerlink" title="🧪 八、开发者体验提升"></a>🧪 八、开发者体验提升</h2><ul>
+<li><p>更强的 <code>EXPLAIN ANALYZE</code>：真实执行时间分析</p>
+</li>
+<li><p><code>DESC FORMAT=JSON</code> 输出结构化执行计划</p>
+</li>
+<li><p>新增 <code>RESOURCE GROUP</code>：可限制某用户 CPU 资源</p>
+</li>
+</ul>
+<hr>
+<h2 id="🎯-总结建议"><a href="#🎯-总结建议" class="headerlink" title="🎯 总结建议"></a>🎯 总结建议</h2><table>
+<thead>
+<tr>
+<th>使用场景</th>
+<th>推荐功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多层级数据</td>
+<td>CTE（递归）</td>
+</tr>
+<tr>
+<td>分组统计、排名</td>
+<td>窗口函数</td>
+</tr>
+<tr>
+<td>JSON 数据存储</td>
+<td>JSON_TABLE、IS JSON、聚合函数</td>
+</tr>
+<tr>
+<td>安全管理</td>
+<td>角色系统、密码策略</td>
+</tr>
+<tr>
+<td>大表变更</td>
+<td>INSTANT ALTER COLUMN、Atomic DDL</td>
+</tr>
+<tr>
+<td>高可用架构</td>
+<td>Group Replication、GTID</td>
+</tr>
+<tr>
+<td>性能优化</td>
+<td>Performance Schema、EXPLAIN ANALYZE</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/25/Mysql8.0%E6%96%B0%E5%A2%9E%E7%89%B9%E6%80%A7%E8%AF%A6%E8%A7%A3/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;25&#x2F;Mysql8.0%E6%96%B0%E5%A2%9E%E7%89%B9%E6%80%A7%E8%AF%A6%E8%A7%A3&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;25&#x2F;Mysql8.0%E6%96%B0%E5%A2%9E%E7%89%B9%E6%80%A7%E8%AF%A6%E8%A7%A3&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Mysql/" rel="tag">Mysql</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/05/25/Mysql%E5%85%A8%E5%B1%80%E4%BC%98%E5%8C%96%E6%80%BB%E7%BB%93/">Mysql全局优化总结<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%96%B0%E5%A2%9E%E7%89%B9%E6%80%A7"><span class="toc-text">新增特性</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-%E4%B8%80%E3%80%81SQL-%E8%A1%A8%E8%BE%BE%E8%83%BD%E5%8A%9B%E5%A2%9E%E5%BC%BA"><span class="toc-text">🚀 一、SQL &amp; 表达能力增强</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%AA%97%E5%8F%A3%E5%87%BD%E6%95%B0%EF%BC%88Window-Functions%EF%BC%89"><span class="toc-text">1. 窗口函数（Window Functions）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%85%AC%E5%85%B1%E8%A1%A8%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%88CTE-WITH-%E5%AD%90%E5%8F%A5%EF%BC%89"><span class="toc-text">2. 公共表表达式（CTE &#x2F; WITH 子句）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E9%BB%98%E8%AE%A4%E8%A1%A8%E8%BE%BE%E5%BC%8F%E5%92%8C-INVISIBLE-%E5%88%97"><span class="toc-text">3. 默认表达式和 INVISIBLE 列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-CHECK-%E7%BA%A6%E6%9D%9F"><span class="toc-text">4. CHECK 约束</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%A1-%E4%BA%8C%E3%80%81%E6%80%A7%E8%83%BD%E4%B8%8E%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7%E6%8F%90%E5%8D%87"><span class="toc-text">⚡ 二、性能与可扩展性提升</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9B%B4%E5%BC%BA%E7%9A%84-InnoDB-%E5%BC%95%E6%93%8E"><span class="toc-text">1. 更强的 InnoDB 引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8E%86%E5%8F%B2%E6%95%B0%E6%8D%AE%E9%97%AA%E5%9B%9E%EF%BC%88UNDO-%E5%8E%86%E5%8F%B2%E5%BF%AB%E7%85%A7%EF%BC%89"><span class="toc-text">2. 历史数据闪回（UNDO 历史快照）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%9B%B4%E5%BF%AB%E7%9A%84-DDL-%E6%93%8D%E4%BD%9C"><span class="toc-text">3. 更快的 DDL 操作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%B8%89%E3%80%81JSON-%E6%94%AF%E6%8C%81%E5%A2%9E%E5%BC%BA"><span class="toc-text">📦 三、JSON 支持增强</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%90-%E5%9B%9B%E3%80%81%E5%AE%89%E5%85%A8%E5%A2%9E%E5%BC%BA"><span class="toc-text">🔐 四、安全增强</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E9%BB%98%E8%AE%A4%E4%BD%BF%E7%94%A8-caching-sha2-password-%E6%8F%92%E4%BB%B6"><span class="toc-text">1. 默认使用 caching_sha2_password 插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%94%AF%E6%8C%81%E8%A7%92%E8%89%B2%EF%BC%88ROLES%EF%BC%89%E7%AE%A1%E7%90%86"><span class="toc-text">2. 支持角色（ROLES）管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%94%AF%E6%8C%81%E5%AF%86%E7%A0%81%E5%8E%86%E5%8F%B2%E3%80%81%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5"><span class="toc-text">3. 支持密码历史、过期策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8A-%E4%BA%94%E3%80%81%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E5%A2%9E%E5%BC%BA%EF%BC%88DBA-%E7%A6%8F%E9%9F%B3%EF%BC%89"><span class="toc-text">📊 五、可观测性增强（DBA 福音）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Performance-Schema-INFORMATION-SCHEMA-%E6%89%A9%E5%B1%95"><span class="toc-text">1. Performance Schema &#x2F; INFORMATION_SCHEMA 扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%B3%BB%E7%BB%9F%E5%8F%98%E9%87%8F%E5%8A%A8%E6%80%81%E4%BF%AE%E6%94%B9"><span class="toc-text">2. 系统变量动态修改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E9%87%8D%E5%81%9A%E6%97%A5%E5%BF%97%EF%BC%88redo-log%EF%BC%89%E6%94%AF%E6%8C%81%E5%8E%8B%E7%BC%A9"><span class="toc-text">3. 重做日志（redo log）支持压缩</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%8D-%E5%85%AD%E3%80%81GIS%EF%BC%88%E5%9C%B0%E7%90%86%E7%A9%BA%E9%97%B4%EF%BC%89%E6%94%AF%E6%8C%81%E5%A2%9E%E5%BC%BA"><span class="toc-text">🌍 六、GIS（地理空间）支持增强</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%99-%E4%B8%83%E3%80%81%E5%A4%8D%E5%88%B6%E4%B8%8E%E9%AB%98%E5%8F%AF%E7%94%A8%E5%A2%9E%E5%BC%BA"><span class="toc-text">⚙ 七、复制与高可用增强</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-GTID-%E6%94%AF%E6%8C%81%E6%9B%B4%E5%AE%8C%E5%96%84"><span class="toc-text">1. GTID 支持更完善</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BB%84%E5%A4%8D%E5%88%B6%EF%BC%88Group-Replication%EF%BC%89"><span class="toc-text">2. 组复制（Group Replication）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E5%85%AB%E3%80%81%E5%BC%80%E5%8F%91%E8%80%85%E4%BD%93%E9%AA%8C%E6%8F%90%E5%8D%87"><span class="toc-text">🧪 八、开发者体验提升</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E6%80%BB%E7%BB%93%E5%BB%BA%E8%AE%AE"><span class="toc-text">🎯 总结建议</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
