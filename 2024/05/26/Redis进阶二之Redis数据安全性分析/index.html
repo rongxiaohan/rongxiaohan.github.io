@@ -1,0 +1,628 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Redis进阶二之Redis数据安全性分析 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🛡️ Redis 数据安全性分析
+“Redis 是...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Redis进阶二之Redis数据安全性分析</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Redis进阶二之Redis数据安全性分析</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 26, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>3711</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h1 id="🛡️-Redis-数据安全性分析"><a href="#🛡️-Redis-数据安全性分析" class="headerlink" title="🛡️ Redis 数据安全性分析"></a>🛡️ Redis 数据安全性分析</h1><blockquote>
+<p>“Redis 是内存数据库，那断电岂不是数据全丢了？”<br>“主从同步过程中断了，数据是不是就不一致了？”</p>
+</blockquote>
+<p>Redis 虽然是基于内存的高速数据存储系统，但在数据安全性上，设计得其实相当扎实。本文将从多个方面分析 Redis 的数据安全策略，包括持久化、容灾、复制一致性、访问控制与常见风险应对。</p>
+<hr>
+<h2 id="📦-一、Redis-数据持久化机制"><a href="#📦-一、Redis-数据持久化机制" class="headerlink" title="📦 一、Redis 数据持久化机制"></a>📦 一、Redis 数据持久化机制</h2><p>Redis 提供两种内建的持久化方式：</p>
+<table>
+<thead>
+<tr>
+<th>持久化方式</th>
+<th>特点</th>
+<th>触发时机</th>
+<th>优缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RDB（快照）</strong></td>
+<td>将内存数据定时保存为 <code>.rdb</code> 文件</td>
+<td>定时 &#x2F; SAVE 命令 &#x2F; 自动配置</td>
+<td>启动恢复快，适合备份；可能丢失最后一次修改</td>
+</tr>
+<tr>
+<td><strong>AOF（日志）</strong></td>
+<td>将所有写命令追加到 <code>.aof</code> 文件</td>
+<td>每次写操作</td>
+<td>数据更完整，但文件大，恢复慢</td>
+</tr>
+</tbody></table>
+<h3 id="📘-推荐策略：AOF-RDB-双保险"><a href="#📘-推荐策略：AOF-RDB-双保险" class="headerlink" title="📘 推荐策略：AOF + RDB 双保险"></a>📘 推荐策略：<strong>AOF + RDB 双保险</strong></h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs conf"># redis.conf 推荐配置<br>save 900 1     # 每 15 分钟至少有一个更改就触发 RDB<br>appendonly yes<br>appendfsync everysec  # 每秒刷新一次 AOF<br></code></pre></td></tr></table></figure>
+
+<p>这样在崩溃恢复时，Redis 优先使用 AOF，还可以保留 RDB 作为“紧急还原点”。</p>
+<hr>
+<h2 id="🌐-二、复制与高可用机制"><a href="#🌐-二、复制与高可用机制" class="headerlink" title="🌐 二、复制与高可用机制"></a>🌐 二、复制与高可用机制</h2><h3 id="🔁-主从复制（Replication）"><a href="#🔁-主从复制（Replication）" class="headerlink" title="🔁 主从复制（Replication）"></a>🔁 主从复制（Replication）</h3><ul>
+<li><p>Redis 支持一主多从结构，数据写入主节点自动复制到从节点。</p>
+</li>
+<li><p>默认是 <strong>异步复制</strong>，可能出现“主写成功，从未同步”的情况。</p>
+</li>
+</ul>
+<h3 id="✅-Redis-6-引入-WAIT-命令（半同步机制）"><a href="#✅-Redis-6-引入-WAIT-命令（半同步机制）" class="headerlink" title="✅ Redis 6 引入 WAIT 命令（半同步机制）"></a>✅ Redis 6 引入 <code>WAIT</code> 命令（半同步机制）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">WAIT 1 1000<br></code></pre></td></tr></table></figure>
+
+<p>表示等待至少 1 个从节点确认接收，超时为 1000 毫秒。可以在关键业务写入前后保障一致性。</p>
+<hr>
+<h3 id="🤖-Redis-Sentinel（哨兵）"><a href="#🤖-Redis-Sentinel（哨兵）" class="headerlink" title="🤖 Redis Sentinel（哨兵）"></a>🤖 Redis Sentinel（哨兵）</h3><p>提供故障自动转移功能：</p>
+<ul>
+<li><p>监控主从状态</p>
+</li>
+<li><p>自动切换主从</p>
+</li>
+<li><p>客户端可自动重新连接新主</p>
+</li>
+</ul>
+<p>📌 注意：切主时可能会造成 <strong>短暂的数据丢失或脑裂问题</strong>，实际业务需结合事务补偿机制设计。</p>
+<hr>
+<h2 id="🧱-三、Redis-Cluster-的一致性挑战"><a href="#🧱-三、Redis-Cluster-的一致性挑战" class="headerlink" title="🧱 三、Redis Cluster 的一致性挑战"></a>🧱 三、Redis Cluster 的一致性挑战</h2><p>在分布式 Redis Cluster 模式下：</p>
+<ul>
+<li><p>数据以 Slot 分片分布于多个节点</p>
+</li>
+<li><p>每个主节点可以有 1+ 个从节点</p>
+</li>
+</ul>
+<h3 id="⛔-面临的问题："><a href="#⛔-面临的问题：" class="headerlink" title="⛔ 面临的问题："></a>⛔ 面临的问题：</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>脑裂</td>
+<td>网络分区时多个主节点独立写入</td>
+</tr>
+<tr>
+<td>写丢失</td>
+<td>主挂了，但从未完全同步，强制切换后数据丢失</td>
+</tr>
+<tr>
+<td>写偏斜</td>
+<td>写在主节点，但没来得及复制就切换主从</td>
+</tr>
+</tbody></table>
+<h3 id="✅-官方建议："><a href="#✅-官方建议：" class="headerlink" title="✅ 官方建议："></a>✅ 官方建议：</h3><ul>
+<li><p>使用 <code>min-replicas-to-write</code> 配置确保主写入时至少有几个从节点在线</p>
+</li>
+<li><p>使用客户端重试 + 幂等机制保证写入成功</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔐-四、访问安全与数据防护"><a href="#🔐-四、访问安全与数据防护" class="headerlink" title="🔐 四、访问安全与数据防护"></a>🔐 四、访问安全与数据防护</h2><h3 id="1-ACL-权限控制（Redis-6-0-）"><a href="#1-ACL-权限控制（Redis-6-0-）" class="headerlink" title="1. ACL 权限控制（Redis 6.0+）"></a>1. ACL 权限控制（Redis 6.0+）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">ACL SETUSER <span class="hljs-built_in">readonly</span> on &gt;password ~* -@write<br></code></pre></td></tr></table></figure>
+
+<p>可以限制用户只能读，不能写，防止误操作或恶意破坏。</p>
+<h3 id="2-密码保护"><a href="#2-密码保护" class="headerlink" title="2. 密码保护"></a>2. 密码保护</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs conf">requirepass mySuperSecret<br></code></pre></td></tr></table></figure>
+
+<p>避免 Redis 被未授权访问。<strong>永远不要将 Redis 直接暴露在公网！</strong></p>
+<h3 id="3-TLS-加密传输（Redis-6-）"><a href="#3-TLS-加密传输（Redis-6-）" class="headerlink" title="3. TLS 加密传输（Redis 6+）"></a>3. TLS 加密传输（Redis 6+）</h3><p>Redis 6 开始支持 SSL&#x2F;TLS，可以启用加密通信，防止中间人攻击。</p>
+<hr>
+<h2 id="📉-五、常见数据丢失场景与防护建议"><a href="#📉-五、常见数据丢失场景与防护建议" class="headerlink" title="📉 五、常见数据丢失场景与防护建议"></a>📉 五、常见数据丢失场景与防护建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>原因</th>
+<th>防护策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>宕机未持久化</td>
+<td>未启用 AOF &#x2F; RDB</td>
+<td>启用持久化，设置合理策略</td>
+</tr>
+<tr>
+<td>主从数据不同步</td>
+<td>异步复制延迟</td>
+<td>使用 <code>WAIT</code>、客户端幂等</td>
+</tr>
+<tr>
+<td>AOF 文件损坏</td>
+<td>异常中断 &#x2F; 磁盘坏块</td>
+<td>启用 AOF rewrite + 定期备份</td>
+</tr>
+<tr>
+<td>误删</td>
+<td>手动操作、误执行脚本</td>
+<td>限制权限 + 数据备份</td>
+</tr>
+<tr>
+<td>被攻击</td>
+<td>Redis 开放无鉴权</td>
+<td>加 ACL、密码、关闭外网访问</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>“单线程的 Redis，凭什么做到百万级 QPS？”</p>
+</blockquote>
+<p>Redis 的线程模型一直是开发者们津津乐道的话题。它的“单线程”设计曾被质疑，但实际上，这种设计正是其高性能的秘诀之一。</p>
+<p>本文将带你从基础原理、演进历史、源码结构、以及 Redis 6+ 的线程模型优化角度，<strong>全面深入理解 Redis 的线程模型</strong>。</p>
+<hr>
+<h2 id="☝️-一、Redis-是不是单线程？"><a href="#☝️-一、Redis-是不是单线程？" class="headerlink" title="☝️ 一、Redis 是不是单线程？"></a>☝️ 一、Redis 是不是单线程？</h2><h3 id="✔️-主线程单线程-——-处理命令的逻辑是单线程的。"><a href="#✔️-主线程单线程-——-处理命令的逻辑是单线程的。" class="headerlink" title="✔️ 主线程单线程 —— 处理命令的逻辑是单线程的。"></a>✔️ 主线程单线程 —— 处理命令的逻辑是单线程的。</h3><p>Redis 的核心命令执行逻辑是由一个主线程串行完成：</p>
+<ul>
+<li><p>接收请求（通过 <code>epoll</code> 等 IO 多路复用机制）</p>
+</li>
+<li><p>解析命令</p>
+</li>
+<li><p>执行命令</p>
+</li>
+<li><p>返回结果</p>
+</li>
+</ul>
+<p>这种串行执行避免了线程竞争和加锁问题，简化了代码逻辑，也提升了响应速度。</p>
+<h3 id="❌-Redis-并不是“完全单线程”"><a href="#❌-Redis-并不是“完全单线程”" class="headerlink" title="❌ Redis 并不是“完全单线程”"></a>❌ Redis 并不是“完全单线程”</h3><p>Redis 除了主线程，还用到了多个 <strong>后台线程&#x2F;子线程</strong>，如下：</p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>是否异步</th>
+<th>使用线程类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RDB 快照持久化</td>
+<td>是</td>
+<td>后台子进程（fork）</td>
+</tr>
+<tr>
+<td>AOF 重写</td>
+<td>是</td>
+<td>后台子进程（fork）</td>
+</tr>
+<tr>
+<td>异步删除大 key</td>
+<td>是</td>
+<td>后台线程（UNLINK）</td>
+</tr>
+<tr>
+<td>复制、集群同步</td>
+<td>是</td>
+<td>后台线程</td>
+</tr>
+<tr>
+<td>网络 IO（6.0+）</td>
+<td>是</td>
+<td>多 IO 线程</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧰-二、经典模型：单线程-IO-多路复用（Reactor）"><a href="#🧰-二、经典模型：单线程-IO-多路复用（Reactor）" class="headerlink" title="🧰 二、经典模型：单线程 + IO 多路复用（Reactor）"></a>🧰 二、经典模型：单线程 + IO 多路复用（Reactor）</h2><p>Redis 使用的是 <strong>Reactor 模型</strong>，通过 <strong>IO 多路复用（epoll&#x2F;kqueue&#x2F;select）</strong> 实现非阻塞事件驱动机制：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">Redis Event Loop（单线程）<br><br>1. 检查定时任务（如 key 过期）<br>2. 执行网络 IO 事件（接收/发送）<br>3. 读取客户端请求<br>4. 执行命令并写入响应<br></code></pre></td></tr></table></figure>
+
+<h3 id="🔁-事件循环图解"><a href="#🔁-事件循环图解" class="headerlink" title="🔁 事件循环图解"></a>🔁 事件循环图解</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">         epoll_wait<br>            │<br>     ┌──────┴─────────┐<br>     │                │<br> 可读事件           可写事件<br>     │                │<br>读取命令           返回响应<br>     │                │<br>  执行命令 ←──────────┘（核心串行处理）<br></code></pre></td></tr></table></figure>
+
+<p>Redis 主线程就是这么一个“死循环”，不停地处理 IO 和命令逻辑。</p>
+<hr>
+<h2 id="🚀-三、Redis-6-0-的多线程优化"><a href="#🚀-三、Redis-6-0-的多线程优化" class="headerlink" title="🚀 三、Redis 6.0+ 的多线程优化"></a>🚀 三、Redis 6.0+ 的多线程优化</h2><p>从 Redis 6.0 开始，引入了 <strong>多线程网络 IO 支持</strong>，但仍然保持命令执行在主线程中。</p>
+<h3 id="✳️-为什么引入-IO-多线程？"><a href="#✳️-为什么引入-IO-多线程？" class="headerlink" title="✳️ 为什么引入 IO 多线程？"></a>✳️ 为什么引入 IO 多线程？</h3><p>在高并发场景下，网络读写本身的 CPU 开销变大，反而成为瓶颈。因此 Redis 6.0 引入了 IO 多线程机制，把<strong>网络数据的读取解析与写入封装交给多个线程处理</strong>。</p>
+<h3 id="🧪-启用方式"><a href="#🧪-启用方式" class="headerlink" title="🧪 启用方式"></a>🧪 启用方式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs conf"># redis.conf<br>io-threads 4<br>io-threads-do-reads yes<br></code></pre></td></tr></table></figure>
+
+<h3 id="🌈-IO-多线程模型图"><a href="#🌈-IO-多线程模型图" class="headerlink" title="🌈 IO 多线程模型图"></a>🌈 IO 多线程模型图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">[客户端请求]<br>     ↓<br>[IO 线程池]<br>     ↓（读取请求数据）<br>[主线程]<br>     ↓（解析命令并执行）<br>[IO 线程池]<br>     ↓（发送响应数据）<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>主线程依然保持对命令的“原子控制”，避免并发引起的数据一致性问题。</p>
+</blockquote>
+<hr>
+<h2 id="💣-四、线程相关的“坑”和优化建议"><a href="#💣-四、线程相关的“坑”和优化建议" class="headerlink" title="💣 四、线程相关的“坑”和优化建议"></a>💣 四、线程相关的“坑”和优化建议</h2><h3 id="❗️1-慎用阻塞型命令"><a href="#❗️1-慎用阻塞型命令" class="headerlink" title="❗️1. 慎用阻塞型命令"></a>❗️1. 慎用阻塞型命令</h3><p>例如 <code>SAVE</code>, <code>BLPOP</code>, <code>SCRIPT DEBUG</code> 等会<strong>阻塞主线程</strong>，在业务中应尽量避免或用非阻塞版本（如 <code>UNLINK</code> 替代 <code>DEL</code>）。</p>
+<h3 id="❗️2-慎用大-Key"><a href="#❗️2-慎用大-Key" class="headerlink" title="❗️2. 慎用大 Key"></a>❗️2. 慎用大 Key</h3><ul>
+<li><p>一个包含几百万条数据的 Hash 或 List，哪怕只操作一个字段，Redis 也可能因为内存拷贝而卡顿。</p>
+</li>
+<li><p>用 <code>SCAN</code> + 拆分子 Key，避免大 Key 的集中操作。</p>
+</li>
+</ul>
+<h3 id="❗️3-合理配置-IO-线程"><a href="#❗️3-合理配置-IO-线程" class="headerlink" title="❗️3. 合理配置 IO 线程"></a>❗️3. 合理配置 IO 线程</h3><p>在并发量非常高的场景（如 Redis Proxy、百万连接环境）下开启 <code>io-threads</code>，但不要盲目开启太多线程，推荐线程数&#x3D;CPU核心数&#x2F;2。</p>
+<hr>
+<h2 id="📖-五、从源码角度快速理解（简略）"><a href="#📖-五、从源码角度快速理解（简略）" class="headerlink" title="📖 五、从源码角度快速理解（简略）"></a>📖 五、从源码角度快速理解（简略）</h2><p>在 Redis 源码中，事件循环由 <code>ae.c</code> 中的 <code>aeMain()</code> 控制：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">aeMain</span><span class="hljs-params">(aeEventLoop *eventLoop)</span> &#123;<br>    <span class="hljs-keyword">while</span> (!eventLoop-&gt;stop) &#123;<br>        <span class="hljs-type">int</span> numevents = aeProcessEvents(eventLoop, AE_ALL_EVENTS);<br>        <span class="hljs-comment">// 其他任务...</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>在 Redis 6 中的 <code>server.c</code> 中，通过 <code>createIOThreads()</code> 创建多个 IO 线程，并用任务队列进行协调。</p>
+<hr>
+<h2 id="✅-六、总结"><a href="#✅-六、总结" class="headerlink" title="✅ 六、总结"></a>✅ 六、总结</h2><table>
+<thead>
+<tr>
+<th>模型</th>
+<th>特性</th>
+<th>Redis版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单线程（Reactor）</td>
+<td>命令处理串行，避免加锁</td>
+<td>所有版本</td>
+</tr>
+<tr>
+<td>多线程 IO（半异步）</td>
+<td>网络 IO 多线程，命令仍在主线程</td>
+<td>Redis 6+</td>
+</tr>
+<tr>
+<td>后台线程&#x2F;子进程</td>
+<td>RDB、AOF、复制、UNLINK等</td>
+<td>所有版本</td>
+</tr>
+</tbody></table>
+<h3 id="📌-Redis-高性能的核心秘诀："><a href="#📌-Redis-高性能的核心秘诀：" class="headerlink" title="📌 Redis 高性能的核心秘诀："></a>📌 Redis 高性能的核心秘诀：</h3><ol>
+<li><p>所有数据都在内存</p>
+</li>
+<li><p>命令处理无锁、无线程切换</p>
+</li>
+<li><p>IO 多路复用高效处理连接</p>
+</li>
+<li><p>关键任务交由子线程异步完成</p>
+</li>
+</ol>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/26/Redis%E8%BF%9B%E9%98%B6%E4%BA%8C%E4%B9%8BRedis%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E6%80%A7%E5%88%86%E6%9E%90/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;26&#x2F;Redis%E8%BF%9B%E9%98%B6%E4%BA%8C%E4%B9%8BRedis%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E6%80%A7%E5%88%86%E6%9E%90&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;26&#x2F;Redis%E8%BF%9B%E9%98%B6%E4%BA%8C%E4%B9%8BRedis%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E6%80%A7%E5%88%86%E6%9E%90&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2024/05/26/Redis%E8%BF%9B%E9%98%B6%E4%B8%80%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Redis%E7%BA%BF%E7%A8%8B%E6%A8%A1/"><i class="iconfont iconleft"></i>Redis进阶一之深入理解Redis线程模</a>
+    <a href="/2024/05/26/Redis%E9%AB%98%E5%B9%B6%E5%8F%91%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%AE%9E%E6%88%98/">Redis高并发分布式锁实战<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%9B%A1%EF%B8%8F-Redis-%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc-text">🛡️ Redis 数据安全性分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%B8%80%E3%80%81Redis-%E6%95%B0%E6%8D%AE%E6%8C%81%E4%B9%85%E5%8C%96%E6%9C%BA%E5%88%B6"><span class="toc-text">📦 一、Redis 数据持久化机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%98-%E6%8E%A8%E8%8D%90%E7%AD%96%E7%95%A5%EF%BC%9AAOF-RDB-%E5%8F%8C%E4%BF%9D%E9%99%A9"><span class="toc-text">📘 推荐策略：AOF + RDB 双保险</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%90-%E4%BA%8C%E3%80%81%E5%A4%8D%E5%88%B6%E4%B8%8E%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9C%BA%E5%88%B6"><span class="toc-text">🌐 二、复制与高可用机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%81-%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%EF%BC%88Replication%EF%BC%89"><span class="toc-text">🔁 主从复制（Replication）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-Redis-6-%E5%BC%95%E5%85%A5-WAIT-%E5%91%BD%E4%BB%A4%EF%BC%88%E5%8D%8A%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6%EF%BC%89"><span class="toc-text">✅ Redis 6 引入 WAIT 命令（半同步机制）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A4%96-Redis-Sentinel%EF%BC%88%E5%93%A8%E5%85%B5%EF%BC%89"><span class="toc-text">🤖 Redis Sentinel（哨兵）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-%E4%B8%89%E3%80%81Redis-Cluster-%E7%9A%84%E4%B8%80%E8%87%B4%E6%80%A7%E6%8C%91%E6%88%98"><span class="toc-text">🧱 三、Redis Cluster 的一致性挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9B%94-%E9%9D%A2%E4%B8%B4%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-text">⛔ 面临的问题：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%AE%98%E6%96%B9%E5%BB%BA%E8%AE%AE%EF%BC%9A"><span class="toc-text">✅ 官方建议：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%90-%E5%9B%9B%E3%80%81%E8%AE%BF%E9%97%AE%E5%AE%89%E5%85%A8%E4%B8%8E%E6%95%B0%E6%8D%AE%E9%98%B2%E6%8A%A4"><span class="toc-text">🔐 四、访问安全与数据防护</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-ACL-%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6%EF%BC%88Redis-6-0-%EF%BC%89"><span class="toc-text">1. ACL 权限控制（Redis 6.0+）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%AF%86%E7%A0%81%E4%BF%9D%E6%8A%A4"><span class="toc-text">2. 密码保护</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-TLS-%E5%8A%A0%E5%AF%86%E4%BC%A0%E8%BE%93%EF%BC%88Redis-6-%EF%BC%89"><span class="toc-text">3. TLS 加密传输（Redis 6+）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%89-%E4%BA%94%E3%80%81%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1%E5%9C%BA%E6%99%AF%E4%B8%8E%E9%98%B2%E6%8A%A4%E5%BB%BA%E8%AE%AE"><span class="toc-text">📉 五、常见数据丢失场景与防护建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%98%9D%EF%B8%8F-%E4%B8%80%E3%80%81Redis-%E6%98%AF%E4%B8%8D%E6%98%AF%E5%8D%95%E7%BA%BF%E7%A8%8B%EF%BC%9F"><span class="toc-text">☝️ 一、Redis 是不是单线程？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%94%EF%B8%8F-%E4%B8%BB%E7%BA%BF%E7%A8%8B%E5%8D%95%E7%BA%BF%E7%A8%8B-%E2%80%94%E2%80%94-%E5%A4%84%E7%90%86%E5%91%BD%E4%BB%A4%E7%9A%84%E9%80%BB%E8%BE%91%E6%98%AF%E5%8D%95%E7%BA%BF%E7%A8%8B%E7%9A%84%E3%80%82"><span class="toc-text">✔️ 主线程单线程 —— 处理命令的逻辑是单线程的。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%8C-Redis-%E5%B9%B6%E4%B8%8D%E6%98%AF%E2%80%9C%E5%AE%8C%E5%85%A8%E5%8D%95%E7%BA%BF%E7%A8%8B%E2%80%9D"><span class="toc-text">❌ Redis 并不是“完全单线程”</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B0-%E4%BA%8C%E3%80%81%E7%BB%8F%E5%85%B8%E6%A8%A1%E5%9E%8B%EF%BC%9A%E5%8D%95%E7%BA%BF%E7%A8%8B-IO-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%EF%BC%88Reactor%EF%BC%89"><span class="toc-text">🧰 二、经典模型：单线程 + IO 多路复用（Reactor）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%81-%E4%BA%8B%E4%BB%B6%E5%BE%AA%E7%8E%AF%E5%9B%BE%E8%A7%A3"><span class="toc-text">🔁 事件循环图解</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-%E4%B8%89%E3%80%81Redis-6-0-%E7%9A%84%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%BC%98%E5%8C%96"><span class="toc-text">🚀 三、Redis 6.0+ 的多线程优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%B3%EF%B8%8F-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BC%95%E5%85%A5-IO-%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%9F"><span class="toc-text">✳️ 为什么引入 IO 多线程？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%AA-%E5%90%AF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-text">🧪 启用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%88-IO-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E5%9B%BE"><span class="toc-text">🌈 IO 多线程模型图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%A3-%E5%9B%9B%E3%80%81%E7%BA%BF%E7%A8%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E2%80%9C%E5%9D%91%E2%80%9D%E5%92%8C%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">💣 四、线程相关的“坑”和优化建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%97%EF%B8%8F1-%E6%85%8E%E7%94%A8%E9%98%BB%E5%A1%9E%E5%9E%8B%E5%91%BD%E4%BB%A4"><span class="toc-text">❗️1. 慎用阻塞型命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%97%EF%B8%8F2-%E6%85%8E%E7%94%A8%E5%A4%A7-Key"><span class="toc-text">❗️2. 慎用大 Key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%97%EF%B8%8F3-%E5%90%88%E7%90%86%E9%85%8D%E7%BD%AE-IO-%E7%BA%BF%E7%A8%8B"><span class="toc-text">❗️3. 合理配置 IO 线程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%96-%E4%BA%94%E3%80%81%E4%BB%8E%E6%BA%90%E7%A0%81%E8%A7%92%E5%BA%A6%E5%BF%AB%E9%80%9F%E7%90%86%E8%A7%A3%EF%BC%88%E7%AE%80%E7%95%A5%EF%BC%89"><span class="toc-text">📖 五、从源码角度快速理解（简略）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E5%85%AD%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">✅ 六、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-Redis-%E9%AB%98%E6%80%A7%E8%83%BD%E7%9A%84%E6%A0%B8%E5%BF%83%E7%A7%98%E8%AF%80%EF%BC%9A"><span class="toc-text">📌 Redis 高性能的核心秘诀：</span></a></li></ol></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Redis高并发分布式锁实战 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="🔐 Redis 高并发分布式锁实战（含 Rediss...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Redis高并发分布式锁实战</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Redis高并发分布式锁实战</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 26, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2578</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h1 id="🔐-Redis-高并发分布式锁实战（含-Redisson、Lua-脚本）"><a href="#🔐-Redis-高并发分布式锁实战（含-Redisson、Lua-脚本）" class="headerlink" title="🔐 Redis 高并发分布式锁实战（含 Redisson、Lua 脚本）"></a>🔐 Redis 高并发分布式锁实战（含 Redisson、Lua 脚本）</h1><hr>
+<h2 id="💡-为什么需要分布式锁？"><a href="#💡-为什么需要分布式锁？" class="headerlink" title="💡 为什么需要分布式锁？"></a>💡 为什么需要分布式锁？</h2><p>在高并发场景下，多个线程&#x2F;进程&#x2F;节点可能同时修改同一份资源（如库存、任务状态、用户额度）。这时候就需要<strong>分布式锁</strong>来保证 <strong>互斥性 + 安全释放 + 高性能</strong>。</p>
+<hr>
+<h2 id="☁️-场景举例"><a href="#☁️-场景举例" class="headerlink" title="☁️ 场景举例"></a>☁️ 场景举例</h2><ul>
+<li><p>秒杀抢购：防止超卖</p>
+</li>
+<li><p>订单状态更新：避免重复支付</p>
+</li>
+<li><p>定时任务抢占执行权：防止多节点重复执行</p>
+</li>
+<li><p>分布式幂等控制</p>
+</li>
+</ul>
+<hr>
+<h2 id="✅-分布式锁的核心需求"><a href="#✅-分布式锁的核心需求" class="headerlink" title="✅ 分布式锁的核心需求"></a>✅ 分布式锁的核心需求</h2><table>
+<thead>
+<tr>
+<th>目标</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>互斥性</td>
+<td>同一时间只能有一个客户端持有锁</td>
+</tr>
+<tr>
+<td>安全释放</td>
+<td>只能释放自己加的锁，避免误删</td>
+</tr>
+<tr>
+<td>自动过期</td>
+<td>避免死锁</td>
+</tr>
+<tr>
+<td>高可用</td>
+<td>主从切换&#x2F;网络抖动不丢锁</td>
+</tr>
+<tr>
+<td>高性能</td>
+<td>加解锁快，避免阻塞</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧱-实战方式一：基于-Redis-SETNX-实现简易锁"><a href="#🧱-实战方式一：基于-Redis-SETNX-实现简易锁" class="headerlink" title="🧱 实战方式一：基于 Redis SETNX 实现简易锁"></a>🧱 实战方式一：基于 Redis <code>SETNX</code> 实现简易锁</h2><h3 id="🔨-加锁（SETNX-EX）"><a href="#🔨-加锁（SETNX-EX）" class="headerlink" title="🔨 加锁（SETNX + EX）"></a>🔨 加锁（SETNX + EX）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Boolean</span> <span class="hljs-variable">success</span> <span class="hljs-operator">=</span> redisTemplate.opsForValue()<br>    .setIfAbsent(<span class="hljs-string">&quot;lock:order:123&quot;</span>, <span class="hljs-string">&quot;UUID&quot;</span>, Duration.ofSeconds(<span class="hljs-number">10</span>));<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>setIfAbsent</code> → 等价于 <code>SETNX</code></p>
+</li>
+<li><p>设置过期时间，避免死锁</p>
+</li>
+</ul>
+<h3 id="💣-解锁（注意不能直接-DEL）"><a href="#💣-解锁（注意不能直接-DEL）" class="headerlink" title="💣 解锁（注意不能直接 DEL）"></a>💣 解锁（注意不能直接 <code>DEL</code>）</h3><p>不能直接 <code>DEL</code>，因为可能误删别人的锁（比如你持有的锁过期了，别人重入时你还在删）</p>
+<h3 id="✅-正确方式：使用-Lua-脚本判断后删除"><a href="#✅-正确方式：使用-Lua-脚本判断后删除" class="headerlink" title="✅ 正确方式：使用 Lua 脚本判断后删除"></a>✅ 正确方式：使用 Lua 脚本判断后删除</h3><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs lua"><span class="hljs-keyword">if</span> redis.call(<span class="hljs-string">&quot;GET&quot;</span>, KEYS[<span class="hljs-number">1</span>]) == ARGV[<span class="hljs-number">1</span>] <span class="hljs-keyword">then</span><br>    <span class="hljs-keyword">return</span> redis.call(<span class="hljs-string">&quot;DEL&quot;</span>, KEYS[<span class="hljs-number">1</span>])<br><span class="hljs-keyword">else</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span><br><span class="hljs-keyword">end</span><br></code></pre></td></tr></table></figure>
+
+<p>Java 示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">String</span> <span class="hljs-variable">script</span> <span class="hljs-operator">=</span><br>    <span class="hljs-string">&quot;if redis.call(&#x27;GET&#x27;, KEYS[1]) == ARGV[1] then &quot;</span> +<br>    <span class="hljs-string">&quot;   return redis.call(&#x27;DEL&#x27;, KEYS[1]) &quot;</span> +<br>    <span class="hljs-string">&quot;else return 0 end&quot;</span>;<br><br>redisTemplate.execute(<span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultRedisScript</span>&lt;&gt;(script, Long.class),<br>    Collections.singletonList(<span class="hljs-string">&quot;lock:order:123&quot;</span>), <span class="hljs-string">&quot;UUID&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔁-实战方式二：Redisson-分布式锁"><a href="#🔁-实战方式二：Redisson-分布式锁" class="headerlink" title="🔁 实战方式二：Redisson 分布式锁"></a>🔁 实战方式二：Redisson 分布式锁</h2><p>推荐使用 <a target="_blank" rel="noopener" href="https://github.com/redisson/redisson">Redisson</a>，支持自动续期、可重入、公平锁、读写锁、集群、RedLock 等高级功能。</p>
+<h3 id="✅-Maven-引入"><a href="#✅-Maven-引入" class="headerlink" title="✅ Maven 引入"></a>✅ Maven 引入</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.redisson<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>redisson-spring-boot-starter<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.26.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="🔧-配置（单机或哨兵-集群）"><a href="#🔧-配置（单机或哨兵-集群）" class="headerlink" title="🔧 配置（单机或哨兵&#x2F;集群）"></a>🔧 配置（单机或哨兵&#x2F;集群）</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">redisson:</span><br>  <span class="hljs-attr">config:</span> <span class="hljs-string">|</span><br><span class="hljs-string">    singleServerConfig:</span><br><span class="hljs-string">      address: &quot;redis://localhost:6379&quot;</span><br><span class="hljs-string">      password: null</span><br><span class="hljs-string">    threads: 8</span><br><span class="hljs-string">    nettyThreads: 8</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="🔐-使用示例"><a href="#🔐-使用示例" class="headerlink" title="🔐 使用示例"></a>🔐 使用示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Autowired</span><br><span class="hljs-keyword">private</span> RedissonClient redissonClient;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">doSomething</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">RLock</span> <span class="hljs-variable">lock</span> <span class="hljs-operator">=</span> redissonClient.getLock(<span class="hljs-string">&quot;lock:order:123&quot;</span>);<br><br>    <span class="hljs-type">boolean</span> <span class="hljs-variable">locked</span> <span class="hljs-operator">=</span> lock.tryLock(<span class="hljs-number">5</span>, <span class="hljs-number">10</span>, TimeUnit.SECONDS); <span class="hljs-comment">// 等待5秒，加锁10秒</span><br>    <span class="hljs-keyword">if</span> (locked) &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">// 业务逻辑</span><br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            lock.unlock(); <span class="hljs-comment">// 自动校验是否为当前线程持有</span><br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔄-Redisson-支持的锁类型"><a href="#🔄-Redisson-支持的锁类型" class="headerlink" title="🔄 Redisson 支持的锁类型"></a>🔄 Redisson 支持的锁类型</h2><table>
+<thead>
+<tr>
+<th>锁类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RLock</td>
+<td>普通重入锁（推荐）</td>
+</tr>
+<tr>
+<td>FairLock</td>
+<td>公平锁，先进先出</td>
+</tr>
+<tr>
+<td>ReadWriteLock</td>
+<td>读写分离锁</td>
+</tr>
+<tr>
+<td>MultiLock</td>
+<td>多个 key 联锁</td>
+</tr>
+<tr>
+<td>RedLock</td>
+<td>多 Redis 节点冗余锁（CAP偏向 AP）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="⚠️-注意事项与坑点"><a href="#⚠️-注意事项与坑点" class="headerlink" title="⚠️ 注意事项与坑点"></a>⚠️ 注意事项与坑点</h2><table>
+<thead>
+<tr>
+<th>⚠️ 场景</th>
+<th>避坑建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>锁过期提前释放</td>
+<td>使用 Redisson 自动续期机制（watchdog）或合理控制过期时间</td>
+</tr>
+<tr>
+<td>锁误删</td>
+<td>锁值必须是唯一标识 + 用 Lua 检查再删</td>
+</tr>
+<tr>
+<td>单点 Redis 挂了</td>
+<td>用 Redis Sentinel&#x2F;Cluster + Redisson</td>
+</tr>
+<tr>
+<td>主从复制延迟</td>
+<td>使用 Redisson 的 RedLock 或业务幂等保障一致性</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📌-与数据库事务结合的建议"><a href="#📌-与数据库事务结合的建议" class="headerlink" title="📌 与数据库事务结合的建议"></a>📌 与数据库事务结合的建议</h2><ul>
+<li><p>Redis 锁应在 <strong>数据库事务之前加锁</strong></p>
+</li>
+<li><p>锁和 DB 事务无原子性保障，要注意逻辑幂等</p>
+</li>
+<li><p>若涉及锁 + MQ，可用事务消息或最终一致性策略</p>
+</li>
+</ul>
+<hr>
+<h2 id="✅-总结：推荐选型"><a href="#✅-总结：推荐选型" class="headerlink" title="✅ 总结：推荐选型"></a>✅ 总结：推荐选型</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简单、低并发锁</td>
+<td>SETNX + Lua 即可</td>
+</tr>
+<tr>
+<td>高并发、需要公平&#x2F;可重入&#x2F;续期</td>
+<td>Redisson</td>
+</tr>
+<tr>
+<td>多 Redis 节点容灾</td>
+<td>RedLock 或加业务幂等机制</td>
+</tr>
+<tr>
+<td>重安全&#x2F;高可用</td>
+<td>锁 + 事务幂等 + 客户端重试&#x2F;兜底机制</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/26/Redis%E9%AB%98%E5%B9%B6%E5%8F%91%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%AE%9E%E6%88%98/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;26&#x2F;Redis%E9%AB%98%E5%B9%B6%E5%8F%91%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%AE%9E%E6%88%98&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;26&#x2F;Redis%E9%AB%98%E5%B9%B6%E5%8F%91%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%AE%9E%E6%88%98&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2024/05/26/Redis%E8%BF%9B%E9%98%B6%E4%BA%8C%E4%B9%8BRedis%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%E6%80%A7%E5%88%86%E6%9E%90/"><i class="iconfont iconleft"></i>Redis进阶二之Redis数据安全性分析</a>
+    <a href="/2024/05/25/Mysql8.0%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E5%AE%9E%E6%88%98%E4%B8%8E%E5%8E%9F%E7%90%86/">Mysql8.0主从复制实战与原理<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%F0%9F%94%90-Redis-%E9%AB%98%E5%B9%B6%E5%8F%91%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%AE%9E%E6%88%98%EF%BC%88%E5%90%AB-Redisson%E3%80%81Lua-%E8%84%9A%E6%9C%AC%EF%BC%89"><span class="toc-text">🔐 Redis 高并发分布式锁实战（含 Redisson、Lua 脚本）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%A1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%EF%BC%9F"><span class="toc-text">💡 为什么需要分布式锁？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%98%81%EF%B8%8F-%E5%9C%BA%E6%99%AF%E4%B8%BE%E4%BE%8B"><span class="toc-text">☁️ 场景举例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E6%A0%B8%E5%BF%83%E9%9C%80%E6%B1%82"><span class="toc-text">✅ 分布式锁的核心需求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-%E5%AE%9E%E6%88%98%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9A%E5%9F%BA%E4%BA%8E-Redis-SETNX-%E5%AE%9E%E7%8E%B0%E7%AE%80%E6%98%93%E9%94%81"><span class="toc-text">🧱 实战方式一：基于 Redis SETNX 实现简易锁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%A8-%E5%8A%A0%E9%94%81%EF%BC%88SETNX-EX%EF%BC%89"><span class="toc-text">🔨 加锁（SETNX + EX）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A3-%E8%A7%A3%E9%94%81%EF%BC%88%E6%B3%A8%E6%84%8F%E4%B8%8D%E8%83%BD%E7%9B%B4%E6%8E%A5-DEL%EF%BC%89"><span class="toc-text">💣 解锁（注意不能直接 DEL）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%AD%A3%E7%A1%AE%E6%96%B9%E5%BC%8F%EF%BC%9A%E4%BD%BF%E7%94%A8-Lua-%E8%84%9A%E6%9C%AC%E5%88%A4%E6%96%AD%E5%90%8E%E5%88%A0%E9%99%A4"><span class="toc-text">✅ 正确方式：使用 Lua 脚本判断后删除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E5%AE%9E%E6%88%98%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9ARedisson-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81"><span class="toc-text">🔁 实战方式二：Redisson 分布式锁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-Maven-%E5%BC%95%E5%85%A5"><span class="toc-text">✅ Maven 引入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%A7-%E9%85%8D%E7%BD%AE%EF%BC%88%E5%8D%95%E6%9C%BA%E6%88%96%E5%93%A8%E5%85%B5-%E9%9B%86%E7%BE%A4%EF%BC%89"><span class="toc-text">🔧 配置（单机或哨兵&#x2F;集群）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%90-%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-text">🔐 使用示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-Redisson-%E6%94%AF%E6%8C%81%E7%9A%84%E9%94%81%E7%B1%BB%E5%9E%8B"><span class="toc-text">🔄 Redisson 支持的锁类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%A0%EF%B8%8F-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%E4%B8%8E%E5%9D%91%E7%82%B9"><span class="toc-text">⚠️ 注意事项与坑点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8C-%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%BB%93%E5%90%88%E7%9A%84%E5%BB%BA%E8%AE%AE"><span class="toc-text">📌 与数据库事务结合的建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93%EF%BC%9A%E6%8E%A8%E8%8D%90%E9%80%89%E5%9E%8B"><span class="toc-text">✅ 总结：推荐选型</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

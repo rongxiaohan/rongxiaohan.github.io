@@ -1,0 +1,555 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Redis基础数据结构 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🧱 Redis 基础数据结构大全（6 大核心）
+
+...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Redis基础数据结构</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Redis基础数据结构</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 26, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1711</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🧱-Redis-基础数据结构大全（6-大核心）"><a href="#🧱-Redis-基础数据结构大全（6-大核心）" class="headerlink" title="🧱 Redis 基础数据结构大全（6 大核心）"></a>🧱 Redis 基础数据结构大全（6 大核心）</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>命令示例</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>String</strong></td>
+<td><code>SET key value</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>GET key</code></td>
+<td>字符串，最基本的键值对，最大 512MB</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Hash</strong></td>
+<td><code>HSET key field value</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>HGET key field</code></td>
+<td>类似 Java 的 <code>Map&lt;String, String&gt;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>List</strong></td>
+<td><code>LPUSH key value</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>RPOP key</code></td>
+<td>有序列表，双端操作（栈&#x2F;队列）</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Set</strong></td>
+<td><code>SADD key value</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>SMEMBERS key</code></td>
+<td>无序集合，元素唯一</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>ZSet</strong> <em>(Sorted Set)</em></td>
+<td><code>ZADD key score member</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ZRANGE key 0 -1</code></td>
+<td>有序集合，按 score 排序</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Bitmap &#x2F; HyperLogLog &#x2F; Geo &#x2F; Stream</strong></td>
+<td>高级结构</td>
+<td>统计、地理、流式数据处理</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="1️⃣-String：最经典的类型"><a href="#1️⃣-String：最经典的类型" class="headerlink" title="1️⃣ String：最经典的类型"></a>1️⃣ String：最经典的类型</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">SET user:1001 <span class="hljs-string">&quot;Tom&quot;</span><br>GET user:1001<br></code></pre></td></tr></table></figure>
+
+<p>📌 应用场景：缓存对象序列化结果、计数器（<code>INCR</code> &#x2F; <code>DECR</code>）、令牌管理、临时数据。</p>
+<hr>
+<h3 id="2️⃣-Hash：键值对集合（适合存对象）"><a href="#2️⃣-Hash：键值对集合（适合存对象）" class="headerlink" title="2️⃣ Hash：键值对集合（适合存对象）"></a>2️⃣ Hash：键值对集合（适合存对象）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">HSET user:1001 name <span class="hljs-string">&quot;Tom&quot;</span> age <span class="hljs-string">&quot;18&quot;</span><br>HGET user:1001 name<br></code></pre></td></tr></table></figure>
+
+<p>📌 应用场景：用户信息、配置项、CRM&#x2F;MES 中某个实体的字段信息。</p>
+<hr>
+<h3 id="3️⃣-List：有序、可重复的双端队列"><a href="#3️⃣-List：有序、可重复的双端队列" class="headerlink" title="3️⃣ List：有序、可重复的双端队列"></a>3️⃣ List：有序、可重复的双端队列</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">LPUSH messages <span class="hljs-string">&quot;msg1&quot;</span><br>RPUSH messages <span class="hljs-string">&quot;msg2&quot;</span><br>LPOP messages<br></code></pre></td></tr></table></figure>
+
+<p>📌 应用场景：</p>
+<ul>
+<li><p>消息队列（生产者-消费者）</p>
+</li>
+<li><p>最近访问记录</p>
+</li>
+<li><p>工单排队 &#x2F; 审批流程</p>
+</li>
+</ul>
+<hr>
+<h3 id="4️⃣-Set：无序、唯一元素集合"><a href="#4️⃣-Set：无序、唯一元素集合" class="headerlink" title="4️⃣ Set：无序、唯一元素集合"></a>4️⃣ Set：无序、唯一元素集合</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">SADD online_users <span class="hljs-string">&quot;u1&quot;</span><br>SADD online_users <span class="hljs-string">&quot;u2&quot;</span><br>SMEMBERS online_users<br></code></pre></td></tr></table></figure>
+
+<p>📌 应用场景：</p>
+<ul>
+<li><p>在线用户集合</p>
+</li>
+<li><p>标签去重</p>
+</li>
+<li><p>抽奖系统、共同好友推荐</p>
+</li>
+</ul>
+<hr>
+<h3 id="5️⃣-ZSet（Sorted-Set）：带权重的有序集合"><a href="#5️⃣-ZSet（Sorted-Set）：带权重的有序集合" class="headerlink" title="5️⃣ ZSet（Sorted Set）：带权重的有序集合"></a>5️⃣ ZSet（Sorted Set）：带权重的有序集合</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">ZADD rank 100 <span class="hljs-string">&quot;Tom&quot;</span><br>ZADD rank 80 <span class="hljs-string">&quot;Jerry&quot;</span><br>ZRANGE rank 0 -1 WITHSCORES<br></code></pre></td></tr></table></figure>
+
+<p>📌 应用场景：</p>
+<ul>
+<li><p>排行榜（积分&#x2F;活跃度）</p>
+</li>
+<li><p>优先级队列</p>
+</li>
+<li><p>时间排序的数据列表（用时间戳做 score）</p>
+</li>
+</ul>
+<hr>
+<h3 id="6️⃣-拓展结构（高级玩法）"><a href="#6️⃣-拓展结构（高级玩法）" class="headerlink" title="6️⃣ 拓展结构（高级玩法）"></a>6️⃣ 拓展结构（高级玩法）</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Bitmap</strong></td>
+<td>位图，节省空间的布尔标记，适合签到等场景</td>
+</tr>
+<tr>
+<td><strong>HyperLogLog</strong></td>
+<td>近似唯一计数器，误差控制在 0.81%，超低内存</td>
+</tr>
+<tr>
+<td><strong>Geo</strong></td>
+<td>经纬度存储和范围查询，适合 LBS 应用</td>
+</tr>
+<tr>
+<td><strong>Stream</strong></td>
+<td>日志流、消息队列，Kafka 替代者之一</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🛠-举个实际业务例子（MES-系统）"><a href="#🛠-举个实际业务例子（MES-系统）" class="headerlink" title="🛠 举个实际业务例子（MES 系统）"></a>🛠 举个实际业务例子（MES 系统）</h2><p>假设你在做一个 MES 生产监控系统，可以这样用 Redis：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>Redis 结构</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>生产设备状态</td>
+<td>Hash</td>
+<td><code>HSET machine:1001 status &quot;running&quot;</code></td>
+</tr>
+<tr>
+<td>最近报警记录</td>
+<td>List</td>
+<td><code>LPUSH alarms &quot;Overheat warning&quot;</code></td>
+</tr>
+<tr>
+<td>当前在线操作员</td>
+<td>Set</td>
+<td><code>SADD operators &quot;op123&quot;</code></td>
+</tr>
+<tr>
+<td>生产效率排行榜</td>
+<td>ZSet</td>
+<td><code>ZADD efficiency 98.6 &quot;machineA&quot;</code></td>
+</tr>
+<tr>
+<td>每日签到</td>
+<td>Bitmap</td>
+<td><code>SETBIT sign:2025-05-26 1234 1</code></td>
+</tr>
+<tr>
+<td>工单数据缓存</td>
+<td>String</td>
+<td><code>SET workorder:W001 &#123;...&#125;</code></td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/26/Redis%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;26&#x2F;Redis%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;26&#x2F;Redis%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/05/26/Redis%E8%BF%9B%E9%98%B6%E4%B8%80%E4%B9%8B%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3Redis%E7%BA%BF%E7%A8%8B%E6%A8%A1/">Redis进阶一之深入理解Redis线程模<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-Redis-%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E5%A4%A7%E5%85%A8%EF%BC%886-%E5%A4%A7%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="toc-text">🧱 Redis 基础数据结构大全（6 大核心）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-String%EF%BC%9A%E6%9C%80%E7%BB%8F%E5%85%B8%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-text">1️⃣ String：最经典的类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-Hash%EF%BC%9A%E9%94%AE%E5%80%BC%E5%AF%B9%E9%9B%86%E5%90%88%EF%BC%88%E9%80%82%E5%90%88%E5%AD%98%E5%AF%B9%E8%B1%A1%EF%BC%89"><span class="toc-text">2️⃣ Hash：键值对集合（适合存对象）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-List%EF%BC%9A%E6%9C%89%E5%BA%8F%E3%80%81%E5%8F%AF%E9%87%8D%E5%A4%8D%E7%9A%84%E5%8F%8C%E7%AB%AF%E9%98%9F%E5%88%97"><span class="toc-text">3️⃣ List：有序、可重复的双端队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-Set%EF%BC%9A%E6%97%A0%E5%BA%8F%E3%80%81%E5%94%AF%E4%B8%80%E5%85%83%E7%B4%A0%E9%9B%86%E5%90%88"><span class="toc-text">4️⃣ Set：无序、唯一元素集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-ZSet%EF%BC%88Sorted-Set%EF%BC%89%EF%BC%9A%E5%B8%A6%E6%9D%83%E9%87%8D%E7%9A%84%E6%9C%89%E5%BA%8F%E9%9B%86%E5%90%88"><span class="toc-text">5️⃣ ZSet（Sorted Set）：带权重的有序集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%EF%B8%8F%E2%83%A3-%E6%8B%93%E5%B1%95%E7%BB%93%E6%9E%84%EF%BC%88%E9%AB%98%E7%BA%A7%E7%8E%A9%E6%B3%95%EF%BC%89"><span class="toc-text">6️⃣ 拓展结构（高级玩法）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E4%B8%BE%E4%B8%AA%E5%AE%9E%E9%99%85%E4%B8%9A%E5%8A%A1%E4%BE%8B%E5%AD%90%EF%BC%88MES-%E7%B3%BB%E7%BB%9F%EF%BC%89"><span class="toc-text">🛠 举个实际业务例子（MES 系统）</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
