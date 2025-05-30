@@ -1,0 +1,555 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Redis7底层数据结构解析 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+1. String（字符串）底层结构：
+SDS（Si...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Redis7底层数据结构解析</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Redis7底层数据结构解析</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 30, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1782</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="1-String（字符串）"><a href="#1-String（字符串）" class="headerlink" title="1. String（字符串）"></a>1. <strong>String（字符串）</strong></h2><h3 id="底层结构："><a href="#底层结构：" class="headerlink" title="底层结构："></a>底层结构：</h3><ul>
+<li><p><strong>SDS（Simple Dynamic String）</strong></p>
+<ul>
+<li><p>结构体定义：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">sdshdr</span> &#123;</span><br>    <span class="hljs-type">int</span> len;      <span class="hljs-comment">// 已使用长度</span><br>    <span class="hljs-type">int</span> <span class="hljs-built_in">free</span>;     <span class="hljs-comment">// 未使用长度</span><br>    <span class="hljs-type">char</span> buf[];   <span class="hljs-comment">// 实际存储内容</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>自动扩容 &amp; 惰性缩容，支持二进制安全。</p>
+</li>
+<li><p><strong>应用场景</strong>：键、简单值、计数器、缓存等。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="特殊优化："><a href="#特殊优化：" class="headerlink" title="特殊优化："></a>特殊优化：</h3><ul>
+<li>如果值为整数（比如 <code>SET key 123</code>），Redis 会内部用整数类型直接存储（节省内存）。</li>
+</ul>
+<hr>
+<h2 id="2-List（列表）"><a href="#2-List（列表）" class="headerlink" title="2. List（列表）"></a>2. <strong>List（列表）</strong></h2><h3 id="底层结构：-1"><a href="#底层结构：-1" class="headerlink" title="底层结构："></a>底层结构：</h3><ul>
+<li><p><strong>quicklist</strong>（Redis 3.2+ 统一结构）</p>
+<ul>
+<li><p>本质是一个双向链表，每个节点存储一个 ziplist（紧凑表）或 plain linked list。</p>
+</li>
+<li><p>优点：</p>
+<ul>
+<li><p>ziplist 节省内存。</p>
+</li>
+<li><p>多个 ziplist 组成 quicklist 提高读写效率。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>优化点</strong>：支持压缩、快速 push&#x2F;pop。</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="3-Hash（哈希）"><a href="#3-Hash（哈希）" class="headerlink" title="3. Hash（哈希）"></a>3. <strong>Hash（哈希）</strong></h2><h3 id="底层结构：-2"><a href="#底层结构：-2" class="headerlink" title="底层结构："></a>底层结构：</h3><ul>
+<li><p><strong>ziplist</strong>（小数据时使用）</p>
+</li>
+<li><p><strong>hashtable（dict）</strong>（键值对数量或大小较大时使用）</p>
+<ul>
+<li><p>切换阈值：</p>
+<ul>
+<li><p>字段数量 &gt; <code>hash-max-ziplist-entries</code>（默认 512）</p>
+</li>
+<li><p>单个字段大小 &gt; <code>hash-max-ziplist-value</code>（默认 64 字节）</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="结构特点："><a href="#结构特点：" class="headerlink" title="结构特点："></a>结构特点：</h3><ul>
+<li><code>dict</code> 是典型的哈希表结构，支持渐进式 rehash（避免一次性全表重建导致阻塞）。</li>
+</ul>
+<hr>
+<h2 id="4-Set（集合）"><a href="#4-Set（集合）" class="headerlink" title="4. Set（集合）"></a>4. <strong>Set（集合）</strong></h2><h3 id="底层结构：-3"><a href="#底层结构：-3" class="headerlink" title="底层结构："></a>底层结构：</h3><ul>
+<li><p><strong>intset</strong>：所有元素为整数，且集合较小时使用。</p>
+</li>
+<li><p><strong>hashtable</strong>：元素类型复杂或集合变大时自动切换。</p>
+</li>
+</ul>
+<h3 id="特点："><a href="#特点：" class="headerlink" title="特点："></a>特点：</h3><ul>
+<li><p>支持无序、去重。</p>
+</li>
+<li><p>intset 是顺序数组，查找用二分查找。</p>
+</li>
+</ul>
+<hr>
+<h2 id="5-Sorted-Set（有序集合）"><a href="#5-Sorted-Set（有序集合）" class="headerlink" title="5. Sorted Set（有序集合）"></a>5. <strong>Sorted Set（有序集合）</strong></h2><h3 id="底层结构：-4"><a href="#底层结构：-4" class="headerlink" title="底层结构："></a>底层结构：</h3><ul>
+<li><p><strong>ziplist</strong>：成员数量和成员长度都较小时使用。</p>
+</li>
+<li><p><strong>skiplist + dict</strong>：</p>
+<ul>
+<li><p>dict：快速查找成员和分数。</p>
+</li>
+<li><p>skiplist：按分数排序，支持范围查询。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="特点：-1"><a href="#特点：-1" class="headerlink" title="特点："></a>特点：</h3><ul>
+<li><p>时间复杂度：</p>
+<ul>
+<li><p>插入 O(log N)</p>
+</li>
+<li><p>查找&#x2F;范围查询 O(log N) 或 O(K)</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="6-Stream（流，Redis-5-引入）"><a href="#6-Stream（流，Redis-5-引入）" class="headerlink" title="6. Stream（流，Redis 5 引入）"></a>6. <strong>Stream（流，Redis 5 引入）</strong></h2><h3 id="底层结构：-5"><a href="#底层结构：-5" class="headerlink" title="底层结构："></a>底层结构：</h3><ul>
+<li><p><strong>radix tree + listpack</strong></p>
+<ul>
+<li><p>listpack（压缩结构，代替 ziplist）存储实际 stream entries。</p>
+</li>
+<li><p>radix tree 提供快速的 entry 定位。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="特点：-2"><a href="#特点：-2" class="headerlink" title="特点："></a>特点：</h3><ul>
+<li><p>高性能的追加写入。</p>
+</li>
+<li><p>支持消费者组（consumer group）消费。</p>
+</li>
+</ul>
+<hr>
+<h2 id="7-Bitmap-HyperLogLog-Geo-BloomFilter（模块级结构）"><a href="#7-Bitmap-HyperLogLog-Geo-BloomFilter（模块级结构）" class="headerlink" title="7. Bitmap &#x2F; HyperLogLog &#x2F; Geo &#x2F; BloomFilter（模块级结构）"></a>7. <strong>Bitmap &#x2F; HyperLogLog &#x2F; Geo &#x2F; BloomFilter（模块级结构）</strong></h2><h3 id="位图（Bitmap）"><a href="#位图（Bitmap）" class="headerlink" title="位图（Bitmap）"></a>位图（Bitmap）</h3><ul>
+<li>本质是字符串上的位操作，适合记录布尔状态（如签到、在线用户等）。</li>
+</ul>
+<h3 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h3><ul>
+<li>用于基数统计，极小内存（12KB）实现上百万级唯一元素去重计数。</li>
+</ul>
+<h3 id="Geo"><a href="#Geo" class="headerlink" title="Geo"></a>Geo</h3><ul>
+<li>基于 Sorted Set + GeoHash 编码实现地理位置的存储和查询。</li>
+</ul>
+<hr>
+<h2 id="Redis-7-新特性相关结构优化"><a href="#Redis-7-新特性相关结构优化" class="headerlink" title="Redis 7 新特性相关结构优化"></a>Redis 7 新特性相关结构优化</h2><h3 id="1-Listpack-替代-Ziplist"><a href="#1-Listpack-替代-Ziplist" class="headerlink" title="1. Listpack 替代 Ziplist"></a>1. <strong>Listpack 替代 Ziplist</strong></h3><ul>
+<li>更高压缩率、结构更紧凑，性能更优。</li>
+</ul>
+<h3 id="2-模块化架构增强"><a href="#2-模块化架构增强" class="headerlink" title="2. 模块化架构增强"></a>2. <strong>模块化架构增强</strong></h3><ul>
+<li>例如 RedisBloom、RedisJSON 等模块都可以实现自己的底层结构。</li>
+</ul>
+<h3 id="3-I-O-多路复用优化"><a href="#3-I-O-多路复用优化" class="headerlink" title="3. I&#x2F;O 多路复用优化"></a>3. <strong>I&#x2F;O 多路复用优化</strong></h3><ul>
+<li>Redis 7 使用 <code>io-threads</code> 支持更高并发，底层采用多线程处理网络数据读写（不影响主线程逻辑）。</li>
+</ul>
+<hr>
+<h2 id="小结表格"><a href="#小结表格" class="headerlink" title="小结表格"></a>小结表格</h2><table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>小数据结构</th>
+<th>大数据结构</th>
+<th>特点说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>String</td>
+<td>SDS</td>
+<td>-</td>
+<td>动态字符串管理</td>
+</tr>
+<tr>
+<td>List</td>
+<td>ziplist</td>
+<td>quicklist</td>
+<td>双向链表 + 压缩表组合结构</td>
+</tr>
+<tr>
+<td>Hash</td>
+<td>ziplist</td>
+<td>dict</td>
+<td>字典结构，支持渐进式 rehash</td>
+</tr>
+<tr>
+<td>Set</td>
+<td>intset</td>
+<td>dict</td>
+<td>整数集合优化，自动切换</td>
+</tr>
+<tr>
+<td>ZSet</td>
+<td>ziplist</td>
+<td>skiplist + dict</td>
+<td>分数排序 + 快速查找</td>
+</tr>
+<tr>
+<td>Stream</td>
+<td>listpack + rax</td>
+<td>-</td>
+<td>高性能 append-only 结构</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/30/Redis7%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;30&#x2F;Redis7%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;30&#x2F;Redis7%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/05/29/%E4%BA%AC%E4%B8%9C%E7%83%AD%E7%82%B9%E7%BC%93%E5%AD%98%E6%8E%A2%E6%B5%8B%E7%B3%BB%E7%BB%9FJDhotkey%E6%9E%B6%E6%9E%84%E5%89%96%E6%9E%90/">Reids 京东热点缓存探测系统JDhotkey架构剖析<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-String%EF%BC%88%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%89"><span class="toc-text">1. String（字符串）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84%EF%BC%9A"><span class="toc-text">底层结构：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E4%BC%98%E5%8C%96%EF%BC%9A"><span class="toc-text">特殊优化：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-List%EF%BC%88%E5%88%97%E8%A1%A8%EF%BC%89"><span class="toc-text">2. List（列表）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84%EF%BC%9A-1"><span class="toc-text">底层结构：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Hash%EF%BC%88%E5%93%88%E5%B8%8C%EF%BC%89"><span class="toc-text">3. Hash（哈希）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84%EF%BC%9A-2"><span class="toc-text">底层结构：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E7%89%B9%E7%82%B9%EF%BC%9A"><span class="toc-text">结构特点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Set%EF%BC%88%E9%9B%86%E5%90%88%EF%BC%89"><span class="toc-text">4. Set（集合）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84%EF%BC%9A-3"><span class="toc-text">底层结构：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E7%82%B9%EF%BC%9A"><span class="toc-text">特点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Sorted-Set%EF%BC%88%E6%9C%89%E5%BA%8F%E9%9B%86%E5%90%88%EF%BC%89"><span class="toc-text">5. Sorted Set（有序集合）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84%EF%BC%9A-4"><span class="toc-text">底层结构：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E7%82%B9%EF%BC%9A-1"><span class="toc-text">特点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Stream%EF%BC%88%E6%B5%81%EF%BC%8CRedis-5-%E5%BC%95%E5%85%A5%EF%BC%89"><span class="toc-text">6. Stream（流，Redis 5 引入）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84%EF%BC%9A-5"><span class="toc-text">底层结构：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E7%82%B9%EF%BC%9A-2"><span class="toc-text">特点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Bitmap-HyperLogLog-Geo-BloomFilter%EF%BC%88%E6%A8%A1%E5%9D%97%E7%BA%A7%E7%BB%93%E6%9E%84%EF%BC%89"><span class="toc-text">7. Bitmap &#x2F; HyperLogLog &#x2F; Geo &#x2F; BloomFilter（模块级结构）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%8D%E5%9B%BE%EF%BC%88Bitmap%EF%BC%89"><span class="toc-text">位图（Bitmap）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HyperLogLog"><span class="toc-text">HyperLogLog</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Geo"><span class="toc-text">Geo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis-7-%E6%96%B0%E7%89%B9%E6%80%A7%E7%9B%B8%E5%85%B3%E7%BB%93%E6%9E%84%E4%BC%98%E5%8C%96"><span class="toc-text">Redis 7 新特性相关结构优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Listpack-%E6%9B%BF%E4%BB%A3-Ziplist"><span class="toc-text">1. Listpack 替代 Ziplist</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A8%A1%E5%9D%97%E5%8C%96%E6%9E%B6%E6%9E%84%E5%A2%9E%E5%BC%BA"><span class="toc-text">2. 模块化架构增强</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-I-O-%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E4%BC%98%E5%8C%96"><span class="toc-text">3. I&#x2F;O 多路复用优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93%E8%A1%A8%E6%A0%BC"><span class="toc-text">小结表格</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
