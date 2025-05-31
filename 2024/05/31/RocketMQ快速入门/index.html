@@ -1,0 +1,464 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>RocketMQ快速入门 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🧱 一、什么是 RocketMQ？RocketMQ...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">RocketMQ快速入门</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">RocketMQ快速入门</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 31, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2133</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🧱-一、什么是-RocketMQ？"><a href="#🧱-一、什么是-RocketMQ？" class="headerlink" title="🧱 一、什么是 RocketMQ？"></a>🧱 一、什么是 RocketMQ？</h2><p>RocketMQ 是一个高性能、分布式的消息中间件，具有：</p>
+<ul>
+<li><p>支持高吞吐、低延迟</p>
+</li>
+<li><p>支持顺序消息、事务消息、延迟消息</p>
+</li>
+<li><p>适合金融、电商等场景</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧰-二、快速搭建-RocketMQ-本地环境"><a href="#🧰-二、快速搭建-RocketMQ-本地环境" class="headerlink" title="🧰 二、快速搭建 RocketMQ 本地环境"></a>🧰 二、快速搭建 RocketMQ 本地环境</h2><h3 id="✅-环境要求"><a href="#✅-环境要求" class="headerlink" title="✅ 环境要求"></a>✅ 环境要求</h3><ul>
+<li><p>JDK 1.8+</p>
+</li>
+<li><p>Linux &#x2F; macOS &#x2F; Windows（建议 WSL&#x2F;Linux）</p>
+</li>
+<li><p>Maven（构建 Java demo 用）</p>
+</li>
+</ul>
+<hr>
+<h3 id="1️⃣-下载-RocketMQ（二进制）"><a href="#1️⃣-下载-RocketMQ（二进制）" class="headerlink" title="1️⃣ 下载 RocketMQ（二进制）"></a>1️⃣ 下载 RocketMQ（二进制）</h3><p>官网：<a target="_blank" rel="noopener" href="https://rocketmq.apache.org/">https://rocketmq.apache.org/</a></p>
+<p>或者直接命令行下载：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">wget https://downloads.apache.org/rocketmq/5.1.4/rocketmq-all-5.1.4-bin-release.zip<br>unzip rocketmq-all-5.1.4-bin-release.zip<br><span class="hljs-built_in">cd</span> rocketmq-5.1.4<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2️⃣-启动-NameServer"><a href="#2️⃣-启动-NameServer" class="headerlink" title="2️⃣ 启动 NameServer"></a>2️⃣ 启动 NameServer</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 启动</span><br>sh bin/mqnamesrv<br><br><span class="hljs-comment"># 查看日志</span><br><span class="hljs-built_in">tail</span> -f logs/rocketmqlogs/namesrv.log<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3️⃣-启动-Broker"><a href="#3️⃣-启动-Broker" class="headerlink" title="3️⃣ 启动 Broker"></a>3️⃣ 启动 Broker</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 启动 Broker</span><br>sh bin/mqbroker -n localhost:9876 autoCreateTopicEnable=<span class="hljs-literal">true</span><br><br><span class="hljs-comment"># 查看日志</span><br><span class="hljs-built_in">tail</span> -f logs/rocketmqlogs/broker.log<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="☕-三、Java-快速写个生产者-消费者-Demo"><a href="#☕-三、Java-快速写个生产者-消费者-Demo" class="headerlink" title="☕ 三、Java 快速写个生产者 &#x2F; 消费者 Demo"></a>☕ 三、Java 快速写个生产者 &#x2F; 消费者 Demo</h2><blockquote>
+<p>Maven 添加依赖（最新版）：</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.rocketmq<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>rocketmq-client<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>5.1.4<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="🚀-生产者-Producer-示例"><a href="#🚀-生产者-Producer-示例" class="headerlink" title="🚀 生产者 Producer 示例"></a>🚀 生产者 Producer 示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">DefaultMQProducer</span> <span class="hljs-variable">producer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultMQProducer</span>(<span class="hljs-string">&quot;demo-producer-group&quot;</span>);<br>producer.setNamesrvAddr(<span class="hljs-string">&quot;localhost:9876&quot;</span>);<br>producer.start();<br><br><span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">5</span>; i++) &#123;<br>    <span class="hljs-type">Message</span> <span class="hljs-variable">msg</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Message</span>(<span class="hljs-string">&quot;demo-topic&quot;</span>, (<span class="hljs-string">&quot;Hello RocketMQ &quot;</span> + i).getBytes());<br>    <span class="hljs-type">SendResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> producer.send(msg);<br>    System.out.println(<span class="hljs-string">&quot;发送结果：&quot;</span> + result);<br>&#125;<br><br>producer.shutdown();<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="🎯-消费者-Consumer-示例"><a href="#🎯-消费者-Consumer-示例" class="headerlink" title="🎯 消费者 Consumer 示例"></a>🎯 消费者 Consumer 示例</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">DefaultMQPushConsumer</span> <span class="hljs-variable">consumer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultMQPushConsumer</span>(<span class="hljs-string">&quot;demo-consumer-group&quot;</span>);<br>consumer.setNamesrvAddr(<span class="hljs-string">&quot;localhost:9876&quot;</span>);<br>consumer.subscribe(<span class="hljs-string">&quot;demo-topic&quot;</span>, <span class="hljs-string">&quot;*&quot;</span>);<br><br>consumer.registerMessageListener((MessageListenerConcurrently) (msgs, context) -&gt; &#123;<br>    <span class="hljs-keyword">for</span> (MessageExt msg : msgs) &#123;<br>        System.out.println(<span class="hljs-string">&quot;收到消息：&quot;</span> + <span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(msg.getBody()));<br>    &#125;<br>    <span class="hljs-keyword">return</span> ConsumeConcurrentlyStatus.CONSUME_SUCCESS;<br>&#125;);<br><br>consumer.start();<br>System.out.println(<span class="hljs-string">&quot;消费者已启动&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧪-四、测试效果"><a href="#🧪-四、测试效果" class="headerlink" title="🧪 四、测试效果"></a>🧪 四、测试效果</h2><ol>
+<li><p>启动 NameServer 和 Broker</p>
+</li>
+<li><p>启动消费者（等着收消息）</p>
+</li>
+<li><p>运行生产者（发送几条消息）</p>
+</li>
+<li><p>控制台看到消费者收到消息 ✅</p>
+</li>
+</ol>
+<hr>
+<h2 id="🧠-五、常见术语理解"><a href="#🧠-五、常见术语理解" class="headerlink" title="🧠 五、常见术语理解"></a>🧠 五、常见术语理解</h2><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Producer</strong></td>
+<td>发送消息的一方</td>
+</tr>
+<tr>
+<td><strong>Consumer</strong></td>
+<td>接收消息的一方</td>
+</tr>
+<tr>
+<td><strong>Topic</strong></td>
+<td>消息分类（逻辑分组）</td>
+</tr>
+<tr>
+<td><strong>Message</strong></td>
+<td>一条消息</td>
+</tr>
+<tr>
+<td><strong>Broker</strong></td>
+<td>存储和转发消息的服务器</td>
+</tr>
+<tr>
+<td><strong>NameServer</strong></td>
+<td>管理 broker 路由的服务发现模块</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/05/31/RocketMQ%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;31&#x2F;RocketMQ%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;05&#x2F;31&#x2F;RocketMQ%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/05/30/Redis7%E5%BA%95%E5%B1%82%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90/">Redis7底层数据结构解析<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-RocketMQ%EF%BC%9F"><span class="toc-text">🧱 一、什么是 RocketMQ？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B0-%E4%BA%8C%E3%80%81%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA-RocketMQ-%E6%9C%AC%E5%9C%B0%E7%8E%AF%E5%A2%83"><span class="toc-text">🧰 二、快速搭建 RocketMQ 本地环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82"><span class="toc-text">✅ 环境要求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E4%B8%8B%E8%BD%BD-RocketMQ%EF%BC%88%E4%BA%8C%E8%BF%9B%E5%88%B6%EF%BC%89"><span class="toc-text">1️⃣ 下载 RocketMQ（二进制）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E5%90%AF%E5%8A%A8-NameServer"><span class="toc-text">2️⃣ 启动 NameServer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E5%90%AF%E5%8A%A8-Broker"><span class="toc-text">3️⃣ 启动 Broker</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%98%95-%E4%B8%89%E3%80%81Java-%E5%BF%AB%E9%80%9F%E5%86%99%E4%B8%AA%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85-Demo"><span class="toc-text">☕ 三、Java 快速写个生产者 &#x2F; 消费者 Demo</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%80-%E7%94%9F%E4%BA%A7%E8%80%85-Producer-%E7%A4%BA%E4%BE%8B"><span class="toc-text">🚀 生产者 Producer 示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8E%AF-%E6%B6%88%E8%B4%B9%E8%80%85-Consumer-%E7%A4%BA%E4%BE%8B"><span class="toc-text">🎯 消费者 Consumer 示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E5%9B%9B%E3%80%81%E6%B5%8B%E8%AF%95%E6%95%88%E6%9E%9C"><span class="toc-text">🧪 四、测试效果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%BA%94%E3%80%81%E5%B8%B8%E8%A7%81%E6%9C%AF%E8%AF%AD%E7%90%86%E8%A7%A3"><span class="toc-text">🧠 五、常见术语理解</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
