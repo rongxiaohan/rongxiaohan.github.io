@@ -1,0 +1,837 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>RocketMQ进阶二 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+RocketMQ延迟消息与批量消息🕒 一、延迟消息...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">RocketMQ进阶二</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">RocketMQ进阶二</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 02, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>9582</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h1 id="RocketMQ延迟消息与批量消息"><a href="#RocketMQ延迟消息与批量消息" class="headerlink" title="RocketMQ延迟消息与批量消息"></a><strong>RocketMQ延迟消息与批量消息</strong></h1><h2 id="🕒-一、延迟消息（定时消息）"><a href="#🕒-一、延迟消息（定时消息）" class="headerlink" title="🕒 一、延迟消息（定时消息）"></a>🕒 一、延迟消息（定时消息）</h2><h3 id="✅-原理"><a href="#✅-原理" class="headerlink" title="✅ 原理"></a>✅ 原理</h3><p>RocketMQ 使用 <strong>预定义的延迟等级</strong> 实现延迟消息（非任意时间延迟），每个等级对应一个固定的延迟时间。</p>
+<h3 id="🚀-延迟等级（默认）"><a href="#🚀-延迟等级（默认）" class="headerlink" title="🚀 延迟等级（默认）"></a>🚀 延迟等级（默认）</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs text">1: 1s<br>2: 5s<br>3: 10s<br>4: 30s<br>5: 1m<br>6: 2m<br>7: 3m<br>8: 4m<br>9: 5m<br>...<br>18: 2h<br></code></pre></td></tr></table></figure>
+
+<h3 id="🧠-特点"><a href="#🧠-特点" class="headerlink" title="🧠 特点"></a>🧠 特点</h3><ul>
+<li><p>只能使用预定义等级，无法自定义任意时间。</p>
+</li>
+<li><p>仅支持 <strong><code>DelayTimeLevel</code></strong> 配置，不支持消费者端延迟消费。</p>
+</li>
+</ul>
+<h3 id="✍-示例代码"><a href="#✍-示例代码" class="headerlink" title="✍ 示例代码"></a>✍ 示例代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Message</span> <span class="hljs-variable">msg</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Message</span>(<span class="hljs-string">&quot;TopicTest&quot;</span>, <span class="hljs-string">&quot;TagA&quot;</span>, <span class="hljs-string">&quot;OrderID001&quot;</span>, <span class="hljs-string">&quot;Hello delay!&quot;</span>.getBytes());<br>msg.setDelayTimeLevel(<span class="hljs-number">3</span>); <span class="hljs-comment">// 延迟10秒</span><br>producer.send(msg);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📦-二、批量消息（Batch-Message）"><a href="#📦-二、批量消息（Batch-Message）" class="headerlink" title="📦 二、批量消息（Batch Message）"></a>📦 二、批量消息（Batch Message）</h2><h3 id="✅-原理-1"><a href="#✅-原理-1" class="headerlink" title="✅ 原理"></a>✅ 原理</h3><p>将多个消息打包为一批，一次性发送，提高吞吐量。</p>
+<h3 id="🚫-限制"><a href="#🚫-限制" class="headerlink" title="🚫 限制"></a>🚫 限制</h3><ul>
+<li><p>批次总大小不能超过 4MB。</p>
+</li>
+<li><p>同一批消息需有相同的 Topic、相同的 waitStoreMsgOK 标志。</p>
+</li>
+<li><p>不支持延迟消息（批量消息不能设置 <code>DelayTimeLevel</code>）。</p>
+</li>
+</ul>
+<h3 id="✍-示例代码-1"><a href="#✍-示例代码-1" class="headerlink" title="✍ 示例代码"></a>✍ 示例代码</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java">List&lt;Message&gt; messages = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();<br>messages.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Message</span>(<span class="hljs-string">&quot;TopicTest&quot;</span>, <span class="hljs-string">&quot;TagA&quot;</span>, <span class="hljs-string">&quot;key1&quot;</span>, <span class="hljs-string">&quot;Hello 1&quot;</span>.getBytes()));<br>messages.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Message</span>(<span class="hljs-string">&quot;TopicTest&quot;</span>, <span class="hljs-string">&quot;TagA&quot;</span>, <span class="hljs-string">&quot;key2&quot;</span>, <span class="hljs-string">&quot;Hello 2&quot;</span>.getBytes()));<br>messages.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Message</span>(<span class="hljs-string">&quot;TopicTest&quot;</span>, <span class="hljs-string">&quot;TagA&quot;</span>, <span class="hljs-string">&quot;key3&quot;</span>, <span class="hljs-string">&quot;Hello 3&quot;</span>.getBytes()));<br>producer.send(messages);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🤔-延迟消息-vs-批量消息"><a href="#🤔-延迟消息-vs-批量消息" class="headerlink" title="🤔 延迟消息 vs 批量消息"></a>🤔 延迟消息 vs 批量消息</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>延迟消息</th>
+<th>批量消息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目的</td>
+<td>延时投递（定时执行）</td>
+<td>提升吞吐（批量传输）</td>
+</tr>
+<tr>
+<td>是否支持任意时间</td>
+<td>❌（只能选等级）</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>是否支持异步</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>是否支持事务消息</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>消息大小限制</td>
+<td>4MB</td>
+<td>每批 ≤ 4MB</td>
+</tr>
+<tr>
+<td>是否支持混合使用</td>
+<td>❌（批量消息不能延迟）</td>
+<td>❌</td>
+</tr>
+</tbody></table>
+<h1 id="RocketMQ事务消息机制"><a href="#RocketMQ事务消息机制" class="headerlink" title="RocketMQ事务消息机制"></a><strong>RocketMQ事务消息机制</strong></h1><hr>
+<h2 id="🧠-一、事务消息核心原理"><a href="#🧠-一、事务消息核心原理" class="headerlink" title="🧠 一、事务消息核心原理"></a>🧠 一、事务消息核心原理</h2><p>RocketMQ 的事务消息分 <strong>两个阶段</strong>：</p>
+<h3 id="1️⃣-半消息（Half-Message）"><a href="#1️⃣-半消息（Half-Message）" class="headerlink" title="1️⃣ 半消息（Half Message）"></a>1️⃣ 半消息（Half Message）</h3><ul>
+<li><p>Producer 发送的是一个 <strong>“暂不可见”的半消息</strong>。</p>
+</li>
+<li><p>消息进入 RocketMQ，不会被消费者消费。</p>
+</li>
+</ul>
+<h3 id="2️⃣-执行本地事务"><a href="#2️⃣-执行本地事务" class="headerlink" title="2️⃣ 执行本地事务"></a>2️⃣ 执行本地事务</h3><ul>
+<li>Producer 接着执行本地事务逻辑（如数据库操作）。</li>
+</ul>
+<h3 id="3️⃣-根据本地事务结果告知-MQ："><a href="#3️⃣-根据本地事务结果告知-MQ：" class="headerlink" title="3️⃣ 根据本地事务结果告知 MQ："></a>3️⃣ 根据本地事务结果告知 MQ：</h3><ul>
+<li><p>提交事务（<code>COMMIT</code>）：消息变为可投递状态。</p>
+</li>
+<li><p>回滚事务（<code>ROLLBACK</code>）：消息被丢弃。</p>
+</li>
+<li><p>状态不确定（<code>UNKNOWN</code>）：MQ 过一段时间会回查。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔁-二、RocketMQ-的事务状态回查机制"><a href="#🔁-二、RocketMQ-的事务状态回查机制" class="headerlink" title="🔁 二、RocketMQ 的事务状态回查机制"></a>🔁 二、RocketMQ 的事务状态回查机制</h2><p>当 Producer 返回 <code>UNKNOWN</code> 或网络中断，Broker 会 <strong>定期回查事务状态</strong>：</p>
+<ul>
+<li><p>回调 Producer 的 <code>checkLocalTransaction</code> 方法，确认事务的真实状态。</p>
+</li>
+<li><p>Producer 必须实现这个方法，根据业务标识查数据库等方式返回真实状态。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🏗️-三、关键类-方法"><a href="#🏗️-三、关键类-方法" class="headerlink" title="🏗️ 三、关键类 &amp; 方法"></a>🏗️ 三、关键类 &amp; 方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 创建支持事务的 Producer</span><br><span class="hljs-type">TransactionMQProducer</span> <span class="hljs-variable">producer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">TransactionMQProducer</span>(<span class="hljs-string">&quot;tx_producer_group&quot;</span>);<br><br><span class="hljs-comment">// 设置本地事务监听器</span><br>producer.setTransactionListener(<span class="hljs-keyword">new</span> <span class="hljs-title class_">TransactionListener</span>() &#123;<br>    <span class="hljs-comment">// 执行本地事务</span><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> LocalTransactionState <span class="hljs-title function_">executeLocalTransaction</span><span class="hljs-params">(Message msg, Object arg)</span> &#123;<br>        <span class="hljs-comment">// 1. 执行本地事务，如写数据库</span><br>        <span class="hljs-comment">// 2. 根据结果返回 COMMIT / ROLLBACK / UNKNOWN</span><br>    &#125;<br><br>    <span class="hljs-comment">// 回查本地事务状态</span><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> LocalTransactionState <span class="hljs-title function_">checkLocalTransaction</span><span class="hljs-params">(MessageExt msg)</span> &#123;<br>        <span class="hljs-comment">// 例如根据 msg 中的业务Key 去查数据库状态</span><br>        <span class="hljs-comment">// 返回 COMMIT / ROLLBACK</span><br>    &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📦-四、完整示例"><a href="#📦-四、完整示例" class="headerlink" title="📦 四、完整示例"></a>📦 四、完整示例</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Message</span> <span class="hljs-variable">msg</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Message</span>(<span class="hljs-string">&quot;TxTopic&quot;</span>, <span class="hljs-string">&quot;tagA&quot;</span>, <span class="hljs-string">&quot;key123&quot;</span>, <span class="hljs-string">&quot;Hello Transaction&quot;</span>.getBytes());<br><br><span class="hljs-comment">// 发送事务消息（发送半消息 + 回调事务执行）</span><br><span class="hljs-type">TransactionSendResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> producer.sendMessageInTransaction(msg, yourBusinessArg);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧾-五、事务状态枚举说明"><a href="#🧾-五、事务状态枚举说明" class="headerlink" title="🧾 五、事务状态枚举说明"></a>🧾 五、事务状态枚举说明</h2><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>COMMIT_MESSAGE</code></td>
+<td>事务成功，消息投递</td>
+</tr>
+<tr>
+<td><code>ROLLBACK_MESSAGE</code></td>
+<td>事务失败，消息丢弃</td>
+</tr>
+<tr>
+<td><code>UNKNOW</code></td>
+<td>状态不明，Broker 后续会回查</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🚧-六、注意事项"><a href="#🚧-六、注意事项" class="headerlink" title="🚧 六、注意事项"></a>🚧 六、注意事项</h2><ul>
+<li><p><strong>事务消息不支持延迟消息、批量消息。</strong></p>
+</li>
+<li><p><strong>事务Producer 必须长时间运行，Broker需要能回查事务状态。</strong></p>
+</li>
+<li><p>最好使用业务主键等标识存在 DB 中，便于回查事务状态。</p>
+</li>
+<li><p>若本地事务失败，记得明确返回 <code>ROLLBACK</code>，否则 MQ 会持续回查。</p>
+</li>
+</ul>
+<h1 id="RocketMQ-ACL权限控制体系"><a href="#RocketMQ-ACL权限控制体系" class="headerlink" title="RocketMQ ACL权限控制体系"></a><strong>RocketMQ ACL权限控制体系</strong></h1><hr>
+<h2 id="🔐-一、ACL-权限控制概览"><a href="#🔐-一、ACL-权限控制概览" class="headerlink" title="🔐 一、ACL 权限控制概览"></a>🔐 一、ACL 权限控制概览</h2><p>RocketMQ 的 ACL 采用 <strong>基于用户身份和 Topic 级别的权限控制</strong>，支持：</p>
+<table>
+<thead>
+<tr>
+<th>控制项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>身份认证</strong></td>
+<td>使用 AccessKey &#x2F; SecretKey 鉴权</td>
+</tr>
+<tr>
+<td><strong>操作权限</strong></td>
+<td>发布（PUB）、订阅（SUB）权限控制</td>
+</tr>
+<tr>
+<td><strong>资源控制</strong></td>
+<td>可精细到每个 Topic、ConsumerGroup</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧩-二、核心机制组成"><a href="#🧩-二、核心机制组成" class="headerlink" title="🧩 二、核心机制组成"></a>🧩 二、核心机制组成</h2><h3 id="1️⃣-鉴权方式：AccessKey-SecretKey"><a href="#1️⃣-鉴权方式：AccessKey-SecretKey" class="headerlink" title="1️⃣ 鉴权方式：AccessKey &amp; SecretKey"></a>1️⃣ 鉴权方式：AccessKey &amp; SecretKey</h3><p>类似于 AWS IAM：</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs ini"><span class="hljs-comment"># 示例配置</span><br><span class="hljs-attr">accessKey</span>=admin<br><span class="hljs-attr">secretKey</span>=<span class="hljs-number">12345678</span><br></code></pre></td></tr></table></figure>
+
+<p>客户端连接 MQ 时必须提供此凭证。</p>
+<hr>
+<h3 id="2️⃣-配置文件：plain-acl-yml"><a href="#2️⃣-配置文件：plain-acl-yml" class="headerlink" title="2️⃣ 配置文件：plain_acl.yml"></a>2️⃣ 配置文件：<code>plain_acl.yml</code></h3><p>ACL 配置位于 Broker 节点的 <code>conf/plain_acl.yml</code> 文件中，默认路径为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-variable">$ROCKETMQ_HOME</span>/conf/plain_acl.yml<br></code></pre></td></tr></table></figure>
+
+<p>示例内容如下：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">globalWhiteRemoteAddresses:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span><br><br><span class="hljs-attr">accounts:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">accessKey:</span> <span class="hljs-string">admin</span><br>    <span class="hljs-attr">secretKey:</span> <span class="hljs-number">12345678</span><br>    <span class="hljs-attr">whiteRemoteAddress:</span> <span class="hljs-number">192.168</span><span class="hljs-string">.*.*</span><br>    <span class="hljs-attr">admin:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">defaultTopicPerm:</span> <span class="hljs-string">DENY</span><br>    <span class="hljs-attr">defaultGroupPerm:</span> <span class="hljs-string">SUB</span><br>    <span class="hljs-attr">topicPerms:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">topicA=PUB|SUB</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">topicB=DENY</span><br>    <span class="hljs-attr">groupPerms:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">groupA=SUB</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📦-三、权限控制粒度"><a href="#📦-三、权限控制粒度" class="headerlink" title="📦 三、权限控制粒度"></a>📦 三、权限控制粒度</h2><table>
+<thead>
+<tr>
+<th>控制项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>defaultTopicPerm</code></td>
+<td>对所有 Topic 的默认权限（PUB&#x2F;SUB&#x2F;DENY）</td>
+</tr>
+<tr>
+<td><code>topicPerms</code></td>
+<td>针对指定 Topic 的精确权限</td>
+</tr>
+<tr>
+<td><code>groupPerms</code></td>
+<td>针对 ConsumerGroup 的订阅权限</td>
+</tr>
+<tr>
+<td><code>whiteRemoteAddress</code></td>
+<td>白名单 IP，可跳过认证</td>
+</tr>
+<tr>
+<td><code>admin</code></td>
+<td>是否拥有管理员权限（能管理 Topic&#x2F;Group）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔧-四、开启-ACL-的步骤"><a href="#🔧-四、开启-ACL-的步骤" class="headerlink" title="🔧 四、开启 ACL 的步骤"></a>🔧 四、开启 ACL 的步骤</h2><ol>
+<li><strong>启用 ACL 权限控制</strong></li>
+</ol>
+<p>修改 <code>broker.conf</code> 加入：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-attr">aclEnable</span>=<span class="hljs-string">true</span><br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><strong>加载配置文件</strong></li>
+</ol>
+<p>确保 <code>plain_acl.yml</code> 放在 <code>$ROCKETMQ_HOME/conf</code> 下，或自定义路径，并在 <code>broker.conf</code> 中指定：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-attr">aclAccessConfig</span>=<span class="hljs-string">conf/plain_acl.yml</span><br></code></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><strong>重启 Broker</strong></li>
+</ol>
+<hr>
+<h2 id="👨‍💻-五、客户端接入配置（Java-示例）"><a href="#👨‍💻-五、客户端接入配置（Java-示例）" class="headerlink" title="👨‍💻 五、客户端接入配置（Java 示例）"></a>👨‍💻 五、客户端接入配置（Java 示例）</h2><p>添加 <code>AccessChannel</code> 配置，设置 <code>SessionCredentialsProvider</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ClientConfig</span> <span class="hljs-variable">clientConfig</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ClientConfig</span>();<br>clientConfig.setAccessChannel(AccessChannel.CLOUD);<br><br><span class="hljs-type">SessionCredentials</span> <span class="hljs-variable">credentials</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SessionCredentials</span>(<span class="hljs-string">&quot;admin&quot;</span>, <span class="hljs-string">&quot;12345678&quot;</span>);<br><br><span class="hljs-type">MQProducer</span> <span class="hljs-variable">producer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultMQProducer</span>(<span class="hljs-string">&quot;ProducerGroup&quot;</span>, <br>    <span class="hljs-keyword">new</span> <span class="hljs-title class_">AclClientRPCHook</span>(credentials), <span class="hljs-literal">true</span>);<br>producer.setNamesrvAddr(<span class="hljs-string">&quot;127.0.0.1:9876&quot;</span>);<br>producer.start();<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧪-六、注意事项"><a href="#🧪-六、注意事项" class="headerlink" title="🧪 六、注意事项"></a>🧪 六、注意事项</h2><ul>
+<li><p><strong>ACL 开启后所有客户端都必须鉴权</strong>，否则报错：</p>
+  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">CODE: 308 DESC: No permission for this operation<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>ACL 是 Broker 级别生效的</strong>，需所有 Broker 节点开启。</p>
+</li>
+<li><p>如果你使用 Spring Boot + RocketMQ，需在配置中显式设置 AccessKey 和 SecretKey。</p>
+</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">rocketmq:</span><br>  <span class="hljs-attr">producer:</span><br>    <span class="hljs-attr">access-key:</span> <span class="hljs-string">admin</span><br>    <span class="hljs-attr">secret-key:</span> <span class="hljs-number">12345678</span><br></code></pre></td></tr></table></figure>
+
+<h1 id="SpringBoot整合RocketMQ"><a href="#SpringBoot整合RocketMQ" class="headerlink" title="SpringBoot整合RocketMQ"></a><strong>SpringBoot整合RocketMQ</strong></h1><hr>
+<h2 id="📦-一、引入依赖（以-Apache-官方版本为准）"><a href="#📦-一、引入依赖（以-Apache-官方版本为准）" class="headerlink" title="📦 一、引入依赖（以 Apache 官方版本为准）"></a>📦 一、引入依赖（以 Apache 官方版本为准）</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.rocketmq<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>rocketmq-spring-boot-starter<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.2.3<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span> <span class="hljs-comment">&lt;!-- 对应 RocketMQ 4.9.x 或 5.x --&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="⚙️-二、配置-application-yml"><a href="#⚙️-二、配置-application-yml" class="headerlink" title="⚙️ 二、配置 application.yml"></a>⚙️ 二、配置 application.yml</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">rocketmq:</span><br>  <span class="hljs-attr">name-server:</span> <span class="hljs-number">127.0</span><span class="hljs-number">.0</span><span class="hljs-number">.1</span><span class="hljs-string">:9876</span><br>  <span class="hljs-attr">producer:</span><br>    <span class="hljs-attr">group:</span> <span class="hljs-string">my-producer-group</span><br>    <span class="hljs-attr">send-message-timeout:</span> <span class="hljs-number">3000</span><br>    <span class="hljs-attr">access-key:</span> <span class="hljs-string">admin</span>  <span class="hljs-comment"># 如果启用了 ACL</span><br>    <span class="hljs-attr">secret-key:</span> <span class="hljs-number">12345678</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🚀-三、消息生产者示例"><a href="#🚀-三、消息生产者示例" class="headerlink" title="🚀 三、消息生产者示例"></a>🚀 三、消息生产者示例</h2><h3 id="✅-普通消息发送"><a href="#✅-普通消息发送" class="headerlink" title="✅ 普通消息发送"></a>✅ 普通消息发送</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Service</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyProducer</span> &#123;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> RocketMQTemplate rocketMQTemplate;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendSimpleMessage</span><span class="hljs-params">()</span> &#123;<br>        rocketMQTemplate.convertAndSend(<span class="hljs-string">&quot;TestTopic&quot;</span>, <span class="hljs-string">&quot;Hello RocketMQ!&quot;</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-带-Tag-和-Key"><a href="#✅-带-Tag-和-Key" class="headerlink" title="✅ 带 Tag 和 Key"></a>✅ 带 Tag 和 Key</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">rocketMQTemplate.syncSend(<span class="hljs-string">&quot;TestTopic:tagA&quot;</span>, <span class="hljs-string">&quot;message with tag&quot;</span>, <span class="hljs-number">3000</span>);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📥-四、消息消费者示例"><a href="#📥-四、消息消费者示例" class="headerlink" title="📥 四、消息消费者示例"></a>📥 四、消息消费者示例</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Service</span><br><span class="hljs-meta">@RocketMQMessageListener(</span><br><span class="hljs-meta">    topic = &quot;TestTopic&quot;,</span><br><span class="hljs-meta">    consumerGroup = &quot;my-consumer-group&quot;,</span><br><span class="hljs-meta">    selectorExpression = &quot;*&quot;</span><br><span class="hljs-meta">)</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyConsumer</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">RocketMQListener</span>&lt;String&gt; &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onMessage</span><span class="hljs-params">(String message)</span> &#123;<br>        System.out.println(<span class="hljs-string">&quot;收到消息：&quot;</span> + message);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧾-五、事务消息（事务型-Producer）"><a href="#🧾-五、事务消息（事务型-Producer）" class="headerlink" title="🧾 五、事务消息（事务型 Producer）"></a>🧾 五、事务消息（事务型 Producer）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Service</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TxProducer</span> &#123;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> RocketMQTemplate rocketMQTemplate;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">sendTransactionMessage</span><span class="hljs-params">()</span> &#123;<br>        rocketMQTemplate.sendMessageInTransaction(<span class="hljs-string">&quot;TxTopic&quot;</span>, MessageBuilder.withPayload(<span class="hljs-string">&quot;事务消息&quot;</span>).build(), <span class="hljs-literal">null</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-事务监听器"><a href="#✅-事务监听器" class="headerlink" title="✅ 事务监听器"></a>✅ 事务监听器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@RocketMQTransactionListener</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TxListener</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">RocketMQLocalTransactionListener</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> RocketMQLocalTransactionState <span class="hljs-title function_">executeLocalTransaction</span><span class="hljs-params">(Message msg, Object arg)</span> &#123;<br>        <span class="hljs-comment">// 执行本地事务，例如数据库写入</span><br>        <span class="hljs-keyword">return</span> RocketMQLocalTransactionState.COMMIT;<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> RocketMQLocalTransactionState <span class="hljs-title function_">checkLocalTransaction</span><span class="hljs-params">(Message msg)</span> &#123;<br>        <span class="hljs-comment">// 回查事务状态</span><br>        <span class="hljs-keyword">return</span> RocketMQLocalTransactionState.COMMIT;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🛡️-六、开启-ACL-的话（需要设置凭证）"><a href="#🛡️-六、开启-ACL-的话（需要设置凭证）" class="headerlink" title="🛡️ 六、开启 ACL 的话（需要设置凭证）"></a>🛡️ 六、开启 ACL 的话（需要设置凭证）</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">rocketmq:</span><br>  <span class="hljs-attr">producer:</span><br>    <span class="hljs-attr">access-key:</span> <span class="hljs-string">admin</span><br>    <span class="hljs-attr">secret-key:</span> <span class="hljs-number">12345678</span><br>  <span class="hljs-attr">consumer:</span><br>    <span class="hljs-attr">access-key:</span> <span class="hljs-string">admin</span><br>    <span class="hljs-attr">secret-key:</span> <span class="hljs-number">12345678</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔍-七、常见问题"><a href="#🔍-七、常见问题" class="headerlink" title="🔍 七、常见问题"></a>🔍 七、常见问题</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>找不到 NameServer</td>
+<td>检查配置和端口，防火墙是否拦截</td>
+</tr>
+<tr>
+<td>消费无效</td>
+<td>确认 group 名唯一，topic 正确，消息未被过滤</td>
+</tr>
+<tr>
+<td>ACL 报错</td>
+<td>未设置 accessKey&#x2F;secretKey</td>
+</tr>
+<tr>
+<td>Spring Boot 3+</td>
+<td>需要配合 JakartaEE 支持 RocketMQ 5.x</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🎁-Bonus：最佳实践建议"><a href="#🎁-Bonus：最佳实践建议" class="headerlink" title="🎁 Bonus：最佳实践建议"></a>🎁 Bonus：最佳实践建议</h2><table>
+<thead>
+<tr>
+<th>建议</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>发送消息加业务 key</td>
+<td>方便追踪与回查事务</td>
+</tr>
+<tr>
+<td>消费组命名规范</td>
+<td>防止 group 冲突</td>
+</tr>
+<tr>
+<td>使用 Spring Cloud Stream 时关注兼容性</td>
+<td>RocketMQ Binder 适配不同版本</td>
+</tr>
+<tr>
+<td>结合日志&#x2F;链路追踪（如 Sleuth）</td>
+<td>快速排查分布式消息问题</td>
+</tr>
+</tbody></table>
+<h1 id="RocketMQ客户端注意事项"><a href="#RocketMQ客户端注意事项" class="headerlink" title="RocketMQ客户端注意事项"></a><strong>RocketMQ客户端注意事项</strong></h1><hr>
+<h2 id="🧠-一、客户端通用注意事项"><a href="#🧠-一、客户端通用注意事项" class="headerlink" title="🧠 一、客户端通用注意事项"></a>🧠 一、客户端通用注意事项</h2><table>
+<thead>
+<tr>
+<th>⚠ 项</th>
+<th>✅ 建议说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NameServer 地址</td>
+<td>使用 <strong>多个地址</strong>（用 <code>;</code> 分隔），避免单点故障。</td>
+</tr>
+<tr>
+<td>客户端实例</td>
+<td><strong>一个应用建议共用一个 MQ 实例</strong>（Producer&#x2F;Consumer），避免线程资源浪费。</td>
+</tr>
+<tr>
+<td>Group 名</td>
+<td>Producer 和 Consumer 的 group <strong>必须唯一</strong>，不要多个应用共用同一 group。</td>
+</tr>
+<tr>
+<td>Topic 名称</td>
+<td>避免使用“下划线 + 系统关键字”等敏感字符，尽量小写并有业务前缀。</td>
+</tr>
+<tr>
+<td>异步消息</td>
+<td>异步发送消息记得设置回调并做好异常捕获。</td>
+</tr>
+<tr>
+<td>消息大小</td>
+<td>单条消息默认上限 4MB，大于需压缩或拆包。</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🚀-二、Producer-注意事项"><a href="#🚀-二、Producer-注意事项" class="headerlink" title="🚀 二、Producer 注意事项"></a>🚀 二、Producer 注意事项</h2><h3 id="✅-正确配置发送重试机制"><a href="#✅-正确配置发送重试机制" class="headerlink" title="✅ 正确配置发送重试机制"></a>✅ 正确配置发送重试机制</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">producer.setRetryTimesWhenSendFailed(<span class="hljs-number">3</span>);<br>producer.setRetryTimesWhenSendAsyncFailed(<span class="hljs-number">2</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-保证-Producer-长时间存在（不能频繁创建和销毁）"><a href="#✅-保证-Producer-长时间存在（不能频繁创建和销毁）" class="headerlink" title="✅ 保证 Producer 长时间存在（不能频繁创建和销毁）"></a>✅ 保证 Producer 长时间存在（不能频繁创建和销毁）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 建议在应用启动时初始化，常驻内存</span><br><span class="hljs-meta">@Bean</span><br><span class="hljs-keyword">public</span> DefaultMQProducer <span class="hljs-title function_">defaultMQProducer</span><span class="hljs-params">()</span> &#123; ... &#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-发送消息前一定要-start"><a href="#✅-发送消息前一定要-start" class="headerlink" title="✅ 发送消息前一定要 start"></a>✅ 发送消息前一定要 start</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">producer.start(); <span class="hljs-comment">// 否则直接 NPE 或无提示失败</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-异步消息不要吞掉异常"><a href="#✅-异步消息不要吞掉异常" class="headerlink" title="✅ 异步消息不要吞掉异常"></a>✅ 异步消息不要吞掉异常</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java">producer.send(message, <span class="hljs-keyword">new</span> <span class="hljs-title class_">SendCallback</span>() &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onSuccess</span><span class="hljs-params">(SendResult sendResult)</span> &#123; ... &#125;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onException</span><span class="hljs-params">(Throwable e)</span> &#123;<br>        log.error(<span class="hljs-string">&quot;发送失败&quot;</span>, e);<br>    &#125;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📥-三、Consumer-注意事项"><a href="#📥-三、Consumer-注意事项" class="headerlink" title="📥 三、Consumer 注意事项"></a>📥 三、Consumer 注意事项</h2><h3 id="✅-幂等消费！"><a href="#✅-幂等消费！" class="headerlink" title="✅ 幂等消费！"></a>✅ 幂等消费！</h3><p>RocketMQ 默认 <strong>“至少一次投递”</strong>，所以消费者必须支持幂等逻辑，比如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 消费消息前查数据库状态</span><br><span class="hljs-keyword">if</span> (已处理过该消息的唯一Key) &#123;<br>    <span class="hljs-keyword">return</span>; <span class="hljs-comment">// 防重复消费</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-设置线程池参数"><a href="#✅-设置线程池参数" class="headerlink" title="✅ 设置线程池参数"></a>✅ 设置线程池参数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">consumer.setConsumeThreadMin(<span class="hljs-number">10</span>);<br>consumer.setConsumeThreadMax(<span class="hljs-number">50</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-消费模式选择：集群-vs-广播"><a href="#✅-消费模式选择：集群-vs-广播" class="headerlink" title="✅ 消费模式选择：集群 vs 广播"></a>✅ 消费模式选择：集群 vs 广播</h3><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>集群模式（默认）</td>
+<td>多实例负载均衡消费</td>
+</tr>
+<tr>
+<td>广播模式</td>
+<td>每个实例都消费一次（如：日志、告警）</td>
+</tr>
+</tbody></table>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">consumer.setMessageModel(MessageModel.BROADCASTING);<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-手动-ACK-失败重试逻辑"><a href="#✅-手动-ACK-失败重试逻辑" class="headerlink" title="✅ 手动 ACK 失败重试逻辑"></a>✅ 手动 ACK 失败重试逻辑</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">return</span> ConsumeConcurrentlyStatus.RECONSUME_LATER;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔒-四、安全相关（ACL）"><a href="#🔒-四、安全相关（ACL）" class="headerlink" title="🔒 四、安全相关（ACL）"></a>🔒 四、安全相关（ACL）</h2><ul>
+<li><p>ACL 启用后，一定要配置 accessKey 和 secretKey。</p>
+</li>
+<li><p>客户端若未配置，<strong>直接报错 Code: 308 无权限</strong>。</p>
+</li>
+</ul>
+<hr>
+<h2 id="📦-五、消息属性和-Key-的使用建议"><a href="#📦-五、消息属性和-Key-的使用建议" class="headerlink" title="📦 五、消息属性和 Key 的使用建议"></a>📦 五、消息属性和 Key 的使用建议</h2><table>
+<thead>
+<tr>
+<th>属性</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>key</code></td>
+<td>每条消息都建议设置业务唯一 key，便于查询和回查事务。</td>
+</tr>
+<tr>
+<td><code>tag</code></td>
+<td>用于消息过滤，建议枚举约定化管理（避免乱命名）</td>
+</tr>
+<tr>
+<td><code>userProperty</code></td>
+<td>可自定义业务属性，供消费者过滤用。</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧪-六、RocketMQTemplate-Spring-封装注意事项"><a href="#🧪-六、RocketMQTemplate-Spring-封装注意事项" class="headerlink" title="🧪 六、RocketMQTemplate&#x2F;Spring 封装注意事项"></a>🧪 六、RocketMQTemplate&#x2F;Spring 封装注意事项</h2><ul>
+<li><p><code>RocketMQTemplate</code> <strong>不支持批量消息发送</strong>，如需批量请自行拆包或使用原生 API。</p>
+</li>
+<li><p>使用 <code>@RocketMQMessageListener</code> 时不要把 <code>consumerGroup</code> 重复注册。</p>
+</li>
+<li><p>在 Spring Boot 应用中，<code>RocketMQTemplate</code> 是单例 bean，<strong>不要重复创建</strong>。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧯-七、性能-可靠性优化建议"><a href="#🧯-七、性能-可靠性优化建议" class="headerlink" title="🧯 七、性能 &amp; 可靠性优化建议"></a>🧯 七、性能 &amp; 可靠性优化建议</h2><table>
+<thead>
+<tr>
+<th>优化项</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>批量发送</td>
+<td>拆分批量包 ≤ 4MB，提升吞吐</td>
+</tr>
+<tr>
+<td>压缩消息</td>
+<td><code>producer.setCompressMsgBodyOverHowmuch(1024)</code></td>
+</tr>
+<tr>
+<td>消息追踪</td>
+<td>打开 <code>enableMsgTrace</code> 便于问题排查</td>
+</tr>
+<tr>
+<td>异常重试</td>
+<td>异常重试次数和间隔应视业务情况设定</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🎯-八、推荐配置模板（Java-原生）"><a href="#🎯-八、推荐配置模板（Java-原生）" class="headerlink" title="🎯 八、推荐配置模板（Java 原生）"></a>🎯 八、推荐配置模板（Java 原生）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">DefaultMQProducer</span> <span class="hljs-variable">producer</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultMQProducer</span>(<span class="hljs-string">&quot;your-producer-group&quot;</span>);<br>producer.setNamesrvAddr(<span class="hljs-string">&quot;127.0.0.1:9876;127.0.0.2:9876&quot;</span>);<br>producer.setRetryTimesWhenSendFailed(<span class="hljs-number">3</span>);<br>producer.setSendMsgTimeout(<span class="hljs-number">3000</span>);<br>producer.setCompressMsgBodyOverHowmuch(<span class="hljs-number">1024</span>);<br>producer.start();<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🎁-Bonus：踩坑合集（真实案例）"><a href="#🎁-Bonus：踩坑合集（真实案例）" class="headerlink" title="🎁 Bonus：踩坑合集（真实案例）"></a>🎁 Bonus：踩坑合集（真实案例）</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>问题</th>
+<th>解决</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>消费一直失败</td>
+<td>消息重试死循环</td>
+<td>配置最大重试次数 + 死信队列监听</td>
+</tr>
+<tr>
+<td>多个服务用同一个 group</td>
+<td>消费被抢占，只消费一份</td>
+<td>每个消费者微服务使用独立 group</td>
+</tr>
+<tr>
+<td>消息消费过慢</td>
+<td>消费线程数默认低</td>
+<td>配置 consumeThreadMin&#x2F;Max</td>
+</tr>
+<tr>
+<td>异步发送没回调</td>
+<td>被 GC 或线程池收掉</td>
+<td>用 CountDownLatch 等方式等回调</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/06/02/RocketMQ%E8%BF%9B%E9%98%B6%E4%BA%8C/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;06&#x2F;02&#x2F;RocketMQ%E8%BF%9B%E9%98%B6%E4%BA%8C&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;06&#x2F;02&#x2F;RocketMQ%E8%BF%9B%E9%98%B6%E4%BA%8C&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/RocketMQ/" rel="tag">RocketMQ</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/06/01/RocketMQ%E8%BF%9B%E9%98%B6%E4%B8%80/">RocketMQ进阶一<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#RocketMQ%E5%BB%B6%E8%BF%9F%E6%B6%88%E6%81%AF%E4%B8%8E%E6%89%B9%E9%87%8F%E6%B6%88%E6%81%AF"><span class="toc-text">RocketMQ延迟消息与批量消息</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%95%92-%E4%B8%80%E3%80%81%E5%BB%B6%E8%BF%9F%E6%B6%88%E6%81%AF%EF%BC%88%E5%AE%9A%E6%97%B6%E6%B6%88%E6%81%AF%EF%BC%89"><span class="toc-text">🕒 一、延迟消息（定时消息）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%8E%9F%E7%90%86"><span class="toc-text">✅ 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%80-%E5%BB%B6%E8%BF%9F%E7%AD%89%E7%BA%A7%EF%BC%88%E9%BB%98%E8%AE%A4%EF%BC%89"><span class="toc-text">🚀 延迟等级（默认）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A0-%E7%89%B9%E7%82%B9"><span class="toc-text">🧠 特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81"><span class="toc-text">✍ 示例代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%BA%8C%E3%80%81%E6%89%B9%E9%87%8F%E6%B6%88%E6%81%AF%EF%BC%88Batch-Message%EF%BC%89"><span class="toc-text">📦 二、批量消息（Batch Message）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%8E%9F%E7%90%86-1"><span class="toc-text">✅ 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%AB-%E9%99%90%E5%88%B6"><span class="toc-text">🚫 限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%8D-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81-1"><span class="toc-text">✍ 示例代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A4%94-%E5%BB%B6%E8%BF%9F%E6%B6%88%E6%81%AF-vs-%E6%89%B9%E9%87%8F%E6%B6%88%E6%81%AF"><span class="toc-text">🤔 延迟消息 vs 批量消息</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RocketMQ%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6"><span class="toc-text">RocketMQ事务消息机制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%B8%80%E3%80%81%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-text">🧠 一、事务消息核心原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%8D%8A%E6%B6%88%E6%81%AF%EF%BC%88Half-Message%EF%BC%89"><span class="toc-text">1️⃣ 半消息（Half Message）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E6%89%A7%E8%A1%8C%E6%9C%AC%E5%9C%B0%E4%BA%8B%E5%8A%A1"><span class="toc-text">2️⃣ 执行本地事务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E6%A0%B9%E6%8D%AE%E6%9C%AC%E5%9C%B0%E4%BA%8B%E5%8A%A1%E7%BB%93%E6%9E%9C%E5%91%8A%E7%9F%A5-MQ%EF%BC%9A"><span class="toc-text">3️⃣ 根据本地事务结果告知 MQ：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E4%BA%8C%E3%80%81RocketMQ-%E7%9A%84%E4%BA%8B%E5%8A%A1%E7%8A%B6%E6%80%81%E5%9B%9E%E6%9F%A5%E6%9C%BA%E5%88%B6"><span class="toc-text">🔁 二、RocketMQ 的事务状态回查机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8F%97%EF%B8%8F-%E4%B8%89%E3%80%81%E5%85%B3%E9%94%AE%E7%B1%BB-%E6%96%B9%E6%B3%95"><span class="toc-text">🏗️ 三、关键类 &amp; 方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E5%9B%9B%E3%80%81%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B"><span class="toc-text">📦 四、完整示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%BE-%E4%BA%94%E3%80%81%E4%BA%8B%E5%8A%A1%E7%8A%B6%E6%80%81%E6%9E%9A%E4%B8%BE%E8%AF%B4%E6%98%8E"><span class="toc-text">🧾 五、事务状态枚举说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%A7-%E5%85%AD%E3%80%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">🚧 六、注意事项</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RocketMQ-ACL%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6%E4%BD%93%E7%B3%BB"><span class="toc-text">RocketMQ ACL权限控制体系</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%90-%E4%B8%80%E3%80%81ACL-%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6%E6%A6%82%E8%A7%88"><span class="toc-text">🔐 一、ACL 权限控制概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%BA%8C%E3%80%81%E6%A0%B8%E5%BF%83%E6%9C%BA%E5%88%B6%E7%BB%84%E6%88%90"><span class="toc-text">🧩 二、核心机制组成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E9%89%B4%E6%9D%83%E6%96%B9%E5%BC%8F%EF%BC%9AAccessKey-SecretKey"><span class="toc-text">1️⃣ 鉴权方式：AccessKey &amp; SecretKey</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%EF%BC%9Aplain-acl-yml"><span class="toc-text">2️⃣ 配置文件：plain_acl.yml</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%B8%89%E3%80%81%E6%9D%83%E9%99%90%E6%8E%A7%E5%88%B6%E7%B2%92%E5%BA%A6"><span class="toc-text">📦 三、权限控制粒度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%A7-%E5%9B%9B%E3%80%81%E5%BC%80%E5%90%AF-ACL-%E7%9A%84%E6%AD%A5%E9%AA%A4"><span class="toc-text">🔧 四、开启 ACL 的步骤</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%91%A8%E2%80%8D%F0%9F%92%BB-%E4%BA%94%E3%80%81%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%8E%A5%E5%85%A5%E9%85%8D%E7%BD%AE%EF%BC%88Java-%E7%A4%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">👨‍💻 五、客户端接入配置（Java 示例）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E5%85%AD%E3%80%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">🧪 六、注意事项</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SpringBoot%E6%95%B4%E5%90%88RocketMQ"><span class="toc-text">SpringBoot整合RocketMQ</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%B8%80%E3%80%81%E5%BC%95%E5%85%A5%E4%BE%9D%E8%B5%96%EF%BC%88%E4%BB%A5-Apache-%E5%AE%98%E6%96%B9%E7%89%88%E6%9C%AC%E4%B8%BA%E5%87%86%EF%BC%89"><span class="toc-text">📦 一、引入依赖（以 Apache 官方版本为准）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%BA%8C%E3%80%81%E9%85%8D%E7%BD%AE-application-yml"><span class="toc-text">⚙️ 二、配置 application.yml</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-%E4%B8%89%E3%80%81%E6%B6%88%E6%81%AF%E7%94%9F%E4%BA%A7%E8%80%85%E7%A4%BA%E4%BE%8B"><span class="toc-text">🚀 三、消息生产者示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%99%AE%E9%80%9A%E6%B6%88%E6%81%AF%E5%8F%91%E9%80%81"><span class="toc-text">✅ 普通消息发送</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%B8%A6-Tag-%E5%92%8C-Key"><span class="toc-text">✅ 带 Tag 和 Key</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A5-%E5%9B%9B%E3%80%81%E6%B6%88%E6%81%AF%E6%B6%88%E8%B4%B9%E8%80%85%E7%A4%BA%E4%BE%8B"><span class="toc-text">📥 四、消息消费者示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%BE-%E4%BA%94%E3%80%81%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%EF%BC%88%E4%BA%8B%E5%8A%A1%E5%9E%8B-Producer%EF%BC%89"><span class="toc-text">🧾 五、事务消息（事务型 Producer）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%BA%8B%E5%8A%A1%E7%9B%91%E5%90%AC%E5%99%A8"><span class="toc-text">✅ 事务监听器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A1%EF%B8%8F-%E5%85%AD%E3%80%81%E5%BC%80%E5%90%AF-ACL-%E7%9A%84%E8%AF%9D%EF%BC%88%E9%9C%80%E8%A6%81%E8%AE%BE%E7%BD%AE%E5%87%AD%E8%AF%81%EF%BC%89"><span class="toc-text">🛡️ 六、开启 ACL 的话（需要设置凭证）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%8D-%E4%B8%83%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-text">🔍 七、常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%81-Bonus%EF%BC%9A%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc-text">🎁 Bonus：最佳实践建议</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RocketMQ%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">RocketMQ客户端注意事项</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%B8%80%E3%80%81%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%80%9A%E7%94%A8%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">🧠 一、客户端通用注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-%E4%BA%8C%E3%80%81Producer-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">🚀 二、Producer 注意事项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%AD%A3%E7%A1%AE%E9%85%8D%E7%BD%AE%E5%8F%91%E9%80%81%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6"><span class="toc-text">✅ 正确配置发送重试机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%BF%9D%E8%AF%81-Producer-%E9%95%BF%E6%97%B6%E9%97%B4%E5%AD%98%E5%9C%A8%EF%BC%88%E4%B8%8D%E8%83%BD%E9%A2%91%E7%B9%81%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81%EF%BC%89"><span class="toc-text">✅ 保证 Producer 长时间存在（不能频繁创建和销毁）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%8F%91%E9%80%81%E6%B6%88%E6%81%AF%E5%89%8D%E4%B8%80%E5%AE%9A%E8%A6%81-start"><span class="toc-text">✅ 发送消息前一定要 start</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%BC%82%E6%AD%A5%E6%B6%88%E6%81%AF%E4%B8%8D%E8%A6%81%E5%90%9E%E6%8E%89%E5%BC%82%E5%B8%B8"><span class="toc-text">✅ 异步消息不要吞掉异常</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A5-%E4%B8%89%E3%80%81Consumer-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">📥 三、Consumer 注意事项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%B9%82%E7%AD%89%E6%B6%88%E8%B4%B9%EF%BC%81"><span class="toc-text">✅ 幂等消费！</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E8%AE%BE%E7%BD%AE%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0"><span class="toc-text">✅ 设置线程池参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%B6%88%E8%B4%B9%E6%A8%A1%E5%BC%8F%E9%80%89%E6%8B%A9%EF%BC%9A%E9%9B%86%E7%BE%A4-vs-%E5%B9%BF%E6%92%AD"><span class="toc-text">✅ 消费模式选择：集群 vs 广播</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%89%8B%E5%8A%A8-ACK-%E5%A4%B1%E8%B4%A5%E9%87%8D%E8%AF%95%E9%80%BB%E8%BE%91"><span class="toc-text">✅ 手动 ACK 失败重试逻辑</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%92-%E5%9B%9B%E3%80%81%E5%AE%89%E5%85%A8%E7%9B%B8%E5%85%B3%EF%BC%88ACL%EF%BC%89"><span class="toc-text">🔒 四、安全相关（ACL）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E4%BA%94%E3%80%81%E6%B6%88%E6%81%AF%E5%B1%9E%E6%80%A7%E5%92%8C-Key-%E7%9A%84%E4%BD%BF%E7%94%A8%E5%BB%BA%E8%AE%AE"><span class="toc-text">📦 五、消息属性和 Key 的使用建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E5%85%AD%E3%80%81RocketMQTemplate-Spring-%E5%B0%81%E8%A3%85%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">🧪 六、RocketMQTemplate&#x2F;Spring 封装注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AF-%E4%B8%83%E3%80%81%E6%80%A7%E8%83%BD-%E5%8F%AF%E9%9D%A0%E6%80%A7%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">🧯 七、性能 &amp; 可靠性优化建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E5%85%AB%E3%80%81%E6%8E%A8%E8%8D%90%E9%85%8D%E7%BD%AE%E6%A8%A1%E6%9D%BF%EF%BC%88Java-%E5%8E%9F%E7%94%9F%EF%BC%89"><span class="toc-text">🎯 八、推荐配置模板（Java 原生）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%81-Bonus%EF%BC%9A%E8%B8%A9%E5%9D%91%E5%90%88%E9%9B%86%EF%BC%88%E7%9C%9F%E5%AE%9E%E6%A1%88%E4%BE%8B%EF%BC%89"><span class="toc-text">🎁 Bonus：踩坑合集（真实案例）</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
