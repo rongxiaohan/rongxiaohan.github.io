@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>RocketMQ - 笑容+</title>
+  <title>笑容+</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="google" content="notranslate" />
@@ -57,7 +57,7 @@
     var CONFIG = window.CONFIG || {};
     var ZHAOO = window.ZHAOO || {};
     CONFIG = {
-      isHome: false,
+      isHome: true,
       fancybox: true,
       pjax: false,
       loading: {
@@ -142,8 +142,6 @@
   <nav class="navbar">
     <div class="left">
       
-        <i class="iconfont iconhome j-navbar-back-home"></i>
-      
       
         <i class="iconfont iconqrcode j-navbar-qrcode"></i>
       
@@ -152,7 +150,7 @@
       
       
     </div>
-    <div class="center">分类</div>
+    <div class="center"> </div>
     <div class="right">
       <i class="iconfont iconmenu j-navbar-menu"></i>
     </div>
@@ -188,53 +186,78 @@
   </div>
 </nav>
   <main id="main">
-  <section class="archive">
-    <div class="archive-container">
-      <div class="archive-post">
-        <h3 class="archive-total"># RocketMQ</h3>
+  
+    <div class="preview">
+  <!-- <nav class="navbar j-navbar-menu">
+    <i class="iconfont iconmenu"></i>
+  </nav> -->
+  <div class="preview-image">
+    
         
-        
-          
-            <h3 class="archive-year">2024 年</h3>
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2024/06/05/RocketMQ%20Dledger%E3%80%81Controller%E9%9B%86%E7%BE%A4/">06/05</a>
-            <a class="archive-title" href="/2024/06/05/RocketMQ%20Dledger%E3%80%81Controller%E9%9B%86%E7%BE%A4/">RocketMQ Dledger、Controller集群</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2024/06/04/RocketMQ%E8%BF%9B%E9%98%B6%E5%9B%9B/">06/04</a>
-            <a class="archive-title" href="/2024/06/04/RocketMQ%E8%BF%9B%E9%98%B6%E5%9B%9B/">RocketMQ进阶四</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2024/06/03/RocketMQ%E8%BF%9B%E9%98%B6%E4%B8%89%E4%B9%8B%E7%BB%84%E4%BB%B6%E8%A7%A3%E8%AF%BB/">06/03</a>
-            <a class="archive-title" href="/2024/06/03/RocketMQ%E8%BF%9B%E9%98%B6%E4%B8%89%E4%B9%8B%E7%BB%84%E4%BB%B6%E8%A7%A3%E8%AF%BB/">RocketMQ进阶三之组件解读</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2024/06/02/RocketMQ%E8%BF%9B%E9%98%B6%E4%BA%8C/">06/02</a>
-            <a class="archive-title" href="/2024/06/02/RocketMQ%E8%BF%9B%E9%98%B6%E4%BA%8C/">RocketMQ进阶二</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2024/06/01/RocketMQ%E8%BF%9B%E9%98%B6%E4%B8%80/">06/01</a>
-            <a class="archive-title" href="/2024/06/01/RocketMQ%E8%BF%9B%E9%98%B6%E4%B8%80/">RocketMQ进阶一</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2024/05/31/RocketMQ%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/">05/31</a>
-            <a class="archive-title" href="/2024/05/31/RocketMQ%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/">RocketMQ快速入门</a>
-          </div>
+              <div class="preview-overlay">
+                <svg class="preview-waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                  viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                  <defs>
+                    <path id="gentle-wave"
+                      d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+                  </defs>
+                  <g class="preview-parallax">
+                    <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(var(--color-background-rgb),0.7"></use>
+                    <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(var(--color-background-rgb),0.5)"></use>
+                    <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(var(--color-background-rgb),0.3)"></use>
+                    <use xlink:href="#gentle-wave" x="48" y="7" fill="var(--color-background)"></use>
+                  </g>
+                </svg>
+              </div>
+              
+  </div>
+  <div class="preview-motto-wrapper">
+    <h2 class="preview-motto" id="motto">
+      
+    </h2>
+    
+      <span class="preview-cursor">_</span>
+      
+  </div>
+  <div class="preview-scroll">
+    <a href="#container" class="smooth-scroll"><i class="iconfont iconMouse"></i></a>
+  </div>
+</div>
+  
+  <div class="container" id="container">
+    <section class="row post">
+  
+    
+
+<div class="col-lg-4 col-md-6 col-sm-12 post-item">
+  <div class="post-wrap">
+    
+    <a href="/2022/11/08/Websocket%E5%92%8CSocket.io/" class="post-image">
+      <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+    </a>
+    <div class="post-content">
+      <div class="post-content-wrap">
+        <h3 class="post-title"><a href="/2022/11/08/Websocket%E5%92%8CSocket.io/" title="Websocket和Socket.io" >Websocket和Socket.io</a></h3>
+        <div class="post-excerpt">
+          <p class="substr-3">WebSocket 和 Socket.IO：它们究竟有什么不同？之前公司用Socket.io和rtmp做网络视频通讯的需求，有人问我为什么不用Websocket，WebSocket 和 Sock...</p>
+        </div>
+      </div>
+      <div class="post-info">
+        <span class="post-info-item"><i class="iconfont iconcalendar"></i>November 08, 2022</span>
         
       </div>
     </div>
-  </section>
+  </div>
+</div>
+
+  
+</section>
+    <section class="paginator">
+  
+    <a class="extend prev" rel="prev" href="/page/3/">&lt;</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+  
+</section>
+  </div>
 </main>
   
 
