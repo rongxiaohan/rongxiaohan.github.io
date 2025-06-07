@@ -1,0 +1,513 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Java类加载机制 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、类加载的生命周期Java 类的加载生命周期包含以...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Java类加载机制</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Java类加载机制</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 07, 2024</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1792</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、类加载的生命周期"><a href="#一、类加载的生命周期" class="headerlink" title="一、类加载的生命周期"></a>一、类加载的生命周期</h2><p>Java 类的加载生命周期包含以下 <strong>五个主要阶段</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">加载（Loading） → 验证（Verification） → 准备（Preparation） → 解析（Resolution） → 初始化（Initialization）<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、每个阶段详解"><a href="#二、每个阶段详解" class="headerlink" title="二、每个阶段详解"></a>二、每个阶段详解</h2><h3 id="1-加载（Loading）"><a href="#1-加载（Loading）" class="headerlink" title="1. 加载（Loading）"></a>1. 加载（Loading）</h3><ul>
+<li><p>作用：通过类的全限定名（包名+类名）查找 <code>.class</code> 文件，并读取字节码内容，创建 <code>Class</code> 对象。</p>
+</li>
+<li><p>由类加载器完成。</p>
+</li>
+<li><p>可能来源：</p>
+<ul>
+<li><p>本地文件系统</p>
+</li>
+<li><p>jar 包</p>
+</li>
+<li><p>网络</p>
+</li>
+<li><p>动态生成（如 Proxy、Groovy）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-验证（Verification）"><a href="#2-验证（Verification）" class="headerlink" title="2. 验证（Verification）"></a>2. 验证（Verification）</h3><ul>
+<li><p>作用：确保字节码文件符合 JVM 规范，不会危害虚拟机安全。</p>
+</li>
+<li><p>验证内容：</p>
+<ul>
+<li><p>文件格式验证</p>
+</li>
+<li><p>元数据验证</p>
+</li>
+<li><p>字节码验证</p>
+</li>
+<li><p>符号引用验证</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-准备（Preparation）"><a href="#3-准备（Preparation）" class="headerlink" title="3. 准备（Preparation）"></a>3. 准备（Preparation）</h3><ul>
+<li><p>作用：为类的<strong>静态变量</strong>分配内存，并初始化为<strong>默认值</strong>（不是赋初值表达式中的值）。</p>
+</li>
+<li><p>示例：</p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-variable">a</span> <span class="hljs-operator">=</span> <span class="hljs-number">5</span>; <span class="hljs-comment">// 此时只会赋为0，不会赋值为5</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="4-解析（Resolution）"><a href="#4-解析（Resolution）" class="headerlink" title="4. 解析（Resolution）"></a>4. 解析（Resolution）</h3><ul>
+<li><p>作用：将类常量池中的<strong>符号引用</strong>替换为<strong>直接引用</strong>。</p>
+</li>
+<li><p>例如：</p>
+<ul>
+<li><p>类引用</p>
+</li>
+<li><p>接口方法调用</p>
+</li>
+<li><p>字段访问等</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-初始化（Initialization）"><a href="#5-初始化（Initialization）" class="headerlink" title="5. 初始化（Initialization）"></a>5. 初始化（Initialization）</h3><ul>
+<li><p>作用：执行类的 <code>&lt;clinit&gt;()</code> 静态代码块和静态变量的初始化赋值。</p>
+</li>
+<li><p>JVM 保证线程安全，类只会被初始化一次。</p>
+</li>
+</ul>
+<hr>
+<h2 id="三、类加载器（ClassLoader）体系"><a href="#三、类加载器（ClassLoader）体系" class="headerlink" title="三、类加载器（ClassLoader）体系"></a>三、类加载器（ClassLoader）体系</h2><p>Java 中类加载器是按<strong>双亲委派模型（Parent Delegation Model）</strong>来组织的：</p>
+<h3 id="1-类加载器的种类"><a href="#1-类加载器的种类" class="headerlink" title="1. 类加载器的种类"></a>1. 类加载器的种类</h3><table>
+<thead>
+<tr>
+<th>加载器</th>
+<th>说明</th>
+<th>加载内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BootstrapClassLoader</td>
+<td>启动类加载器</td>
+<td>加载 <code>$JAVA_HOME/lib</code> 下的核心类，如 <code>rt.jar</code></td>
+</tr>
+<tr>
+<td>ExtensionClassLoader</td>
+<td>扩展类加载器</td>
+<td>加载 <code>$JAVA_HOME/lib/ext</code> 下的扩展类库</td>
+</tr>
+<tr>
+<td>AppClassLoader</td>
+<td>应用类加载器</td>
+<td>加载 <code>classpath</code> 路径下的类</td>
+</tr>
+<tr>
+<td>自定义类加载器</td>
+<td>用户定义的加载器</td>
+<td>可实现自定义逻辑，如热部署等</td>
+</tr>
+</tbody></table>
+<h3 id="2-双亲委派模型"><a href="#2-双亲委派模型" class="headerlink" title="2. 双亲委派模型"></a>2. 双亲委派模型</h3><p>加载类的流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">尝试从 Bootstrap → Extension → App → 自定义 加载<br></code></pre></td></tr></table></figure>
+
+<p>优点：</p>
+<ul>
+<li><p>避免类的重复加载</p>
+</li>
+<li><p>保证核心类不被篡改（如你写一个 <code>java.lang.String</code>，JVM不会加载你的类）</p>
+</li>
+</ul>
+<hr>
+<h2 id="四、示意图"><a href="#四、示意图" class="headerlink" title="四、示意图"></a>四、示意图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs plaintext"> [Bootstrap ClassLoader]<br>           ↓<br> [Extension ClassLoader]<br>           ↓<br>   [App ClassLoader]<br>           ↓<br>[User-defined ClassLoader]<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、示例：自定义类加载器"><a href="#五、示例：自定义类加载器" class="headerlink" title="五、示例：自定义类加载器"></a>五、示例：自定义类加载器</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyClassLoader</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ClassLoader</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="hljs-keyword">throws</span> ClassNotFoundException &#123;<br>        <span class="hljs-comment">// 读取 .class 文件转为 byte[]</span><br>        <span class="hljs-type">byte</span>[] bytes = loadClassFromFile(name);<br>        <span class="hljs-keyword">return</span> defineClass(name, bytes, <span class="hljs-number">0</span>, bytes.length);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、类加载的触发时机"><a href="#六、类加载的触发时机" class="headerlink" title="六、类加载的触发时机"></a>六、类加载的触发时机</h2><p>以下操作会触发类初始化（即执行 <code>&lt;clinit&gt;</code>）：</p>
+<ul>
+<li><p>new 关键字创建实例</p>
+</li>
+<li><p>调用静态方法</p>
+</li>
+<li><p>访问静态字段（非 final）</p>
+</li>
+<li><p>使用反射 <code>Class.forName</code></p>
+</li>
+<li><p>子类初始化时，父类也会初始化</p>
+</li>
+</ul>
+<hr>
+<h2 id="七、延伸话题"><a href="#七、延伸话题" class="headerlink" title="七、延伸话题"></a>七、延伸话题</h2><ul>
+<li><p><strong>破坏双亲委派模型</strong>：SPI 机制 &#x2F; 自定义类加载器</p>
+</li>
+<li><p><strong>热部署与模块隔离</strong>：Tomcat、Spring Boot Devtools、OSGi 都 heavily 使用类加载器隔离机制</p>
+</li>
+<li><p><strong>类卸载（GC）</strong>：只有当 <code>ClassLoader</code> 和它加载的 <code>Class</code> 实例都不可达时，类才会被卸载</p>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2024/06/07/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;06&#x2F;07&#x2F;java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2024&#x2F;06&#x2F;07&#x2F;java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2024/06/06/RocketMQ%20%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E6%A2%B3%E7%90%86/">RocketMQ 常见问题梳理<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">一、类加载的生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%AF%8F%E4%B8%AA%E9%98%B6%E6%AE%B5%E8%AF%A6%E8%A7%A3"><span class="toc-text">二、每个阶段详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%8A%A0%E8%BD%BD%EF%BC%88Loading%EF%BC%89"><span class="toc-text">1. 加载（Loading）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%AA%8C%E8%AF%81%EF%BC%88Verification%EF%BC%89"><span class="toc-text">2. 验证（Verification）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%87%86%E5%A4%87%EF%BC%88Preparation%EF%BC%89"><span class="toc-text">3. 准备（Preparation）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E8%A7%A3%E6%9E%90%EF%BC%88Resolution%EF%BC%89"><span class="toc-text">4. 解析（Resolution）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%88%9D%E5%A7%8B%E5%8C%96%EF%BC%88Initialization%EF%BC%89"><span class="toc-text">5. 初始化（Initialization）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%EF%BC%88ClassLoader%EF%BC%89%E4%BD%93%E7%B3%BB"><span class="toc-text">三、类加载器（ClassLoader）体系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E7%A7%8D%E7%B1%BB"><span class="toc-text">1. 类加载器的种类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B"><span class="toc-text">2. 双亲委派模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%A4%BA%E6%84%8F%E5%9B%BE"><span class="toc-text">四、示意图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%A4%BA%E4%BE%8B%EF%BC%9A%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="toc-text">五、示例：自定义类加载器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E7%9A%84%E8%A7%A6%E5%8F%91%E6%97%B6%E6%9C%BA"><span class="toc-text">六、类加载的触发时机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%BB%B6%E4%BC%B8%E8%AF%9D%E9%A2%98"><span class="toc-text">七、延伸话题</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
