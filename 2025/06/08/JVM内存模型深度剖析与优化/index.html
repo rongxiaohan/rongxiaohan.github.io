@@ -1,0 +1,563 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JVM内存模型深度剖析与优化 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、JVM内存模型整体架构JVM运行时内存主要包括以...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">JVM内存模型深度剖析与优化</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JVM内存模型深度剖析与优化</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 08, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2091</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、JVM内存模型整体架构"><a href="#一、JVM内存模型整体架构" class="headerlink" title="一、JVM内存模型整体架构"></a>一、JVM内存模型整体架构</h2><p>JVM运行时内存主要包括以下几个区域（以 HotSpot 为例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">┌──────────────┐<br>│   方法区(Metaspace) │ → 类元信息（类结构、常量、静态变量）<br>├──────────────┤<br>│   堆(Heap)         │ → 对象实例、数组等，GC主要作用区域<br>├──────────────┤<br>│   栈(Java Stack)   │ → 每个线程私有，方法调用、局部变量<br>├──────────────┤<br>│   程序计数器       │ → 每个线程私有，指令地址指针<br>├──────────────┤<br>│   本地方法栈(Native)│ → 调用Native方法时使用<br>└──────────────┘<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、各内存区域详解与优化建议"><a href="#二、各内存区域详解与优化建议" class="headerlink" title="二、各内存区域详解与优化建议"></a>二、各内存区域详解与优化建议</h2><h3 id="1-堆（Heap）"><a href="#1-堆（Heap）" class="headerlink" title="1. 堆（Heap）"></a>1. 堆（Heap）</h3><ul>
+<li><p><strong>用途</strong>：存储所有对象实例，是垃圾回收的主要区域。</p>
+</li>
+<li><p><strong>结构</strong>：</p>
+<ul>
+<li><p>新生代（Young）：Eden + Survivor（S0&#x2F;S1）</p>
+</li>
+<li><p>老年代（Old）：长期存活对象</p>
+</li>
+<li><p>可选：大对象区（TLAB）</p>
+</li>
+</ul>
+</li>
+<li><p><strong>垃圾回收器优化</strong>：</p>
+<ul>
+<li><p>串行收集器（Serial）：适合单核小堆</p>
+</li>
+<li><p>并行收集器（Parallel）：高吞吐</p>
+</li>
+<li><p>CMS：低停顿（低响应延迟）</p>
+</li>
+<li><p>G1：分区式管理，更平衡GC负载</p>
+</li>
+<li><p>ZGC&#x2F; Shenandoah：超低停顿，适合大堆（JDK11+）</p>
+</li>
+</ul>
+</li>
+<li><p><strong>调优参数</strong>：</p>
+<ul>
+<li><p><code>-Xms</code>、<code>-Xmx</code>：设置初始和最大堆大小</p>
+</li>
+<li><p><code>-XX:+UseG1GC</code>：使用G1收集器</p>
+</li>
+<li><p><code>-XX:NewRatio</code>、<code>-XX:SurvivorRatio</code>：调整新生代比例</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="2-方法区（Metaspace）"><a href="#2-方法区（Metaspace）" class="headerlink" title="2. 方法区（Metaspace）"></a>2. 方法区（Metaspace）</h3><ul>
+<li><p><strong>用途</strong>：类元信息、静态变量、常量池（JDK8后由永久代转为本地内存 Metaspace）</p>
+</li>
+<li><p><strong>优化策略</strong>：</p>
+<ul>
+<li><p><code>-XX:MaxMetaspaceSize</code> 限制元空间大小，防止类加载过多导致 OOM</p>
+</li>
+<li><p>清理无用的ClassLoader（如频繁使用反射框架）</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="3-Java栈（虚拟机栈）"><a href="#3-Java栈（虚拟机栈）" class="headerlink" title="3. Java栈（虚拟机栈）"></a>3. Java栈（虚拟机栈）</h3><ul>
+<li><p><strong>用途</strong>：每个线程私有，包含方法调用帧（局部变量表、操作数栈、返回地址等）</p>
+</li>
+<li><p><strong>优化建议</strong>：</p>
+<ul>
+<li><p>防止栈帧过深导致 <code>StackOverflowError</code></p>
+</li>
+<li><p>参数：<code>-Xss</code> 设置每个线程栈大小（默认 1M）</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-程序计数器（PC寄存器）"><a href="#4-程序计数器（PC寄存器）" class="headerlink" title="4. 程序计数器（PC寄存器）"></a>4. 程序计数器（PC寄存器）</h3><ul>
+<li><p><strong>用途</strong>：记录当前线程正在执行的字节码行号</p>
+</li>
+<li><p><strong>特点</strong>：每个线程独立，轻量</p>
+</li>
+</ul>
+<hr>
+<h3 id="5-本地方法栈（Native-Stack）"><a href="#5-本地方法栈（Native-Stack）" class="headerlink" title="5. 本地方法栈（Native Stack）"></a>5. 本地方法栈（Native Stack）</h3><ul>
+<li><p><strong>用途</strong>：与操作系统底层交互，如JNI调用</p>
+</li>
+<li><p><strong>问题排查</strong>：使用 native 代码时注意内存管理，否则容易引发 Crash</p>
+</li>
+</ul>
+<hr>
+<h2 id="三、JMM：Java内存模型（并发相关）"><a href="#三、JMM：Java内存模型（并发相关）" class="headerlink" title="三、JMM：Java内存模型（并发相关）"></a>三、JMM：Java内存模型（并发相关）</h2><ul>
+<li><p><strong>主内存 vs 工作内存</strong>：主内存为共享区域（类似堆），每个线程有自己的工作内存（缓存变量）</p>
+</li>
+<li><p><strong>happens-before 原则</strong>：Java并发的可见性和有序性保障</p>
+</li>
+<li><p><strong>volatile、synchronized、Lock</strong>：提供不同层级的内存屏障和可见性保证</p>
+</li>
+</ul>
+<hr>
+<h2 id="四、GC调优与内存分析工具"><a href="#四、GC调优与内存分析工具" class="headerlink" title="四、GC调优与内存分析工具"></a>四、GC调优与内存分析工具</h2><h3 id="1-常用工具"><a href="#1-常用工具" class="headerlink" title="1. 常用工具"></a>1. 常用工具</h3><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>jstat</code></td>
+<td>查看GC频率、堆使用情况</td>
+</tr>
+<tr>
+<td><code>jmap</code></td>
+<td>查看堆快照、对象统计</td>
+</tr>
+<tr>
+<td><code>jstack</code></td>
+<td>查看线程堆栈、死锁分析</td>
+</tr>
+<tr>
+<td><code>jconsole</code></td>
+<td>图形化查看内存、线程</td>
+</tr>
+<tr>
+<td><code>VisualVM</code></td>
+<td>分析内存泄露、GC行为</td>
+</tr>
+<tr>
+<td><code>MAT</code></td>
+<td>Heap Dump分析工具</td>
+</tr>
+</tbody></table>
+<h3 id="2-OOM排查定位"><a href="#2-OOM排查定位" class="headerlink" title="2. OOM排查定位"></a>2. OOM排查定位</h3><ul>
+<li><p><code>java.lang.OutOfMemoryError: Java heap space</code></p>
+<ul>
+<li>提示堆不足，可结合 <code>jmap</code> 查看对象分布</li>
+</ul>
+</li>
+<li><p><code>java.lang.OutOfMemoryError: Metaspace</code></p>
+<ul>
+<li>检查类加载频率、是否有ClassLoader泄露</li>
+</ul>
+</li>
+<li><p><code>java.lang.StackOverflowError</code></p>
+<ul>
+<li>分析递归调用&#x2F;栈深度异常</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="五、实战调优思路"><a href="#五、实战调优思路" class="headerlink" title="五、实战调优思路"></a>五、实战调优思路</h2><h3 id="1-设定合适的堆参数"><a href="#1-设定合适的堆参数" class="headerlink" title="1. 设定合适的堆参数"></a>1. 设定合适的堆参数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-Xms2g -Xmx2g -Xmn512m -XX:SurvivorRatio=8<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-开启GC日志"><a href="#2-开启GC日志" class="headerlink" title="2. 开启GC日志"></a>2. 开启GC日志</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+PrintGCDetails -Xloggc:gc.log<br></code></pre></td></tr></table></figure>
+
+<p>配合工具如 <a target="_blank" rel="noopener" href="https://gceasy.io/">GCEasy</a> 解析 GC 日志。</p>
+<h3 id="3-G1-GC-参数样例"><a href="#3-G1-GC-参数样例" class="headerlink" title="3. G1 GC 参数样例"></a>3. G1 GC 参数样例</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+PrintGCDetails<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、经典内存泄露场景"><a href="#六、经典内存泄露场景" class="headerlink" title="六、经典内存泄露场景"></a>六、经典内存泄露场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>静态集合未清理</td>
+<td>静态Map中缓存对象</td>
+</tr>
+<tr>
+<td>监听器&#x2F;回调未移除</td>
+<td>注册事件后未注销</td>
+</tr>
+<tr>
+<td>ThreadLocal泄露</td>
+<td>特别是在Tomcat这种线程池框架中</td>
+</tr>
+<tr>
+<td>大量ClassLoader动态加载</td>
+<td>热部署应用中未释放ClassLoader</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="七、总结"><a href="#七、总结" class="headerlink" title="七、总结"></a>七、总结</h2><p>JVM内存模型从结构到GC，再到并发语义和实际调优，是一项贯穿<strong>系统设计、性能优化、问题排查</strong>的基础技能。建议：</p>
+<ul>
+<li><p>开发期：避免频繁创建大对象、注意对象生命周期</p>
+</li>
+<li><p>线上期：监控堆使用、GC行为、线程状态</p>
+</li>
+<li><p>事故处理期：利用工具快速定位、修复、优化</p>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/08/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;08&#x2F;JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;08&#x2F;JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/07/java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/">Java类加载机制<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-text">一、JVM内存模型整体架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%90%84%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E8%AF%A6%E8%A7%A3%E4%B8%8E%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">二、各内存区域详解与优化建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%A0%86%EF%BC%88Heap%EF%BC%89"><span class="toc-text">1. 堆（Heap）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%96%B9%E6%B3%95%E5%8C%BA%EF%BC%88Metaspace%EF%BC%89"><span class="toc-text">2. 方法区（Metaspace）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Java%E6%A0%88%EF%BC%88%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%A0%88%EF%BC%89"><span class="toc-text">3. Java栈（虚拟机栈）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88PC%E5%AF%84%E5%AD%98%E5%99%A8%EF%BC%89"><span class="toc-text">4. 程序计数器（PC寄存器）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88%EF%BC%88Native-Stack%EF%BC%89"><span class="toc-text">5. 本地方法栈（Native Stack）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81JMM%EF%BC%9AJava%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%EF%BC%88%E5%B9%B6%E5%8F%91%E7%9B%B8%E5%85%B3%EF%BC%89"><span class="toc-text">三、JMM：Java内存模型（并发相关）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81GC%E8%B0%83%E4%BC%98%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7"><span class="toc-text">四、GC调优与内存分析工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7"><span class="toc-text">1. 常用工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-OOM%E6%8E%92%E6%9F%A5%E5%AE%9A%E4%BD%8D"><span class="toc-text">2. OOM排查定位</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%AE%9E%E6%88%98%E8%B0%83%E4%BC%98%E6%80%9D%E8%B7%AF"><span class="toc-text">五、实战调优思路</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%AE%BE%E5%AE%9A%E5%90%88%E9%80%82%E7%9A%84%E5%A0%86%E5%8F%82%E6%95%B0"><span class="toc-text">1. 设定合适的堆参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%BC%80%E5%90%AFGC%E6%97%A5%E5%BF%97"><span class="toc-text">2. 开启GC日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-G1-GC-%E5%8F%82%E6%95%B0%E6%A0%B7%E4%BE%8B"><span class="toc-text">3. G1 GC 参数样例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BB%8F%E5%85%B8%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2%E5%9C%BA%E6%99%AF"><span class="toc-text">六、经典内存泄露场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">七、总结</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
