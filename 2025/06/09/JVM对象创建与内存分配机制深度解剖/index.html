@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JVM对象创建与内存分配机制深度解剖 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、对象的创建流程（从 Java 代码层面看）1My...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">JVM对象创建与内存分配机制深度解剖</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JVM对象创建与内存分配机制深度解剖</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 09, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1829</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、对象的创建流程（从-Java-代码层面看）"><a href="#一、对象的创建流程（从-Java-代码层面看）" class="headerlink" title="一、对象的创建流程（从 Java 代码层面看）"></a>一、对象的创建流程（从 Java 代码层面看）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">MyObject</span> <span class="hljs-variable">obj</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">MyObject</span>();<br></code></pre></td></tr></table></figure>
+
+<p>JVM 实际上做了以下几件事：</p>
+<ol>
+<li><p><strong>类是否已加载、解析、初始化</strong>（Class Resolution）</p>
+<ul>
+<li><p>如果类 <code>MyObject</code> 没有初始化，先通过类加载器加载；</p>
+</li>
+<li><p>执行 <code>&lt;clinit&gt;</code> 方法，初始化静态变量和静态代码块。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>为对象分配内存</strong></p>
+<ul>
+<li><p>在堆中为对象分配足够的内存空间；</p>
+</li>
+<li><p>地址分配方式可能是指针碰撞（Bump-the-pointer）或空闲列表（Free List）。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>设置对象头（Mark Word + Klass Pointer）</strong></p>
+<ul>
+<li><p>Mark Word：存储 hashCode、GC 分代年龄、锁标志位等；</p>
+</li>
+<li><p>Klass Pointer：对象所属类的元数据信息。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>执行构造函数 <init> 方法</strong></p>
+<ul>
+<li>完成对象初始化（初始化成员变量，调用父类构造器）。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="二、对象内存分配的策略"><a href="#二、对象内存分配的策略" class="headerlink" title="二、对象内存分配的策略"></a>二、对象内存分配的策略</h2><h3 id="1-指针碰撞（Bump-the-Pointer）"><a href="#1-指针碰撞（Bump-the-Pointer）" class="headerlink" title="1. 指针碰撞（Bump-the-Pointer）"></a>1. 指针碰撞（Bump-the-Pointer）</h3><blockquote>
+<p><strong>适用于堆空间规整的场景：如新生代 Eden 区</strong></p>
+</blockquote>
+<ul>
+<li><p>堆中有一个指针 <code>Top</code> 指向下一个空闲区域；</p>
+</li>
+<li><p>每次分配后 <code>Top += size</code>；</p>
+</li>
+<li><p>高效，类似 <code>malloc</code> 的连续分配。</p>
+</li>
+</ul>
+<h3 id="2-空闲列表（Free-List）"><a href="#2-空闲列表（Free-List）" class="headerlink" title="2. 空闲列表（Free List）"></a>2. 空闲列表（Free List）</h3><blockquote>
+<p><strong>适用于堆空间碎片化的场景：如老年代</strong></p>
+</blockquote>
+<ul>
+<li><p>维护一张空闲内存块列表；</p>
+</li>
+<li><p>查找合适大小的内存块（首次适应、最佳适应）；</p>
+</li>
+<li><p>分配后可能还要做合并与回收。</p>
+</li>
+</ul>
+<hr>
+<h2 id="三、内存分配的线程安全性"><a href="#三、内存分配的线程安全性" class="headerlink" title="三、内存分配的线程安全性"></a>三、内存分配的线程安全性</h2><h3 id="TLAB（Thread-Local-Allocation-Buffer）"><a href="#TLAB（Thread-Local-Allocation-Buffer）" class="headerlink" title="TLAB（Thread Local Allocation Buffer）"></a>TLAB（Thread Local Allocation Buffer）</h3><blockquote>
+<p>每个线程有自己的一块 Eden 空间缓存</p>
+</blockquote>
+<ul>
+<li><p>减少堆锁竞争，支持多线程并发分配；</p>
+</li>
+<li><p>对象小于阈值时优先在 TLAB 中分配；</p>
+</li>
+<li><p>TLAB 不够用再尝试直接在 Eden 分配。</p>
+</li>
+</ul>
+<hr>
+<h2 id="四、对象的内存布局（Object-Layout）"><a href="#四、对象的内存布局（Object-Layout）" class="headerlink" title="四、对象的内存布局（Object Layout）"></a>四、对象的内存布局（Object Layout）</h2><p>一个 Java 对象在堆内的结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">|-----------|------------------|----------------------|<br>| MarkWord  | Klass Pointer    | Instance Data        |<br>|-----------|------------------|----------------------|<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>MarkWord（8字节）：</p>
+<ul>
+<li><p>偏向锁：Thread ID、时间戳、标志位；</p>
+</li>
+<li><p>轻量级锁&#x2F;重量级锁；</p>
+</li>
+<li><p>GC 分代年龄；</p>
+</li>
+</ul>
+</li>
+<li><p>Klass Pointer（4&#x2F;8字节）：指向类元数据；</p>
+</li>
+<li><p>Instance Data：成员变量（包含父类字段）；</p>
+</li>
+<li><p>Padding：对齐填充，8字节对齐。</p>
+</li>
+</ul>
+<hr>
+<h2 id="五、内存分配失败时的处理流程"><a href="#五、内存分配失败时的处理流程" class="headerlink" title="五、内存分配失败时的处理流程"></a>五、内存分配失败时的处理流程</h2><p>如果分配失败，JVM 触发一次 <strong>Minor GC</strong> 或 <strong>Full GC</strong>：</p>
+<ul>
+<li><p>Eden 分配失败 ➜ Minor GC；</p>
+</li>
+<li><p>老年代不足 ➜ Full GC；</p>
+</li>
+<li><p>GC 后仍无法分配 ➜ 抛出 <code>OutOfMemoryError: Java heap space</code></p>
+</li>
+</ul>
+<hr>
+<h2 id="六、对象创建过程源码简要路径（HotSpot）"><a href="#六、对象创建过程源码简要路径（HotSpot）" class="headerlink" title="六、对象创建过程源码简要路径（HotSpot）"></a>六、对象创建过程源码简要路径（HotSpot）</h2><p>以 <code>new</code> 指令为例，对应 JVM 中的执行：</p>
+<ul>
+<li><p><code>BytecodeInterpreter::run</code> 调用 <code>Bytecode_new</code></p>
+</li>
+<li><p>最终调用 <code>InstanceKlass::allocate_instance</code></p>
+</li>
+<li><p>使用 <code>MemAllocator</code> 分配内存，涉及 <code>ThreadLocalAllocBuffer</code> 等</p>
+</li>
+</ul>
+<hr>
+<h2 id="七、对象分配优化策略"><a href="#七、对象分配优化策略" class="headerlink" title="七、对象分配优化策略"></a>七、对象分配优化策略</h2><ol>
+<li><p><strong>逃逸分析（Escape Analysis）</strong></p>
+<ul>
+<li><p>判断对象是否会逃出当前线程；</p>
+</li>
+<li><p>不逃逸 ➜ 栈上分配（Stack Allocation）、标量替换；</p>
+</li>
+</ul>
+</li>
+<li><p><strong>标量替换（Scalar Replacement）</strong></p>
+<ul>
+<li>拆解对象为若干基本类型变量；</li>
+</ul>
+</li>
+<li><p><strong>延迟初始化（Lazy Init）</strong></p>
+<ul>
+<li>用到时才创建对象，减少不必要的内存占用；</li>
+</ul>
+</li>
+<li><p><strong>对象池技术（如连接池、线程池）</strong></p>
+<ul>
+<li>减少频繁创建和销毁的开销。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="总结：从代码到堆，一气呵成"><a href="#总结：从代码到堆，一气呵成" class="headerlink" title="总结：从代码到堆，一气呵成"></a>总结：从代码到堆，一气呵成</h2><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>类元信息检查</td>
+<td>类加载、连接、初始化</td>
+</tr>
+<tr>
+<td>分配内存</td>
+<td>TLAB or Eden 分配；失败则 GC</td>
+</tr>
+<tr>
+<td>填充对象头</td>
+<td>Mark Word + Klass Pointer</td>
+</tr>
+<tr>
+<td>初始化成员变量</td>
+<td>设置默认值&#x2F;构造方法赋值</td>
+</tr>
+<tr>
+<td>返回引用</td>
+<td>返回在堆中的地址（引用），栈变量指向它</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/09/JVM%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%BA%A6%E8%A7%A3%E5%89%96/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;09&#x2F;JVM%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%BA%A6%E8%A7%A3%E5%89%96&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;09&#x2F;JVM%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%BA%A6%E8%A7%A3%E5%89%96&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/08/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90%E4%B8%8E%E4%BC%98%E5%8C%96/">JVM内存模型深度剖析与优化<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9B%E5%BB%BA%E6%B5%81%E7%A8%8B%EF%BC%88%E4%BB%8E-Java-%E4%BB%A3%E7%A0%81%E5%B1%82%E9%9D%A2%E7%9C%8B%EF%BC%89"><span class="toc-text">一、对象的创建流程（从 Java 代码层面看）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%9A%84%E7%AD%96%E7%95%A5"><span class="toc-text">二、对象内存分配的策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%8C%87%E9%92%88%E7%A2%B0%E6%92%9E%EF%BC%88Bump-the-Pointer%EF%BC%89"><span class="toc-text">1. 指针碰撞（Bump-the-Pointer）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%A9%BA%E9%97%B2%E5%88%97%E8%A1%A8%EF%BC%88Free-List%EF%BC%89"><span class="toc-text">2. 空闲列表（Free List）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%9A%84%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E6%80%A7"><span class="toc-text">三、内存分配的线程安全性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TLAB%EF%BC%88Thread-Local-Allocation-Buffer%EF%BC%89"><span class="toc-text">TLAB（Thread Local Allocation Buffer）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80%EF%BC%88Object-Layout%EF%BC%89"><span class="toc-text">四、对象的内存布局（Object Layout）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%A4%B1%E8%B4%A5%E6%97%B6%E7%9A%84%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B"><span class="toc-text">五、内存分配失败时的处理流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E8%BF%87%E7%A8%8B%E6%BA%90%E7%A0%81%E7%AE%80%E8%A6%81%E8%B7%AF%E5%BE%84%EF%BC%88HotSpot%EF%BC%89"><span class="toc-text">六、对象创建过程源码简要路径（HotSpot）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%AF%B9%E8%B1%A1%E5%88%86%E9%85%8D%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5"><span class="toc-text">七、对象分配优化策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A%E4%BB%8E%E4%BB%A3%E7%A0%81%E5%88%B0%E5%A0%86%EF%BC%8C%E4%B8%80%E6%B0%94%E5%91%B5%E6%88%90"><span class="toc-text">总结：从代码到堆，一气呵成</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
