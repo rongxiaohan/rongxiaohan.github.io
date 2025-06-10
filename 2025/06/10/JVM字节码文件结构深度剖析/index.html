@@ -1,0 +1,683 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JVM字节码文件结构深度剖析 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、Class文件总体结构Class文件是以二进制形...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">JVM字节码文件结构深度剖析</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JVM字节码文件结构深度剖析</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 10, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2932</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h1 id="一、Class文件总体结构"><a href="#一、Class文件总体结构" class="headerlink" title="一、Class文件总体结构"></a>一、Class文件总体结构</h1><p>Class文件是以二进制形式存储，格式大致如下：</p>
+<table>
+<thead>
+<tr>
+<th>顺序</th>
+<th>字段名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>魔数（magic）</td>
+<td>固定为0xCAFEBABE，标识Class文件</td>
+</tr>
+<tr>
+<td>2</td>
+<td>次版本号（minor_version）</td>
+<td>Class文件次版本号</td>
+</tr>
+<tr>
+<td>3</td>
+<td>主版本号（major_version）</td>
+<td>Class文件主版本号</td>
+</tr>
+<tr>
+<td>4</td>
+<td>常量池计数（constant_pool_count）</td>
+<td>常量池大小（+1，因为索引从1开始）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>常量池（constant_pool）</td>
+<td>存储类、方法、字段、字面量等信息</td>
+</tr>
+<tr>
+<td>6</td>
+<td>访问标志（access_flags）</td>
+<td>类或接口的访问权限和修饰符</td>
+</tr>
+<tr>
+<td>7</td>
+<td>本类索引（this_class）</td>
+<td>指向常量池中描述本类的项</td>
+</tr>
+<tr>
+<td>8</td>
+<td>父类索引（super_class）</td>
+<td>指向常量池中描述父类的项</td>
+</tr>
+<tr>
+<td>9</td>
+<td>接口数量（interfaces_count）</td>
+<td>实现的接口个数</td>
+</tr>
+<tr>
+<td>10</td>
+<td>接口表（interfaces）</td>
+<td>实现接口的常量池索引数组</td>
+</tr>
+<tr>
+<td>11</td>
+<td>字段数量（fields_count）</td>
+<td>本类字段数量</td>
+</tr>
+<tr>
+<td>12</td>
+<td>字段表（fields）</td>
+<td>本类字段的详细描述</td>
+</tr>
+<tr>
+<td>13</td>
+<td>方法数量（methods_count）</td>
+<td>本类方法数量</td>
+</tr>
+<tr>
+<td>14</td>
+<td>方法表（methods）</td>
+<td>本类方法的详细描述</td>
+</tr>
+<tr>
+<td>15</td>
+<td>属性数量（attributes_count）</td>
+<td>额外属性的数量</td>
+</tr>
+<tr>
+<td>16</td>
+<td>属性表（attributes）</td>
+<td>额外信息，如源码文件名、调试信息等</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="二、详细结构解析"><a href="#二、详细结构解析" class="headerlink" title="二、详细结构解析"></a>二、详细结构解析</h1><h2 id="1-魔数（magic）"><a href="#1-魔数（magic）" class="headerlink" title="1. 魔数（magic）"></a>1. 魔数（magic）</h2><ul>
+<li><p>4字节固定值 <code>0xCAFEBABE</code></p>
+</li>
+<li><p>用于快速判断文件是否为合法的Class文件。</p>
+</li>
+</ul>
+<h2 id="2-版本号（minor-version-major-version）"><a href="#2-版本号（minor-version-major-version）" class="headerlink" title="2. 版本号（minor_version + major_version）"></a>2. 版本号（minor_version + major_version）</h2><ul>
+<li><p>2字节次版本号 + 2字节主版本号</p>
+</li>
+<li><p>Java SE版本对应的Class版本：</p>
+<ul>
+<li><p>Java 8: major&#x3D;52, minor&#x3D;0</p>
+</li>
+<li><p>Java 11: major&#x3D;55, minor&#x3D;0</p>
+</li>
+<li><p>以此类推</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-常量池（constant-pool）"><a href="#3-常量池（constant-pool）" class="headerlink" title="3. 常量池（constant_pool）"></a>3. 常量池（constant_pool）</h2><ul>
+<li><p>常量池是Class文件的灵魂，存放字面量和符号引用</p>
+</li>
+<li><p><code>constant_pool_count</code> 表示常量池大小（从1开始计数，0不使用）</p>
+</li>
+<li><p>每个常量池项由tag标识类型，常见tag：</p>
+<ul>
+<li><p>7: Class，存储类或接口名索引</p>
+</li>
+<li><p>9: Fieldref，字段引用</p>
+</li>
+<li><p>10: Methodref，方法引用</p>
+</li>
+<li><p>8: String，字符串字面量</p>
+</li>
+<li><p>1: Utf8，UTF-8编码的字符串</p>
+</li>
+<li><p>12: NameAndType，名称和描述符（签名）</p>
+</li>
+</ul>
+</li>
+<li><p>注意Long和Double占用两个位置</p>
+</li>
+</ul>
+<h3 id="常量池项格式举例（简化）"><a href="#常量池项格式举例（简化）" class="headerlink" title="常量池项格式举例（简化）"></a>常量池项格式举例（简化）</h3><table>
+<thead>
+<tr>
+<th>tag</th>
+<th>内容描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>7</td>
+<td>Class：u2 name_index</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Fieldref：u2 class_index + u2 name_and_type_index</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Methodref：u2 class_index + u2 name_and_type_index</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Utf8：u2 length + bytes[length]</td>
+</tr>
+</tbody></table>
+<h2 id="4-访问标志（access-flags）"><a href="#4-访问标志（access-flags）" class="headerlink" title="4. 访问标志（access_flags）"></a>4. 访问标志（access_flags）</h2><ul>
+<li><p>2字节，指明类的访问权限和性质</p>
+</li>
+<li><p>常见标志：</p>
+<ul>
+<li><p>0x0001：public</p>
+</li>
+<li><p>0x0010：final</p>
+</li>
+<li><p>0x0020：super（用来支持新的类文件版本）</p>
+</li>
+<li><p>0x0200：interface</p>
+</li>
+<li><p>0x0400：abstract</p>
+</li>
+<li><p>0x1000：synthetic（编译器生成）</p>
+</li>
+<li><p>0x2000：annotation（注解）</p>
+</li>
+<li><p>0x4000：enum（枚举）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-this-class-和-super-class"><a href="#5-this-class-和-super-class" class="headerlink" title="5. this_class 和 super_class"></a>5. this_class 和 super_class</h2><ul>
+<li><p>指向常量池的Class索引</p>
+</li>
+<li><p>this_class指向当前类</p>
+</li>
+<li><p>super_class指向父类（Object类没有父类）</p>
+</li>
+</ul>
+<h2 id="6-接口（interfaces）"><a href="#6-接口（interfaces）" class="headerlink" title="6. 接口（interfaces）"></a>6. 接口（interfaces）</h2><ul>
+<li>接口数量 + 指向常量池Class项的索引列表</li>
+</ul>
+<h2 id="7-字段表（fields）"><a href="#7-字段表（fields）" class="headerlink" title="7. 字段表（fields）"></a>7. 字段表（fields）</h2><ul>
+<li><p>字段数量</p>
+</li>
+<li><p>每个字段结构包含：</p>
+<ul>
+<li><p>access_flags</p>
+</li>
+<li><p>name_index（字段名）</p>
+</li>
+<li><p>descriptor_index（字段类型描述符）</p>
+</li>
+<li><p>属性表（如ConstantValue）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="8-方法表（methods）"><a href="#8-方法表（methods）" class="headerlink" title="8. 方法表（methods）"></a>8. 方法表（methods）</h2><ul>
+<li><p>方法数量</p>
+</li>
+<li><p>每个方法结构包含：</p>
+<ul>
+<li><p>access_flags</p>
+</li>
+<li><p>name_index（方法名）</p>
+</li>
+<li><p>descriptor_index（方法描述符，如参数和返回值）</p>
+</li>
+<li><p>属性表（最重要的是Code属性）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="9-属性表（attributes）"><a href="#9-属性表（attributes）" class="headerlink" title="9. 属性表（attributes）"></a>9. 属性表（attributes）</h2><ul>
+<li><p>类、字段、方法、代码都可以拥有属性</p>
+</li>
+<li><p>属性格式：</p>
+<ul>
+<li><p>attribute_name_index：指向常量池Utf8的索引</p>
+</li>
+<li><p>attribute_length：属性字节长度</p>
+</li>
+<li><p>info：属性内容</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>常见属性：</p>
+<ul>
+<li><p><code>Code</code>：包含方法的字节码、局部变量表、异常表等</p>
+</li>
+<li><p><code>LineNumberTable</code>：源码行号映射，调试用</p>
+</li>
+<li><p><code>SourceFile</code>：源码文件名</p>
+</li>
+<li><p><code>LocalVariableTable</code>：局部变量调试信息</p>
+</li>
+</ul>
+<hr>
+<h1 id="三、Code属性详细结构（方法字节码的核心）"><a href="#三、Code属性详细结构（方法字节码的核心）" class="headerlink" title="三、Code属性详细结构（方法字节码的核心）"></a>三、Code属性详细结构（方法字节码的核心）</h1><p>Code属性是方法中最重要的属性，包含了Java虚拟机执行的实际字节码指令。</p>
+<p>结构示例：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>max_stack</td>
+<td>u2</td>
+<td>操作数栈最大深度</td>
+</tr>
+<tr>
+<td>max_locals</td>
+<td>u2</td>
+<td>局部变量表大小</td>
+</tr>
+<tr>
+<td>code_length</td>
+<td>u4</td>
+<td>字节码长度</td>
+</tr>
+<tr>
+<td>code</td>
+<td>u1数组</td>
+<td>字节码指令</td>
+</tr>
+<tr>
+<td>exception_table_length</td>
+<td>u2</td>
+<td>异常处理表大小</td>
+</tr>
+<tr>
+<td>exception_table</td>
+<td>exception_table结构体数组</td>
+<td>捕获异常的表</td>
+</tr>
+<tr>
+<td>attributes_count</td>
+<td>u2</td>
+<td>Code属性中子属性数量</td>
+</tr>
+<tr>
+<td>attributes</td>
+<td>属性结构数组</td>
+<td>如LineNumberTable等</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="四、类文件结构的简图"><a href="#四、类文件结构的简图" class="headerlink" title="四、类文件结构的简图"></a>四、类文件结构的简图</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">ClassFile &#123;<br>    u4 magic;<br>    u2 minor_version;<br>    u2 major_version;<br>    u2 constant_pool_count;<br>    cp_info constant_pool[constant_pool_count-1];<br>    u2 access_flags;<br>    u2 this_class;<br>    u2 super_class;<br>    u2 interfaces_count;<br>    u2 interfaces[interfaces_count];<br>    u2 fields_count;<br>    field_info fields[fields_count];<br>    u2 methods_count;<br>    method_info methods[methods_count];<br>    u2 attributes_count;<br>    attribute_info attributes[attributes_count];<br>&#125;<br></code></pre></td></tr></table></figure>
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/10/JVM%E5%AD%97%E8%8A%82%E7%A0%81%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;10&#x2F;JVM%E5%AD%97%E8%8A%82%E7%A0%81%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;10&#x2F;JVM%E5%AD%97%E8%8A%82%E7%A0%81%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/09/JVM%E5%AF%B9%E8%B1%A1%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E6%9C%BA%E5%88%B6%E6%B7%B1%E5%BA%A6%E8%A7%A3%E5%89%96/">JVM对象创建与内存分配机制深度解剖<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81Class%E6%96%87%E4%BB%B6%E6%80%BB%E4%BD%93%E7%BB%93%E6%9E%84"><span class="toc-text">一、Class文件总体结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%AF%A6%E7%BB%86%E7%BB%93%E6%9E%84%E8%A7%A3%E6%9E%90"><span class="toc-text">二、详细结构解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%AD%94%E6%95%B0%EF%BC%88magic%EF%BC%89"><span class="toc-text">1. 魔数（magic）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%89%88%E6%9C%AC%E5%8F%B7%EF%BC%88minor-version-major-version%EF%BC%89"><span class="toc-text">2. 版本号（minor_version + major_version）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%88constant-pool%EF%BC%89"><span class="toc-text">3. 常量池（constant_pool）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E9%87%8F%E6%B1%A0%E9%A1%B9%E6%A0%BC%E5%BC%8F%E4%B8%BE%E4%BE%8B%EF%BC%88%E7%AE%80%E5%8C%96%EF%BC%89"><span class="toc-text">常量池项格式举例（简化）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%AE%BF%E9%97%AE%E6%A0%87%E5%BF%97%EF%BC%88access-flags%EF%BC%89"><span class="toc-text">4. 访问标志（access_flags）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-this-class-%E5%92%8C-super-class"><span class="toc-text">5. this_class 和 super_class</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%8E%A5%E5%8F%A3%EF%BC%88interfaces%EF%BC%89"><span class="toc-text">6. 接口（interfaces）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E5%AD%97%E6%AE%B5%E8%A1%A8%EF%BC%88fields%EF%BC%89"><span class="toc-text">7. 字段表（fields）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E6%96%B9%E6%B3%95%E8%A1%A8%EF%BC%88methods%EF%BC%89"><span class="toc-text">8. 方法表（methods）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E5%B1%9E%E6%80%A7%E8%A1%A8%EF%BC%88attributes%EF%BC%89"><span class="toc-text">9. 属性表（attributes）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81Code%E5%B1%9E%E6%80%A7%E8%AF%A6%E7%BB%86%E7%BB%93%E6%9E%84%EF%BC%88%E6%96%B9%E6%B3%95%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="toc-text">三、Code属性详细结构（方法字节码的核心）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E7%9A%84%E7%AE%80%E5%9B%BE"><span class="toc-text">四、类文件结构的简图</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
