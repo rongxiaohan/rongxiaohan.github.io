@@ -1,0 +1,522 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JVM垃圾回收器ParNew&amp;CMS于三色标记算法详解 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🧠 一、前置概念复习1. ParNew 是啥？
+是...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">JVM垃圾回收器ParNew&amp;CMS于三色标记算法详解</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JVM垃圾回收器ParNew&CMS于三色标记算法详解</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 11, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1276</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🧠-一、前置概念复习"><a href="#🧠-一、前置概念复习" class="headerlink" title="🧠 一、前置概念复习"></a>🧠 一、前置概念复习</h2><h3 id="1-ParNew-是啥？"><a href="#1-ParNew-是啥？" class="headerlink" title="1. ParNew 是啥？"></a>1. ParNew 是啥？</h3><ul>
+<li><p>是 <strong>新生代</strong>的多线程并行收集器；</p>
+</li>
+<li><p>基于 <strong>标记-复制算法</strong>；</p>
+</li>
+<li><p>一般与 <strong>CMS（Concurrent Mark-Sweep）</strong> 搭配使用。</p>
+</li>
+</ul>
+<h3 id="2-CMS-是啥？"><a href="#2-CMS-是啥？" class="headerlink" title="2. CMS 是啥？"></a>2. CMS 是啥？</h3><ul>
+<li><p>是老年代的 <strong>并发标记清除收集器</strong>；</p>
+</li>
+<li><p>优点：<strong>低停顿时间</strong>，非常适合响应速度要求高的场景；</p>
+</li>
+<li><p>缺点：<strong>易产生内存碎片</strong>，处理过程复杂。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🎨-二、三色标记算法简介"><a href="#🎨-二、三色标记算法简介" class="headerlink" title="🎨 二、三色标记算法简介"></a>🎨 二、三色标记算法简介</h2><p>三色标记是 CMS 和 G1 都采用的一种 <strong>并发标记策略</strong>，它的核心思想是将对象按“可达性”标记为三种颜色：</p>
+<table>
+<thead>
+<tr>
+<th>颜色</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>白色</strong></td>
+<td>未被访问，默认所有对象初始都是白色</td>
+</tr>
+<tr>
+<td><strong>灰色</strong></td>
+<td>被访问了，但它的引用还未被扫描</td>
+</tr>
+<tr>
+<td><strong>黑色</strong></td>
+<td>被访问，且它引用的对象也都扫描完了</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>标记过程最终目标：<strong>清除白色对象</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="🚀-三、CMS-中三色标记的过程详解"><a href="#🚀-三、CMS-中三色标记的过程详解" class="headerlink" title="🚀 三、CMS 中三色标记的过程详解"></a>🚀 三、CMS 中三色标记的过程详解</h2><p>CMS 垃圾收集的过程分为如下几个阶段：</p>
+<h3 id="📌-1-初始标记（Stop-The-World）"><a href="#📌-1-初始标记（Stop-The-World）" class="headerlink" title="📌 1. 初始标记（Stop-The-World）"></a>📌 1. 初始标记（Stop-The-World）</h3><ul>
+<li><p>暂停所有线程；</p>
+</li>
+<li><p>从 GC Root 开始，把直接可达的对象标记为<strong>灰色</strong>；</p>
+</li>
+<li><p>时间非常短。</p>
+</li>
+</ul>
+<h3 id="📌-2-并发标记（Concurrent-Mark）"><a href="#📌-2-并发标记（Concurrent-Mark）" class="headerlink" title="📌 2. 并发标记（Concurrent Mark）"></a>📌 2. 并发标记（Concurrent Mark）</h3><ul>
+<li><p><strong>用户线程和 GC 同时运行</strong>；</p>
+</li>
+<li><p>灰色对象会被扫描，它引用的对象也会被标记为灰色；</p>
+</li>
+<li><p>自身变为黑色。</p>
+</li>
+</ul>
+<h3 id="📌-3-重新标记（Stop-The-World）"><a href="#📌-3-重新标记（Stop-The-World）" class="headerlink" title="📌 3. 重新标记（Stop-The-World）"></a>📌 3. 重新标记（Stop-The-World）</h3><ul>
+<li><p>短暂暂停所有线程；</p>
+</li>
+<li><p>用来修正并发标记阶段<strong>因为对象引用变化而漏标的情况</strong>。</p>
+</li>
+</ul>
+<h3 id="📌-4-并发清除"><a href="#📌-4-并发清除" class="headerlink" title="📌 4. 并发清除"></a>📌 4. 并发清除</h3><ul>
+<li><p>清理白色对象；</p>
+</li>
+<li><p>不会移动对象（导致内存碎片）；</p>
+</li>
+<li><p>与用户线程并发执行。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔥-四、那三色标记有啥问题？（重点）"><a href="#🔥-四、那三色标记有啥问题？（重点）" class="headerlink" title="🔥 四、那三色标记有啥问题？（重点）"></a>🔥 四、那三色标记有啥问题？（重点）</h2><h3 id="❗-问题1：漏标问题（Concurrent-Modification）"><a href="#❗-问题1：漏标问题（Concurrent-Modification）" class="headerlink" title="❗ 问题1：漏标问题（Concurrent Modification）"></a>❗ 问题1：<strong>漏标问题（Concurrent Modification）</strong></h3><p>假设在并发标记阶段：</p>
+<ol>
+<li><p>对象 A 是灰色，引用 B（白色）；</p>
+</li>
+<li><p>GC 还没扫描 A；</p>
+</li>
+<li><p>应用线程把 A 的引用 B 删了，改由 C 引用了 B；</p>
+</li>
+<li><p>此时 GC 扫描 A 时，发现没引用 B，B 就“被漏掉”了；</p>
+</li>
+<li><p>而 C 是黑色，不会再被扫描；</p>
+</li>
+<li><p>所以 B <strong>漏标，被当垃圾回收了</strong>，产生严重错误。</p>
+</li>
+</ol>
+<h3 id="💡-解决方法：写屏障机制（Write-Barrier）"><a href="#💡-解决方法：写屏障机制（Write-Barrier）" class="headerlink" title="💡 解决方法：写屏障机制（Write Barrier）"></a>💡 解决方法：<strong>写屏障机制（Write Barrier）</strong></h3><ul>
+<li><p><strong>Incremental Update（增量更新）</strong>：记录谁修改了引用；</p>
+</li>
+<li><p><strong>Snapshot-At-The-Beginning（SATB 快照）</strong>：记录“原始快照”状态；</p>
+</li>
+<li><p>CMS 使用的是 <strong>SATB 的变种</strong>，配合写屏障，在对象引用修改时记录原状态，避免漏标。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧪-五、CMS-ParNew-回收流程总结"><a href="#🧪-五、CMS-ParNew-回收流程总结" class="headerlink" title="🧪 五、CMS + ParNew 回收流程总结"></a>🧪 五、CMS + ParNew 回收流程总结</h2><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>新生代（ParNew）</th>
+<th>老年代（CMS）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>初始标记</strong></td>
+<td>暂停</td>
+<td>暂停</td>
+</tr>
+<tr>
+<td><strong>并发标记</strong></td>
+<td>-</td>
+<td>与用户线程并发</td>
+</tr>
+<tr>
+<td><strong>重新标记</strong></td>
+<td>暂停</td>
+<td>暂停</td>
+</tr>
+<tr>
+<td><strong>并发清除</strong></td>
+<td>-</td>
+<td>并发清除白色对象</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🎯-六、优缺点总结"><a href="#🎯-六、优缺点总结" class="headerlink" title="🎯 六、优缺点总结"></a>🎯 六、优缺点总结</h2><h3 id="✅-优点"><a href="#✅-优点" class="headerlink" title="✅ 优点"></a>✅ 优点</h3><ul>
+<li><p>响应快，<strong>低延迟</strong>；</p>
+</li>
+<li><p>回收过程多是并发的，对应用影响小。</p>
+</li>
+</ul>
+<h3 id="❌-缺点"><a href="#❌-缺点" class="headerlink" title="❌ 缺点"></a>❌ 缺点</h3><ul>
+<li><p><strong>容易产生碎片</strong>，因为是标记-清除；</p>
+</li>
+<li><p><strong>浮动垃圾</strong>问题严重，容易造成<strong>Concurrent Mode Failure</strong>（并发失败，触发 Full GC）；</p>
+</li>
+<li><p>要求对象分代策略合理，否则容易<strong>晋升失败</strong>。</p>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/11/JVM%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8ParNew&CMS%E4%BA%8E%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%AE%97%E6%B3%95%E8%AF%A6%E8%A7%A3/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;11&#x2F;JVM%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8ParNew&amp;CMS%E4%BA%8E%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%AE%97%E6%B3%95%E8%AF%A6%E8%A7%A3&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;11&#x2F;JVM%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8ParNew&amp;CMS%E4%BA%8E%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%AE%97%E6%B3%95%E8%AF%A6%E8%A7%A3&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/10/JVM%E5%AD%97%E8%8A%82%E7%A0%81%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E6%B7%B1%E5%BA%A6%E5%89%96%E6%9E%90/">JVM字节码文件结构深度剖析<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%B8%80%E3%80%81%E5%89%8D%E7%BD%AE%E6%A6%82%E5%BF%B5%E5%A4%8D%E4%B9%A0"><span class="toc-text">🧠 一、前置概念复习</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-ParNew-%E6%98%AF%E5%95%A5%EF%BC%9F"><span class="toc-text">1. ParNew 是啥？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-CMS-%E6%98%AF%E5%95%A5%EF%BC%9F"><span class="toc-text">2. CMS 是啥？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%A8-%E4%BA%8C%E3%80%81%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%AE%97%E6%B3%95%E7%AE%80%E4%BB%8B"><span class="toc-text">🎨 二、三色标记算法简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-%E4%B8%89%E3%80%81CMS-%E4%B8%AD%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%9A%84%E8%BF%87%E7%A8%8B%E8%AF%A6%E8%A7%A3"><span class="toc-text">🚀 三、CMS 中三色标记的过程详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-1-%E5%88%9D%E5%A7%8B%E6%A0%87%E8%AE%B0%EF%BC%88Stop-The-World%EF%BC%89"><span class="toc-text">📌 1. 初始标记（Stop-The-World）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-2-%E5%B9%B6%E5%8F%91%E6%A0%87%E8%AE%B0%EF%BC%88Concurrent-Mark%EF%BC%89"><span class="toc-text">📌 2. 并发标记（Concurrent Mark）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-3-%E9%87%8D%E6%96%B0%E6%A0%87%E8%AE%B0%EF%BC%88Stop-The-World%EF%BC%89"><span class="toc-text">📌 3. 重新标记（Stop-The-World）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8C-4-%E5%B9%B6%E5%8F%91%E6%B8%85%E9%99%A4"><span class="toc-text">📌 4. 并发清除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%A5-%E5%9B%9B%E3%80%81%E9%82%A3%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%9C%89%E5%95%A5%E9%97%AE%E9%A2%98%EF%BC%9F%EF%BC%88%E9%87%8D%E7%82%B9%EF%BC%89"><span class="toc-text">🔥 四、那三色标记有啥问题？（重点）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%97-%E9%97%AE%E9%A2%981%EF%BC%9A%E6%BC%8F%E6%A0%87%E9%97%AE%E9%A2%98%EF%BC%88Concurrent-Modification%EF%BC%89"><span class="toc-text">❗ 问题1：漏标问题（Concurrent Modification）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%EF%BC%9A%E5%86%99%E5%B1%8F%E9%9A%9C%E6%9C%BA%E5%88%B6%EF%BC%88Write-Barrier%EF%BC%89"><span class="toc-text">💡 解决方法：写屏障机制（Write Barrier）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E4%BA%94%E3%80%81CMS-ParNew-%E5%9B%9E%E6%94%B6%E6%B5%81%E7%A8%8B%E6%80%BB%E7%BB%93"><span class="toc-text">🧪 五、CMS + ParNew 回收流程总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E5%85%AD%E3%80%81%E4%BC%98%E7%BC%BA%E7%82%B9%E6%80%BB%E7%BB%93"><span class="toc-text">🎯 六、优缺点总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%BC%98%E7%82%B9"><span class="toc-text">✅ 优点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%8C-%E7%BC%BA%E7%82%B9"><span class="toc-text">❌ 缺点</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
