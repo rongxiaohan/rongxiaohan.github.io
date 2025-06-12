@@ -1,0 +1,537 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JVM调优实战和常量池详解 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、JVM调优实战篇1.1 常见调优目标
+减少 Fu...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">JVM调优实战和常量池详解</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JVM调优实战和常量池详解</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 12, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2165</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、JVM调优实战篇"><a href="#一、JVM调优实战篇" class="headerlink" title="一、JVM调优实战篇"></a>一、JVM调优实战篇</h2><h3 id="1-1-常见调优目标"><a href="#1-1-常见调优目标" class="headerlink" title="1.1 常见调优目标"></a>1.1 常见调优目标</h3><ul>
+<li><p>减少 Full GC 次数与耗时</p>
+</li>
+<li><p>降低响应延迟（Low Latency）</p>
+</li>
+<li><p>提高吞吐量（Throughput）</p>
+</li>
+<li><p>控制内存占用</p>
+</li>
+<li><p>避免 OOM（OutOfMemoryError）</p>
+</li>
+</ul>
+<h3 id="1-2-核心参数调优"><a href="#1-2-核心参数调优" class="headerlink" title="1.2 核心参数调优"></a>1.2 核心参数调优</h3><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-Xms</code> &#x2F; <code>-Xmx</code></td>
+<td>初始堆大小 &#x2F; 最大堆大小</td>
+</tr>
+<tr>
+<td><code>-Xmn</code></td>
+<td>年轻代大小（包括 Eden + S0 + S1）</td>
+</tr>
+<tr>
+<td><code>-XX:PermSize</code> &#x2F; <code>-XX:MaxPermSize</code></td>
+<td>永久代（JDK 8 前）</td>
+</tr>
+<tr>
+<td><code>-XX:MetaspaceSize</code> &#x2F; <code>-XX:MaxMetaspaceSize</code></td>
+<td>元空间（JDK 8+）</td>
+</tr>
+<tr>
+<td><code>-XX:+UseG1GC</code></td>
+<td>启用 G1 垃圾收集器</td>
+</tr>
+<tr>
+<td><code>-XX:+UseParallelGC</code></td>
+<td>启用吞吐量优先的并行GC</td>
+</tr>
+<tr>
+<td><code>-XX:+UseZGC</code> &#x2F; <code>-XX:+UseShenandoahGC</code></td>
+<td>低延迟收集器（JDK11+）</td>
+</tr>
+</tbody></table>
+<h3 id="1-3-GC-日志分析"><a href="#1-3-GC-日志分析" class="headerlink" title="1.3 GC 日志分析"></a>1.3 GC 日志分析</h3><p>启动参数添加：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:gc.log<br></code></pre></td></tr></table></figure>
+
+<p>常见日志样例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">[GC (Allocation Failure) [PSYoungGen: 1024K-&gt;512K(1536K)] 2048K-&gt;1536K(4096K), 0.005 secs]<br></code></pre></td></tr></table></figure>
+
+<p>重点关注：</p>
+<ul>
+<li><p>GC次数、频率</p>
+</li>
+<li><p>每次GC回收了多少对象</p>
+</li>
+<li><p>Full GC 是否频繁触发</p>
+</li>
+</ul>
+<h3 id="1-4-性能调优实战策略"><a href="#1-4-性能调优实战策略" class="headerlink" title="1.4 性能调优实战策略"></a>1.4 性能调优实战策略</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Full GC 频繁</td>
+<td>检查是否内存不足，老年代是否过小，是否有内存泄漏</td>
+</tr>
+<tr>
+<td>响应慢</td>
+<td>使用 G1 &#x2F; ZGC 替代 CMS &#x2F; ParallelGC</td>
+</tr>
+<tr>
+<td>Metaspace OOM</td>
+<td>增加 <code>-XX:MaxMetaspaceSize</code></td>
+</tr>
+<tr>
+<td>Minor GC 频繁</td>
+<td>增大 Eden 区大小或设置更大 <code>Xmn</code></td>
+</tr>
+<tr>
+<td>对象创建频繁</td>
+<td>使用对象池、避免过多临时对象</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、JVM常量池详解"><a href="#二、JVM常量池详解" class="headerlink" title="二、JVM常量池详解"></a>二、JVM常量池详解</h2><p>JVM 中的常量池是提高执行效率的重要机制，主要包括 <strong>Class 常量池</strong> 和 <strong>运行时常量池（Runtime Constant Pool）</strong>。</p>
+<h3 id="2-1-Class-文件常量池"><a href="#2-1-Class-文件常量池" class="headerlink" title="2.1 Class 文件常量池"></a>2.1 Class 文件常量池</h3><p>存在于 <code>.class</code> 文件中的结构，包含：</p>
+<ul>
+<li><p>字面量（如字符串、整数）</p>
+</li>
+<li><p>符号引用（类、方法、字段）</p>
+</li>
+</ul>
+<p>示例（通过 <code>javap -v</code>）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">javap -v HelloWorld.class<br></code></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">Constant pool:<br> #1 = Methodref          #6.#17         // java/lang/Object.&quot;&lt;init&gt;&quot;:()V<br> #2 = Class              #18            // HelloWorld<br> #3 = Utf8               HelloWorld<br> #4 = Utf8               java/lang/Object<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-运行时常量池（Runtime-Constant-Pool）"><a href="#2-2-运行时常量池（Runtime-Constant-Pool）" class="headerlink" title="2.2 运行时常量池（Runtime Constant Pool）"></a>2.2 运行时常量池（Runtime Constant Pool）</h3><p>加载 <code>.class</code> 文件时，JVM 将常量池的一部分加载进内存，存在于 <strong>方法区（永久代或元空间）</strong> 中。</p>
+<p>用途：</p>
+<ul>
+<li><p>执行符号引用解析</p>
+</li>
+<li><p>字符串常量池（StringTable）</p>
+</li>
+<li><p>动态常量（<code>invokedynamic</code>）</p>
+</li>
+</ul>
+<h3 id="2-3-字符串常量池（String-Pool）"><a href="#2-3-字符串常量池（String-Pool）" class="headerlink" title="2.3 字符串常量池（String Pool）"></a>2.3 字符串常量池（String Pool）</h3><p><strong>重要特性</strong>：</p>
+<ul>
+<li><p>字符串字面量自动加入常量池：<code>String s = &quot;abc&quot;;</code></p>
+</li>
+<li><p>使用 <code>new String(&quot;abc&quot;)</code> 不会自动加入常量池</p>
+</li>
+<li><p>可以通过 <code>intern()</code> 手动加入池中</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">String</span> <span class="hljs-variable">s1</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;abc&quot;</span>;<br><span class="hljs-type">String</span> <span class="hljs-variable">s2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(<span class="hljs-string">&quot;abc&quot;</span>);<br>System.out.println(s1 == s2); <span class="hljs-comment">// false</span><br>System.out.println(s1 == s2.intern()); <span class="hljs-comment">// true</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-4-常量池溢出"><a href="#2-4-常量池溢出" class="headerlink" title="2.4 常量池溢出"></a>2.4 常量池溢出</h3><p>在旧版 JDK 中，如果大量动态生成的字符串调用 <code>intern()</code>，可能导致 <code>OutOfMemoryError: PermGen space</code>（JDK 7之前）。</p>
+<p>JDK 8 起常量池移到 <strong>元空间</strong>，不过依然可能引发 <code>OutOfMemoryError: Metaspace</code>。</p>
+<hr>
+<h2 id="三、实战案例：内存泄漏排查-调优"><a href="#三、实战案例：内存泄漏排查-调优" class="headerlink" title="三、实战案例：内存泄漏排查+调优"></a>三、实战案例：内存泄漏排查+调优</h2><h3 id="案例：线上系统频繁Full-GC"><a href="#案例：线上系统频繁Full-GC" class="headerlink" title="案例：线上系统频繁Full GC"></a>案例：线上系统频繁Full GC</h3><p><strong>现象</strong>：</p>
+<ul>
+<li><p>CMS GC频率高</p>
+</li>
+<li><p>Metaspace OOM</p>
+</li>
+</ul>
+<p><strong>分析过程</strong>：</p>
+<ol>
+<li><p>通过 <code>jstat -gcutil</code> 查看 GC 情况</p>
+</li>
+<li><p>使用 <code>jmap  -heap pid</code> 查看 Metaspace 占用</p>
+</li>
+<li><p>使用 <code>jmap -histo:live pid</code> 分析类实例占用</p>
+</li>
+<li><p>使用 MAT 分析 <code>.hprof</code> dump 文件</p>
+</li>
+</ol>
+<p><strong>解决</strong>：</p>
+<ul>
+<li><p>增大 <code>MaxMetaspaceSize</code></p>
+</li>
+<li><p>清理 <code>ClassLoader</code> 泄漏（如 Tomcat 热部署）</p>
+</li>
+<li><p>替换 CMS 为 G1</p>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/12/JVM%E8%B0%83%E4%BC%98%E5%AE%9E%E6%88%98%E5%92%8C%E5%B8%B8%E9%87%8F%E6%B1%A0%E8%AF%A6%E8%A7%A3/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;12&#x2F;JVM%E8%B0%83%E4%BC%98%E5%AE%9E%E6%88%98%E5%92%8C%E5%B8%B8%E9%87%8F%E6%B1%A0%E8%AF%A6%E8%A7%A3&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;12&#x2F;JVM%E8%B0%83%E4%BC%98%E5%AE%9E%E6%88%98%E5%92%8C%E5%B8%B8%E9%87%8F%E6%B1%A0%E8%AF%A6%E8%A7%A3&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/11/JVM%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8ParNew&CMS%E4%BA%8E%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E7%AE%97%E6%B3%95%E8%AF%A6%E8%A7%A3/">JVM垃圾回收器ParNew&CMS于三色标记算法详解<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81JVM%E8%B0%83%E4%BC%98%E5%AE%9E%E6%88%98%E7%AF%87"><span class="toc-text">一、JVM调优实战篇</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%B8%B8%E8%A7%81%E8%B0%83%E4%BC%98%E7%9B%AE%E6%A0%87"><span class="toc-text">1.1 常见调优目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98"><span class="toc-text">1.2 核心参数调优</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-GC-%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90"><span class="toc-text">1.3 GC 日志分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E5%AE%9E%E6%88%98%E7%AD%96%E7%95%A5"><span class="toc-text">1.4 性能调优实战策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81JVM%E5%B8%B8%E9%87%8F%E6%B1%A0%E8%AF%A6%E8%A7%A3"><span class="toc-text">二、JVM常量池详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Class-%E6%96%87%E4%BB%B6%E5%B8%B8%E9%87%8F%E6%B1%A0"><span class="toc-text">2.1 Class 文件常量池</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%88Runtime-Constant-Pool%EF%BC%89"><span class="toc-text">2.2 运行时常量池（Runtime Constant Pool）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%88String-Pool%EF%BC%89"><span class="toc-text">2.3 字符串常量池（String Pool）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%B8%B8%E9%87%8F%E6%B1%A0%E6%BA%A2%E5%87%BA"><span class="toc-text">2.4 常量池溢出</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B%EF%BC%9A%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E6%8E%92%E6%9F%A5-%E8%B0%83%E4%BC%98"><span class="toc-text">三、实战案例：内存泄漏排查+调优</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%EF%BC%9A%E7%BA%BF%E4%B8%8A%E7%B3%BB%E7%BB%9F%E9%A2%91%E7%B9%81Full-GC"><span class="toc-text">案例：线上系统频繁Full GC</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
