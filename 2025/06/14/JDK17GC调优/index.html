@@ -1,0 +1,473 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>JDK17GC调优 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、选择合适的 GC1. G1 GC（默认）
+特点：...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">JDK17GC调优</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">JDK17GC调优</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 14, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1821</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、选择合适的-GC"><a href="#一、选择合适的-GC" class="headerlink" title="一、选择合适的 GC"></a>一、选择合适的 GC</h2><h3 id="1-G1-GC（默认）"><a href="#1-G1-GC（默认）" class="headerlink" title="1. G1 GC（默认）"></a>1. G1 GC（默认）</h3><ul>
+<li><p>特点：并发、分代、并行、低停顿</p>
+</li>
+<li><p>适合：大多数通用场景，低延迟+中等吞吐量</p>
+</li>
+<li><p>默认在 JDK 9 起取代 Parallel 成为默认 GC</p>
+</li>
+</ul>
+<h3 id="2-ZGC"><a href="#2-ZGC" class="headerlink" title="2. ZGC"></a>2. ZGC</h3><ul>
+<li><p>特点：<strong>超低延迟</strong>（&lt;10ms）、<strong>可扩展至 TB 级堆内存</strong></p>
+</li>
+<li><p>适合：对响应时间敏感的系统，如金融、游戏、SaaS 服务</p>
+</li>
+<li><p>参数开启：</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+UseZGC<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="3-Shenandoah-GC"><a href="#3-Shenandoah-GC" class="headerlink" title="3. Shenandoah GC"></a>3. Shenandoah GC</h3><ul>
+<li><p>特点：和 ZGC 类似，也是并发压缩，低延迟</p>
+</li>
+<li><p>适合：RedHat 生态、JDK 17+ 可用</p>
+</li>
+<li><p>参数开启：</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+UseShenandoahGC<br></code></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="4-Parallel-GC"><a href="#4-Parallel-GC" class="headerlink" title="4. Parallel GC"></a>4. Parallel GC</h3><ul>
+<li><p>特点：吞吐量优先，适合批处理、大量计算任务</p>
+</li>
+<li><p>参数开启：</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+UseParallelGC<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h2 id="二、常用-GC-调优参数"><a href="#二、常用-GC-调优参数" class="headerlink" title="二、常用 GC 调优参数"></a>二、常用 GC 调优参数</h2><h3 id="1-堆内存配置"><a href="#1-堆内存配置" class="headerlink" title="1. 堆内存配置"></a>1. 堆内存配置</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-Xms4g -Xmx4g        <span class="hljs-comment"># 初始/最大堆内存</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-G1-GC-专属调优"><a href="#2-G1-GC-专属调优" class="headerlink" title="2. G1 GC 专属调优"></a>2. G1 GC 专属调优</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+UseG1GC<br>-XX:MaxGCPauseMillis=100        <span class="hljs-comment"># 期望最大 GC 停顿时间（默认 200ms）</span><br>-XX:+ParallelRefProcEnabled     <span class="hljs-comment"># 并行处理 Reference（Soft/Weak/Phantom）</span><br>-XX:G1HeapRegionSize=16m        <span class="hljs-comment"># 控制每个 Region 大小（1MB~32MB）</span><br>-XX:InitiatingHeapOccupancyPercent=45   <span class="hljs-comment"># Mixed GC 触发阈值（默认45）</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="3-ZGC-调优"><a href="#3-ZGC-调优" class="headerlink" title="3. ZGC 调优"></a>3. ZGC 调优</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:+UseZGC<br>-XX:ZUncommitDelay=300          <span class="hljs-comment"># 空闲内存回收延迟（秒）</span><br>-XX:SoftMaxHeapSize=6g          <span class="hljs-comment"># GC 主动缩小 heap 的上限提示值</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="4-GC-日志推荐配置（统一适用）"><a href="#4-GC-日志推荐配置（统一适用）" class="headerlink" title="4. GC 日志推荐配置（统一适用）"></a>4. GC 日志推荐配置（统一适用）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-Xlog:gc*:file=gc.log:time,<span class="hljs-built_in">uptime</span>,level,tags<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、调优建议和实践"><a href="#三、调优建议和实践" class="headerlink" title="三、调优建议和实践"></a>三、调优建议和实践</h2><h3 id="1-优先设定目标"><a href="#1-优先设定目标" class="headerlink" title="1. 优先设定目标"></a>1. 优先设定目标</h3><ul>
+<li><p>对延迟敏感：ZGC &#x2F; Shenandoah</p>
+</li>
+<li><p>吞吐量优先：Parallel GC</p>
+</li>
+<li><p>平衡兼顾：G1 GC</p>
+</li>
+</ul>
+<h3 id="2-常用调优策略（G1-为例）"><a href="#2-常用调优策略（G1-为例）" class="headerlink" title="2. 常用调优策略（G1 为例）"></a>2. 常用调优策略（G1 为例）</h3><ul>
+<li><p><strong>控制 GC 停顿时间</strong>：</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:MaxGCPauseMillis=200<br></code></pre></td></tr></table></figure>
+<p>  过低可能导致频繁 GC，反而影响性能。</p>
+</li>
+<li><p><strong>监控 Mixed GC 是否频繁</strong>：<br>  调整 <code>InitiatingHeapOccupancyPercent</code>，默认 45%，适当提高至 60% 可减少 Mixed GC。</p>
+</li>
+<li><p><strong>避免过度 Full GC</strong>：<br>  分析 GC log 中 Full GC 频次、触发原因（一般为晋升失败）。</p>
+</li>
+<li><p><strong>元空间爆炸？</strong><br>  加：</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:MaxMetaspaceSize=512m<br></code></pre></td></tr></table></figure>
+</li>
+<li><p><strong>JFR（Java Flight Recorder）分析 GC 行为</strong>：<br>  开启方式：</p>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">-XX:StartFlightRecording=duration=5m,filename=recording.jfr<br></code></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<h2 id="四、调优流程建议"><a href="#四、调优流程建议" class="headerlink" title="四、调优流程建议"></a>四、调优流程建议</h2><ol>
+<li><p><strong>初期设置</strong></p>
+<ul>
+<li><p>G1GC + 合理的 <code>-Xms</code> <code>-Xmx</code>，设置目标 <code>MaxGCPauseMillis</code></p>
+</li>
+<li><p>开启 GC 日志</p>
+</li>
+</ul>
+</li>
+<li><p><strong>运行监控</strong></p>
+<ul>
+<li>使用 <code>jstat</code>, <code>jmap</code>, <code>jcmd</code>, <code>JFR</code>, <code>VisualVM</code>, <code>GCViewer</code> 等工具</li>
+</ul>
+</li>
+<li><p><strong>分析 GC 日志</strong></p>
+<ul>
+<li>关注 GC 次数、耗时、堆使用变化，查看是否频繁 Full GC</li>
+</ul>
+</li>
+<li><p><strong>调整参数</strong></p>
+<ul>
+<li><p>提高 <code>InitiatingHeapOccupancyPercent</code>、增大 Region</p>
+</li>
+<li><p>评估是否切换为 ZGC 或 Parallel GC</p>
+</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="五、实战推荐配置示例（G1GC，服务类应用）"><a href="#五、实战推荐配置示例（G1GC，服务类应用）" class="headerlink" title="五、实战推荐配置示例（G1GC，服务类应用）"></a>五、实战推荐配置示例（G1GC，服务类应用）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">-Xms4g -Xmx4g<br>-XX:+UseG1GC<br>-XX:MaxGCPauseMillis=200<br>-XX:+ParallelRefProcEnabled<br>-XX:InitiatingHeapOccupancyPercent=45<br>-XX:+UnlockExperimentalVMOptions<br>-XX:+DoEscapeAnalysis<br>-Xlog:gc*:file=/var/log/gc.log:time,<span class="hljs-built_in">uptime</span>,level,tags<br></code></pre></td></tr></table></figure>
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/14/JDK17GC%E8%B0%83%E4%BC%98/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;14&#x2F;JDK17GC%E8%B0%83%E4%BC%98&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;14&#x2F;JDK17GC%E8%B0%83%E4%BC%98&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/13/JDK17%E6%96%B0%E7%89%B9%E6%80%A7/">JDK17新特性<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E9%80%89%E6%8B%A9%E5%90%88%E9%80%82%E7%9A%84-GC"><span class="toc-text">一、选择合适的 GC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-G1-GC%EF%BC%88%E9%BB%98%E8%AE%A4%EF%BC%89"><span class="toc-text">1. G1 GC（默认）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-ZGC"><span class="toc-text">2. ZGC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Shenandoah-GC"><span class="toc-text">3. Shenandoah GC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Parallel-GC"><span class="toc-text">4. Parallel GC</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E7%94%A8-GC-%E8%B0%83%E4%BC%98%E5%8F%82%E6%95%B0"><span class="toc-text">二、常用 GC 调优参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%A0%86%E5%86%85%E5%AD%98%E9%85%8D%E7%BD%AE"><span class="toc-text">1. 堆内存配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-G1-GC-%E4%B8%93%E5%B1%9E%E8%B0%83%E4%BC%98"><span class="toc-text">2. G1 GC 专属调优</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-ZGC-%E8%B0%83%E4%BC%98"><span class="toc-text">3. ZGC 调优</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-GC-%E6%97%A5%E5%BF%97%E6%8E%A8%E8%8D%90%E9%85%8D%E7%BD%AE%EF%BC%88%E7%BB%9F%E4%B8%80%E9%80%82%E7%94%A8%EF%BC%89"><span class="toc-text">4. GC 日志推荐配置（统一适用）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE%E5%92%8C%E5%AE%9E%E8%B7%B5"><span class="toc-text">三、调优建议和实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BC%98%E5%85%88%E8%AE%BE%E5%AE%9A%E7%9B%AE%E6%A0%87"><span class="toc-text">1. 优先设定目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%B8%B8%E7%94%A8%E8%B0%83%E4%BC%98%E7%AD%96%E7%95%A5%EF%BC%88G1-%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">2. 常用调优策略（G1 为例）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%B0%83%E4%BC%98%E6%B5%81%E7%A8%8B%E5%BB%BA%E8%AE%AE"><span class="toc-text">四、调优流程建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%AE%9E%E6%88%98%E6%8E%A8%E8%8D%90%E9%85%8D%E7%BD%AE%E7%A4%BA%E4%BE%8B%EF%BC%88G1GC%EF%BC%8C%E6%9C%8D%E5%8A%A1%E7%B1%BB%E5%BA%94%E7%94%A8%EF%BC%89"><span class="toc-text">五、实战推荐配置示例（G1GC，服务类应用）</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
