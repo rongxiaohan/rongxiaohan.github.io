@@ -1,0 +1,980 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>微服务架构解决方案二 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="网关整合OAuth2.0设计思路分析一、什么是网关服务...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">微服务架构解决方案二</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">微服务架构解决方案二</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 16, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>13466</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h1 id="网关整合OAuth2-0设计思路分析"><a href="#网关整合OAuth2-0设计思路分析" class="headerlink" title="网关整合OAuth2.0设计思路分析"></a><strong>网关整合OAuth2.0设计思路分析</strong></h1><h2 id="一、什么是网关服务？"><a href="#一、什么是网关服务？" class="headerlink" title="一、什么是网关服务？"></a>一、什么是网关服务？</h2><p>网关服务是介于客户端和后端微服务之间的一层，主要职责是：</p>
+<ul>
+<li><p><strong>统一请求入口</strong>（如 API 入口）</p>
+</li>
+<li><p><strong>路由转发</strong></p>
+</li>
+<li><p><strong>协议转换</strong></p>
+</li>
+<li><p><strong>鉴权与安全控制</strong></p>
+</li>
+<li><p><strong>限流与熔断</strong></p>
+</li>
+<li><p><strong>请求日志与监控</strong></p>
+</li>
+</ul>
+<hr>
+<h2 id="二、网关服务的核心功能设计"><a href="#二、网关服务的核心功能设计" class="headerlink" title="二、网关服务的核心功能设计"></a>二、网关服务的核心功能设计</h2><h3 id="1-路由转发"><a href="#1-路由转发" class="headerlink" title="1. 路由转发"></a>1. 路由转发</h3><p>将请求按 URL、方法、Header、Path 等映射到对应服务。</p>
+<ul>
+<li><p>静态路由配置（YAML、JSON 等）</p>
+</li>
+<li><p>动态路由（数据库&#x2F;配置中心&#x2F;Nacos）</p>
+</li>
+<li><p>支持灰度发布（基于用户ID、版本、地区等做路由）</p>
+</li>
+</ul>
+<h3 id="2-权限认证"><a href="#2-权限认证" class="headerlink" title="2. 权限认证"></a>2. 权限认证</h3><p>支持多种认证机制：</p>
+<ul>
+<li><p>Token 校验（JWT）</p>
+</li>
+<li><p>OAuth2</p>
+</li>
+<li><p>接口级权限校验</p>
+</li>
+<li><p>签名校验（开放 API）</p>
+</li>
+</ul>
+<h3 id="3-限流与熔断"><a href="#3-限流与熔断" class="headerlink" title="3. 限流与熔断"></a>3. 限流与熔断</h3><p>保护后端服务：</p>
+<ul>
+<li><p>限流：如基于 IP、用户 ID、API 路径的 QPS 限制</p>
+</li>
+<li><p>熔断：当某个服务异常时，自动熔断以保护整个系统</p>
+</li>
+</ul>
+<p>常用库：Sentinel、Resilience4j</p>
+<h3 id="4-日志与追踪"><a href="#4-日志与追踪" class="headerlink" title="4. 日志与追踪"></a>4. 日志与追踪</h3><ul>
+<li><p>请求日志、响应日志</p>
+</li>
+<li><p>TraceID 跨服务传递</p>
+</li>
+<li><p>接入链路追踪系统（如 Zipkin、SkyWalking）</p>
+</li>
+</ul>
+<h3 id="5-协议转换（可选）"><a href="#5-协议转换（可选）" class="headerlink" title="5. 协议转换（可选）"></a>5. 协议转换（可选）</h3><ul>
+<li><p>HTTP ⇄ WebSocket</p>
+</li>
+<li><p>HTTP ⇄ gRPC</p>
+</li>
+<li><p>JSON ⇄ XML</p>
+</li>
+</ul>
+<hr>
+<h2 id="三、网关架构设计"><a href="#三、网关架构设计" class="headerlink" title="三、网关架构设计"></a>三、网关架构设计</h2><h3 id="1-部署架构"><a href="#1-部署架构" class="headerlink" title="1. 部署架构"></a>1. 部署架构</h3><ul>
+<li><p><strong>单点网关</strong>（适用于小型系统）</p>
+</li>
+<li><p><strong>分布式集群</strong>（基于Nginx、K8s Ingress、服务网格等）</p>
+</li>
+</ul>
+<h3 id="2-架构图示意："><a href="#2-架构图示意：" class="headerlink" title="2. 架构图示意："></a>2. 架构图示意：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">+------------+       +-----------+       +----------------+<br>|  Client    | &lt;---&gt; |  Gateway  | &lt;---&gt; | Backend Service|<br>+------------+       +-----------+       +----------------+<br>                        |             ↘<br>                        ↓              ↘<br>                 Auth Service     Config/Nacos/Consul<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、技术选型"><a href="#四、技术选型" class="headerlink" title="四、技术选型"></a>四、技术选型</h2><table>
+<thead>
+<tr>
+<th>功能</th>
+<th>Java生态实现</th>
+<th>其他语言生态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>网关框架</td>
+<td>Spring Cloud Gateway、Zuul、Soul</td>
+<td>Kong、APISIX、Nginx、Envoy</td>
+</tr>
+<tr>
+<td>配置中心</td>
+<td>Nacos、Apollo</td>
+<td>Consul、Etcd</td>
+</tr>
+<tr>
+<td>认证鉴权</td>
+<td>Spring Security、JWT</td>
+<td>Keycloak、OAuth2 Proxy</td>
+</tr>
+<tr>
+<td>限流熔断</td>
+<td>Sentinel、Resilience4j</td>
+<td>Envoy RateLimit、Istio</td>
+</tr>
+<tr>
+<td>监控与追踪</td>
+<td>Sleuth + Zipkin&#x2F;SkyWalking</td>
+<td>Prometheus + Jaeger</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、Spring-Cloud-Gateway-实现示例"><a href="#五、Spring-Cloud-Gateway-实现示例" class="headerlink" title="五、Spring Cloud Gateway 实现示例"></a>五、Spring Cloud Gateway 实现示例</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-comment"># application.yml</span><br><span class="hljs-attr">spring:</span><br>  <span class="hljs-attr">cloud:</span><br>    <span class="hljs-attr">gateway:</span><br>      <span class="hljs-attr">routes:</span><br>        <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">user-service</span><br>          <span class="hljs-attr">uri:</span> <span class="hljs-string">lb://user-service</span><br>          <span class="hljs-attr">predicates:</span><br>            <span class="hljs-bullet">-</span> <span class="hljs-string">Path=/user/**</span><br>          <span class="hljs-attr">filters:</span><br>            <span class="hljs-bullet">-</span> <span class="hljs-string">StripPrefix=1</span><br>            <span class="hljs-bullet">-</span> <span class="hljs-string">RequestRateLimiter=redis-rate-limiter</span><br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>负载均衡</strong>：基于服务发现（如Nacos）</p>
+</li>
+<li><p><strong>StripPrefix</strong>：去掉前缀路径</p>
+</li>
+<li><p><strong>RateLimiter</strong>：限流配置</p>
+</li>
+</ul>
+<h3 id="限流配置（基于-Redis）"><a href="#限流配置（基于-Redis）" class="headerlink" title="限流配置（基于 Redis）"></a>限流配置（基于 Redis）</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">spring:</span><br>  <span class="hljs-attr">cloud:</span><br>    <span class="hljs-attr">gateway:</span><br>      <span class="hljs-attr">redis-rate-limiter:</span><br>        <span class="hljs-attr">replenishRate:</span> <span class="hljs-number">10</span><br>        <span class="hljs-attr">burstCapacity:</span> <span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、最佳实践"><a href="#六、最佳实践" class="headerlink" title="六、最佳实践"></a>六、最佳实践</h2><ol>
+<li><p><strong>前后端接口规范化（RESTful &#x2F; OpenAPI）</strong></p>
+</li>
+<li><p><strong>灰度发布支持</strong></p>
+</li>
+<li><p><strong>配置中心集中管理</strong></p>
+</li>
+<li><p><strong>接口加密签名</strong></p>
+</li>
+<li><p><strong>高可用集群部署 + 熔断保护</strong></p>
+</li>
+<li><p><strong>接入API监控系统</strong></p>
+</li>
+</ol>
+<hr>
+<h2 id="七、开源网关推荐"><a href="#七、开源网关推荐" class="headerlink" title="七、开源网关推荐"></a>七、开源网关推荐</h2><table>
+<thead>
+<tr>
+<th>网关</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Spring Cloud Gateway</td>
+<td>深度集成Spring生态，适合Java开发者</td>
+</tr>
+<tr>
+<td>Apache APISIX</td>
+<td>Lua扩展能力强，支持热更新、gRPC</td>
+</tr>
+<tr>
+<td>Kong</td>
+<td>插件丰富，企业级方案支持</td>
+</tr>
+<tr>
+<td>Nginx + Lua&#x2F;OpenResty</td>
+<td>高性能，灵活但开发成本高</td>
+</tr>
+<tr>
+<td>Envoy + Istio</td>
+<td>云原生服务网格，微服务架构首选</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="一、OAuth2-0-简要回顾"><a href="#一、OAuth2-0-简要回顾" class="headerlink" title="一、OAuth2.0 简要回顾"></a>一、OAuth2.0 简要回顾</h2><p>OAuth2.0 是一种<strong>授权协议</strong>，用于第三方系统在不暴露用户密码的前提下，访问受保护资源。</p>
+<h3 id="OAuth2-四种角色"><a href="#OAuth2-四种角色" class="headerlink" title="OAuth2 四种角色"></a>OAuth2 四种角色</h3><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Resource Owner</td>
+<td>资源拥有者（通常是用户）</td>
+</tr>
+<tr>
+<td>Client</td>
+<td>第三方应用（浏览器、APP）</td>
+</tr>
+<tr>
+<td>Authorization Server</td>
+<td>授权服务器（颁发令牌）</td>
+</tr>
+<tr>
+<td>Resource Server</td>
+<td>资源服务器（真实API服务）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、整合-OAuth2-0-的典型架构图"><a href="#二、整合-OAuth2-0-的典型架构图" class="headerlink" title="二、整合 OAuth2.0 的典型架构图"></a>二、整合 OAuth2.0 的典型架构图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">           +-------------------------+<br>           | Authorization Server    |<br>           | (认证+授权+令牌服务)     |<br>           +-------------------------+<br>                     ↑<br>                     |<br>     +---------------+--------------+<br>     |                              |<br>+----------+                 +-------------+<br>|   Client | &lt;---&gt; Gateway &lt;-&gt; Resource API|<br>+----------+                 +-------------+<br>                 ↑<br>             Token 校验 &amp; 权限判断<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、网关与-OAuth2-的职责划分"><a href="#三、网关与-OAuth2-的职责划分" class="headerlink" title="三、网关与 OAuth2 的职责划分"></a>三、网关与 OAuth2 的职责划分</h2><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>网关（Gateway）</td>
+<td>鉴权拦截、Token解析与验证、权限过滤、转发请求至下游服务</td>
+</tr>
+<tr>
+<td>授权服务器（Auth Server）</td>
+<td>登录认证、授权码生成、Token 签发、刷新、注销等</td>
+</tr>
+<tr>
+<td>后端服务</td>
+<td>提供真实业务数据，信任来自网关的认证信息</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、设计思路核心模块详解"><a href="#四、设计思路核心模块详解" class="headerlink" title="四、设计思路核心模块详解"></a>四、设计思路核心模块详解</h2><h3 id="1-网关-Token-认证处理流程"><a href="#1-网关-Token-认证处理流程" class="headerlink" title="1. 网关 Token 认证处理流程"></a>1. 网关 Token 认证处理流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">1. 客户端请求网关携带 Token<br>2. 网关拦截请求 → 校验 Token<br>   - 校验合法性（格式、签名）<br>   - 校验有效性（是否过期）<br>3. Token 有效 → 放行并传递用户上下文（User Info）<br>4. Token 无效 → 返回 401 / 403<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-网关中认证实现方式（以-Spring-Cloud-Gateway-为例）"><a href="#2-网关中认证实现方式（以-Spring-Cloud-Gateway-为例）" class="headerlink" title="2. 网关中认证实现方式（以 Spring Cloud Gateway 为例）"></a>2. 网关中认证实现方式（以 Spring Cloud Gateway 为例）</h3><ul>
+<li><p>网关通过 <strong>JWT + Filter</strong> 校验 Token</p>
+</li>
+<li><p>使用 <code>ReactiveAuthenticationManager</code> 或 <code>OAuth2ResourceServer</code> 模块集成认证</p>
+</li>
+<li><p>可配置远程调用认证服务校验 Token（适用于 opaque Token）</p>
+</li>
+</ul>
+<h3 id="3-网关中的用户上下文透传"><a href="#3-网关中的用户上下文透传" class="headerlink" title="3. 网关中的用户上下文透传"></a>3. 网关中的用户上下文透传</h3><ul>
+<li><p>将解析后的用户信息写入请求头（<code>X-User-Id</code>、<code>X-User-Role</code> 等）</p>
+</li>
+<li><p>也可以将信息写入 Spring <code>SecurityContext</code>，配合全链路鉴权</p>
+</li>
+</ul>
+<hr>
+<h2 id="五、Token-策略设计（重点）"><a href="#五、Token-策略设计（重点）" class="headerlink" title="五、Token 策略设计（重点）"></a>五、Token 策略设计（重点）</h2><h3 id="Token-类型选择："><a href="#Token-类型选择：" class="headerlink" title="Token 类型选择："></a>Token 类型选择：</h3><ul>
+<li><p><strong>JWT Token</strong>（推荐）：网关可本地校验，适合分布式架构，性能好</p>
+</li>
+<li><p><strong>Opaque Token</strong>（不透明令牌）：需远程查询授权服务器（如 introspect 接口）</p>
+</li>
+</ul>
+<h3 id="Token-内容设计（JWT-Payload-示例）："><a href="#Token-内容设计（JWT-Payload-示例）：" class="headerlink" title="Token 内容设计（JWT Payload 示例）："></a>Token 内容设计（JWT Payload 示例）：</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;sub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;user123&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;username&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;张三&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;roles&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;admin&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;editor&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;exp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1719201981</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="Token-安全加固建议："><a href="#Token-安全加固建议：" class="headerlink" title="Token 安全加固建议："></a>Token 安全加固建议：</h3><ul>
+<li><p>使用 HMAC &#x2F; RSA 签名</p>
+</li>
+<li><p>设置过期时间</p>
+</li>
+<li><p>支持 Refresh Token 策略</p>
+</li>
+<li><p>Token 黑名单支持（登出&#x2F;踢出）</p>
+</li>
+</ul>
+<hr>
+<h2 id="六、安全防护设计"><a href="#六、安全防护设计" class="headerlink" title="六、安全防护设计"></a>六、安全防护设计</h2><table>
+<thead>
+<tr>
+<th>安全点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HTTPS</td>
+<td>所有传输必须走 HTTPS</td>
+</tr>
+<tr>
+<td>Token 保护</td>
+<td>禁止 Token 出现在 URL 中（只能放 Header）</td>
+</tr>
+<tr>
+<td>接口权限控制</td>
+<td>可在网关做权限路由控制，也可下发至服务做细粒度校验</td>
+</tr>
+<tr>
+<td>限流防刷</td>
+<td>IP + 用户维度限流，防止接口滥用</td>
+</tr>
+<tr>
+<td>客户端凭证保护</td>
+<td>使用 client_secret 加密存储</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="七、Spring-Cloud-Gateway-OAuth2-参考实现（JWT）"><a href="#七、Spring-Cloud-Gateway-OAuth2-参考实现（JWT）" class="headerlink" title="七、Spring Cloud Gateway + OAuth2 参考实现（JWT）"></a>七、Spring Cloud Gateway + OAuth2 参考实现（JWT）</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">spring:</span><br>  <span class="hljs-attr">security:</span><br>    <span class="hljs-attr">oauth2:</span><br>      <span class="hljs-attr">resourceserver:</span><br>        <span class="hljs-attr">jwt:</span><br>          <span class="hljs-attr">jwk-set-uri:</span> <span class="hljs-string">http://auth-server/oauth2/jwks</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Bean</span><br><span class="hljs-keyword">public</span> SecurityWebFilterChain <span class="hljs-title function_">springSecurityFilterChain</span><span class="hljs-params">(ServerHttpSecurity http)</span> &#123;<br>    http<br>        .authorizeExchange(exchanges -&gt; exchanges<br>            .pathMatchers(<span class="hljs-string">&quot;/auth/**&quot;</span>).permitAll()<br>            .anyExchange().authenticated()<br>        )<br>        .oauth2ResourceServer(oauth2 -&gt; oauth2<br>            .jwt(jwt -&gt; jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))<br>        );<br>    <span class="hljs-keyword">return</span> http.build();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、整合-OAuth2-0-的最佳实践建议"><a href="#八、整合-OAuth2-0-的最佳实践建议" class="headerlink" title="八、整合 OAuth2.0 的最佳实践建议"></a>八、整合 OAuth2.0 的最佳实践建议</h2><ol>
+<li><p><strong>JWT 优先，性能更好</strong></p>
+</li>
+<li><p><strong>Token 本地解析 + 远程黑名单同步（如 Redis）</strong></p>
+</li>
+<li><p><strong>用户上下文透传标准化</strong></p>
+</li>
+<li><p><strong>接口分级权限控制（URL粒度 + 方法粒度）</strong></p>
+</li>
+<li><p><strong>统一网关错误响应格式（401、403 自定义返回）</strong></p>
+</li>
+<li><p><strong>配合限流+验证码防刷策略</strong></p>
+</li>
+<li><p><strong>登录态检测&#x2F;续签机制健壮（支持 Refresh Token）</strong></p>
+</li>
+</ol>
+<hr>
+<h2 id="九、补充：推荐开源授权服务器"><a href="#九、补充：推荐开源授权服务器" class="headerlink" title="九、补充：推荐开源授权服务器"></a>九、补充：推荐开源授权服务器</h2><ul>
+<li><p>✅ <a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-authorization-server">Spring Authorization Server（官方推荐）</a></p>
+</li>
+<li><p>✅ <a target="_blank" rel="noopener" href="https://www.keycloak.org/">Keycloak</a>：功能全面的身份管理系统</p>
+</li>
+<li><p>✅ <a target="_blank" rel="noopener" href="https://authing.cn/">Authing &#x2F; Okta</a>：适合企业接入云端 SSO</p>
+</li>
+</ul>
+<h1 id="授权中心实战"><a href="#授权中心实战" class="headerlink" title="授权中心实战"></a><strong>授权中心实战</strong></h1><hr>
+<h2 id="✅-一、什么是账号密码模式授权（Resource-Owner-Password-Credentials-Grant）"><a href="#✅-一、什么是账号密码模式授权（Resource-Owner-Password-Credentials-Grant）" class="headerlink" title="✅ 一、什么是账号密码模式授权（Resource Owner Password Credentials Grant）"></a>✅ 一、什么是账号密码模式授权（Resource Owner Password Credentials Grant）</h2><p>在 OAuth2 中，<strong>账号密码模式</strong>允许客户端直接以 <strong>用户名+密码</strong> 获取 access token，流程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">[客户端]<br>  ↓ 用户输入用户名/密码<br>[调用授权中心]<br>  POST /oauth/token<br>  grant_type=password<br>  username=xxx&amp;password=yyy&amp;client_id=xxx&amp;client_secret=yyy<br>  ↓<br>[返回 access_token, refresh_token]<br></code></pre></td></tr></table></figure>
+
+<p>✅ 优点：</p>
+<ul>
+<li><p>简单，前后端分离项目登录流程清晰<br>  ❗ 缺点：</p>
+</li>
+<li><p>客户端需掌握用户密码，不适合第三方 App</p>
+</li>
+</ul>
+<hr>
+<h2 id="🏗️-二、架构图（JWT-Spring-Authorization-Server）"><a href="#🏗️-二、架构图（JWT-Spring-Authorization-Server）" class="headerlink" title="🏗️ 二、架构图（JWT + Spring Authorization Server）"></a>🏗️ 二、架构图（JWT + Spring Authorization Server）</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">          [用户]                <br>           ↓                  <br>    [Web/App 客户端]           <br>           ↓                  <br>   POST /oauth2/token          <br>grant_type=password + 用户密码  <br>           ↓                  <br>   [授权中心 Authorization Server]     <br>           ↓                  <br>   返回 JWT access_token &amp; refresh_token<br>           ↓                  <br>     资源服务(Resource Server)<br>      校验JWT，识别用户身份<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧰-三、核心组件选型"><a href="#🧰-三、核心组件选型" class="headerlink" title="🧰 三、核心组件选型"></a>🧰 三、核心组件选型</h2><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>技术选型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>授权中心</td>
+<td>Spring Authorization Server</td>
+</tr>
+<tr>
+<td>鉴权框架</td>
+<td>Spring Security 6.x</td>
+</tr>
+<tr>
+<td>用户认证</td>
+<td>实现自定义 <code>UserDetailsService</code></td>
+</tr>
+<tr>
+<td>Token 格式</td>
+<td>JWT（基于 RSA 签名）</td>
+</tr>
+<tr>
+<td>客户端存储</td>
+<td>数据库 &#x2F; 内存注册 <code>RegisteredClientRepository</code></td>
+</tr>
+<tr>
+<td>用户数据</td>
+<td>数据库（MySQL）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📦-四、项目实战代码结构"><a href="#📦-四、项目实战代码结构" class="headerlink" title="📦 四、项目实战代码结构"></a>📦 四、项目实战代码结构</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">auth-server<br>├── config<br>│   ├── AuthorizationServerConfig.java  # 授权中心核心配置<br>│   ├── SecurityConfig.java             # Spring Security配置<br>├── controller<br>│   └── TokenController.java            # 令牌接口(可选自定义)<br>├── service<br>│   └── CustomUserDetailsService.java   # 自定义用户信息服务<br>├── entity/User.java                    # 用户实体<br>├── repository/UserRepository.java      # 用户DAO<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧑‍💻-五、关键代码讲解"><a href="#🧑‍💻-五、关键代码讲解" class="headerlink" title="🧑‍💻 五、关键代码讲解"></a>🧑‍💻 五、关键代码讲解</h2><h3 id="1️⃣-启用授权中心配置"><a href="#1️⃣-启用授权中心配置" class="headerlink" title="1️⃣ 启用授权中心配置"></a>1️⃣ 启用授权中心配置</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Configuration</span><br><span class="hljs-meta">@EnableWebSecurity</span><br><span class="hljs-meta">@EnableAuthorizationServer</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AuthorizationServerConfig</span> &#123;<br>    <span class="hljs-meta">@Bean</span><br>    <span class="hljs-keyword">public</span> RegisteredClientRepository <span class="hljs-title function_">clientRepository</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">RegisteredClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> RegisteredClient.withId(UUID.randomUUID().toString())<br>            .clientId(<span class="hljs-string">&quot;web-client&quot;</span>)<br>            .clientSecret(<span class="hljs-string">&quot;&#123;noop&#125;web-secret&quot;</span>)<br>            .authorizationGrantType(AuthorizationGrantType.PASSWORD)<br>            .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)<br>            .scope(<span class="hljs-string">&quot;read&quot;</span>).scope(<span class="hljs-string">&quot;write&quot;</span>)<br>            .build();<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">InMemoryRegisteredClientRepository</span>(client);<br>    &#125;<br><br>    <span class="hljs-meta">@Bean</span><br>    <span class="hljs-keyword">public</span> AuthorizationServerSettings <span class="hljs-title function_">authServerSettings</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> AuthorizationServerSettings.builder().build();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2️⃣-自定义用户认证逻辑（查数据库）"><a href="#2️⃣-自定义用户认证逻辑（查数据库）" class="headerlink" title="2️⃣ 自定义用户认证逻辑（查数据库）"></a>2️⃣ 自定义用户认证逻辑（查数据库）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Service</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomUserDetailsService</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">UserDetailsService</span> &#123;<br>    <span class="hljs-meta">@Autowired</span> <span class="hljs-keyword">private</span> UserRepository userRepo;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> UserDetails <span class="hljs-title function_">loadUserByUsername</span><span class="hljs-params">(String username)</span> <span class="hljs-keyword">throws</span> UsernameNotFoundException &#123;<br>        <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> userRepo.findByUsername(username)<br>            .orElseThrow(() -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">UsernameNotFoundException</span>(<span class="hljs-string">&quot;用户不存在&quot;</span>));<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">org</span>.springframework.security.core.userdetails.User(<br>            user.getUsername(),<br>            user.getPassword(),<br>            List.of(<span class="hljs-keyword">new</span> <span class="hljs-title class_">SimpleGrantedAuthority</span>(<span class="hljs-string">&quot;ROLE_USER&quot;</span>)) <span class="hljs-comment">// 可扩展角色系统</span><br>        );<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3️⃣-Spring-Security-支持表单登录（用于-Password-模式）"><a href="#3️⃣-Spring-Security-支持表单登录（用于-Password-模式）" class="headerlink" title="3️⃣ Spring Security 支持表单登录（用于 Password 模式）"></a>3️⃣ Spring Security 支持表单登录（用于 Password 模式）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Configuration</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SecurityConfig</span> &#123;<br>    <span class="hljs-meta">@Bean</span><br>    <span class="hljs-keyword">public</span> SecurityFilterChain <span class="hljs-title function_">filterChain</span><span class="hljs-params">(HttpSecurity http)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>        http<br>          .csrf().disable()<br>          .authorizeHttpRequests()<br>            .anyRequest().authenticated()<br>          .and()<br>            .formLogin(); <span class="hljs-comment">// 启用表单登录，密码模式需要</span><br>        <span class="hljs-keyword">return</span> http.build();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔑-六、获取-token-示例"><a href="#🔑-六、获取-token-示例" class="headerlink" title="🔑 六、获取 token 示例"></a>🔑 六、获取 token 示例</h2><h3 id="请求："><a href="#请求：" class="headerlink" title="请求："></a>请求：</h3><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs http">POST /oauth2/token<br><span class="hljs-attribute">Content-Type</span><span class="hljs-punctuation">: </span>application/x-www-form-urlencoded<br><span class="hljs-attribute">Authorization</span><span class="hljs-punctuation">: </span>Basic base64(client_id:client_secret)<br><br>grant_type=password&amp;username=admin&amp;password=123456<br></code></pre></td></tr></table></figure>
+
+<h3 id="响应："><a href="#响应：" class="headerlink" title="响应："></a>响应：</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;access_token&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;eyJraWQiOiJ...&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;token_type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Bearer&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;expires_in&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3600</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;refresh_token&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;XYZ...&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;scope&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;read write&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🛡️-七、安全建议"><a href="#🛡️-七、安全建议" class="headerlink" title="🛡️ 七、安全建议"></a>🛡️ 七、安全建议</h2><table>
+<thead>
+<tr>
+<th>风险点</th>
+<th>防护建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>密码明文传输</td>
+<td>使用 HTTPS + 客户端 AES 加密（前端）</td>
+</tr>
+<tr>
+<td>账号爆破</td>
+<td>加入验证码 + 登录限频</td>
+</tr>
+<tr>
+<td>Refresh Token滥用</td>
+<td>设置过期时间、绑定设备信息</td>
+</tr>
+<tr>
+<td>Token泄漏</td>
+<td>支持 Token 黑名单 &#x2F; 登出销毁</td>
+</tr>
+<tr>
+<td>统一异常处理</td>
+<td>自定义 <code>AuthenticationFailureHandler</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="💬-八、常见问题解答"><a href="#💬-八、常见问题解答" class="headerlink" title="💬 八、常见问题解答"></a>💬 八、常见问题解答</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>可以多个客户端使用 password 吗？</td>
+<td>✅ 支持，只需在 RegisteredClient 配置多个 client</td>
+</tr>
+<tr>
+<td>密码模式是否已被弃用？</td>
+<td>✅ 是，OAuth2.1 移除了它，但对内部系统仍可使用</td>
+</tr>
+<tr>
+<td>与授权码模式相比有何区别？</td>
+<td>授权码模式更安全，适合开放平台；密码模式仅适用于你信任的客户端</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧩-九、项目扩展建议"><a href="#🧩-九、项目扩展建议" class="headerlink" title="🧩 九、项目扩展建议"></a>🧩 九、项目扩展建议</h2><ul>
+<li><p>✅ 登录验证码接入（Spring Security Filter）</p>
+</li>
+<li><p>✅ 支持多种登录方式（邮箱&#x2F;手机号&#x2F;三方登录）</p>
+</li>
+<li><p>✅ 用户锁定、冻结机制</p>
+</li>
+<li><p>✅ 登录日志审计（可存入数据库或ES）</p>
+</li>
+<li><p>✅ JWT 携带 userId、role 等自定义 claim</p>
+</li>
+<li><p>✅ 登录态统一退出（Token 黑名单 + Redis）</p>
+</li>
+</ul>
+<h1 id="网关服务实现统一认证"><a href="#网关服务实现统一认证" class="headerlink" title="网关服务实现统一认证"></a><strong>网关服务实现统一认证</strong></h1><hr>
+<h2 id="🧭-一、统一认证网关的核心目标"><a href="#🧭-一、统一认证网关的核心目标" class="headerlink" title="🧭 一、统一认证网关的核心目标"></a>🧭 一、统一认证网关的核心目标</h2><table>
+<thead>
+<tr>
+<th>目标</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅ 统一认证入口</td>
+<td>所有用户请求先过网关验证，未登录拦截</td>
+</tr>
+<tr>
+<td>✅ Token 校验和续签支持</td>
+<td>校验 JWT 的合法性、是否过期、是否黑名单等</td>
+</tr>
+<tr>
+<td>✅ 用户身份上下文透传</td>
+<td>将用户信息（userId&#x2F;role）透传给后端服务</td>
+</tr>
+<tr>
+<td>✅ 白名单控制</td>
+<td>登录接口、静态资源等可放行</td>
+</tr>
+<tr>
+<td>✅ 安全与性能兼顾</td>
+<td>高性能 Token 解析，减少不必要的鉴权开销</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🏗️-二、架构图解"><a href="#🏗️-二、架构图解" class="headerlink" title="🏗️ 二、架构图解"></a>🏗️ 二、架构图解</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">┌─────────────────────────────────────┐<br>│              用户浏览器/App           │<br>└─────────────────────────────────────┘<br>               │<br>         [带 JWT Token 的请求]<br>               │<br>┌─────────────────────────────────────┐<br>│          网关 Gateway 服务           │<br>│  ① 鉴权过滤器：检查是否登录            │<br>│  ② JWT 验证、黑名单校验等             │<br>│  ③ 提取 userId/roles 写入请求头       │<br>└─────────────────────────────────────┘<br>               │<br>    请求转发至目标微服务（带用户上下文）<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧰-三、技术选型（Spring-Cloud-体系）"><a href="#🧰-三、技术选型（Spring-Cloud-体系）" class="headerlink" title="🧰 三、技术选型（Spring Cloud 体系）"></a>🧰 三、技术选型（Spring Cloud 体系）</h2><table>
+<thead>
+<tr>
+<th>模块</th>
+<th>技术选型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>网关</td>
+<td>Spring Cloud Gateway</td>
+</tr>
+<tr>
+<td>安全框架</td>
+<td>Spring Security + OAuth2 Resource Server</td>
+</tr>
+<tr>
+<td>Token 格式</td>
+<td>JWT（推荐使用非对称加密，如 RS256）</td>
+</tr>
+<tr>
+<td>用户上下文传递</td>
+<td>请求头（Header）+ ThreadLocal&#x2F;MDC日志注入</td>
+</tr>
+<tr>
+<td>黑名单机制</td>
+<td>Redis（注销、封禁等）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧱-四、核心实现步骤"><a href="#🧱-四、核心实现步骤" class="headerlink" title="🧱 四、核心实现步骤"></a>🧱 四、核心实现步骤</h2><h3 id="1️⃣-加入-JWT-依赖（Spring-Boot-3-x）"><a href="#1️⃣-加入-JWT-依赖（Spring-Boot-3-x）" class="headerlink" title="1️⃣ 加入 JWT 依赖（Spring Boot 3.x）"></a>1️⃣ 加入 JWT 依赖（Spring Boot 3.x）</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.boot<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-boot-starter-oauth2-resource-server<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2️⃣-网关配置资源服务器（JWT-验证）"><a href="#2️⃣-网关配置资源服务器（JWT-验证）" class="headerlink" title="2️⃣ 网关配置资源服务器（JWT 验证）"></a>2️⃣ 网关配置资源服务器（JWT 验证）</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">spring:</span><br>  <span class="hljs-attr">security:</span><br>    <span class="hljs-attr">oauth2:</span><br>      <span class="hljs-attr">resourceserver:</span><br>        <span class="hljs-attr">jwt:</span><br>          <span class="hljs-attr">public-key-location:</span> <span class="hljs-string">classpath:public.key</span><br></code></pre></td></tr></table></figure>
+
+<p>或者使用 JWK：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">jwt:</span><br>  <span class="hljs-attr">jwk-set-uri:</span> <span class="hljs-string">http://auth-server/oauth2/jwks</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3️⃣-自定义全局鉴权过滤器（统一身份校验）"><a href="#3️⃣-自定义全局鉴权过滤器（统一身份校验）" class="headerlink" title="3️⃣ 自定义全局鉴权过滤器（统一身份校验）"></a>3️⃣ 自定义全局鉴权过滤器（统一身份校验）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AuthGlobalFilter</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">GlobalFilter</span>, Ordered &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> Mono&lt;Void&gt; <span class="hljs-title function_">filter</span><span class="hljs-params">(ServerWebExchange exchange, GatewayFilterChain chain)</span> &#123;<br>        <span class="hljs-type">String</span> <span class="hljs-variable">token</span> <span class="hljs-operator">=</span> resolveToken(exchange.getRequest());<br>        <span class="hljs-keyword">if</span> (StringUtils.isBlank(token)) &#123;<br>            <span class="hljs-keyword">return</span> unauthorized(exchange, <span class="hljs-string">&quot;Token不能为空&quot;</span>);<br>        &#125;<br><br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-type">Claims</span> <span class="hljs-variable">claims</span> <span class="hljs-operator">=</span> JwtUtils.parseToken(token); <span class="hljs-comment">// 可使用 JWT 工具类</span><br>            <span class="hljs-type">String</span> <span class="hljs-variable">userId</span> <span class="hljs-operator">=</span> claims.getSubject();<br>            <span class="hljs-comment">// 将用户信息注入请求头</span><br>            <span class="hljs-type">ServerHttpRequest</span> <span class="hljs-variable">mutatedRequest</span> <span class="hljs-operator">=</span> exchange.getRequest().mutate()<br>                .header(<span class="hljs-string">&quot;X-User-Id&quot;</span>, userId)<br>                .build();<br>            <span class="hljs-keyword">return</span> chain.filter(exchange.mutate().request(mutatedRequest).build());<br>        &#125; <span class="hljs-keyword">catch</span> (JwtException e) &#123;<br>            <span class="hljs-keyword">return</span> unauthorized(exchange, <span class="hljs-string">&quot;Token非法或已过期&quot;</span>);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// 解析 Authorization Bearer Token</span><br>    <span class="hljs-keyword">private</span> String <span class="hljs-title function_">resolveToken</span><span class="hljs-params">(ServerHttpRequest request)</span> &#123;<br>        <span class="hljs-type">String</span> <span class="hljs-variable">bearer</span> <span class="hljs-operator">=</span> request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);<br>        <span class="hljs-keyword">return</span> StringUtils.removeStartIgnoreCase(bearer, <span class="hljs-string">&quot;Bearer &quot;</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> Mono&lt;Void&gt; <span class="hljs-title function_">unauthorized</span><span class="hljs-params">(ServerWebExchange exchange, String msg)</span> &#123;<br>        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);<br>        <span class="hljs-keyword">return</span> exchange.getResponse().setComplete();<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getOrder</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> -<span class="hljs-number">100</span>; <span class="hljs-comment">// 高优先级</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4️⃣-网关配置白名单（无需鉴权的接口）"><a href="#4️⃣-网关配置白名单（无需鉴权的接口）" class="headerlink" title="4️⃣ 网关配置白名单（无需鉴权的接口）"></a>4️⃣ 网关配置白名单（无需鉴权的接口）</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">app:</span><br>  <span class="hljs-attr">ignore-urls:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">/login</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">/register</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">/public/**</span><br><br><span class="hljs-string">@Bean</span><br><span class="hljs-string">public</span> <span class="hljs-string">SecurityWebFilterChain</span> <span class="hljs-string">securityWebFilterChain(ServerHttpSecurity</span> <span class="hljs-string">http)</span> &#123;<br>    <span class="hljs-string">http</span><br>      <span class="hljs-string">.csrf().disable()</span><br>      <span class="hljs-string">.authorizeExchange()</span><br>        <span class="hljs-string">.pathMatchers(&quot;/login&quot;</span>, <span class="hljs-string">&quot;/public/**&quot;</span><span class="hljs-string">).permitAll()</span><br>        <span class="hljs-string">.anyExchange().authenticated();</span><br>    <span class="hljs-string">return</span> <span class="hljs-string">http.build();</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="5️⃣-下游服务如何获取用户信息"><a href="#5️⃣-下游服务如何获取用户信息" class="headerlink" title="5️⃣ 下游服务如何获取用户信息"></a>5️⃣ 下游服务如何获取用户信息</h3><p>在微服务中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">String</span> <span class="hljs-variable">userId</span> <span class="hljs-operator">=</span> request.getHeader(<span class="hljs-string">&quot;X-User-Id&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<p>或者使用 Spring Security 的上下文：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Authentication</span> <span class="hljs-variable">auth</span> <span class="hljs-operator">=</span> SecurityContextHolder.getContext().getAuthentication();<br><span class="hljs-type">String</span> <span class="hljs-variable">userId</span> <span class="hljs-operator">=</span> auth.getName(); <span class="hljs-comment">// JWT 中 sub 字段</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔐-五、增强功能建议"><a href="#🔐-五、增强功能建议" class="headerlink" title="🔐 五、增强功能建议"></a>🔐 五、增强功能建议</h2><table>
+<thead>
+<tr>
+<th>功能</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅ 登录态失效控制</td>
+<td>支持 Token 黑名单（退出&#x2F;强制下线）</td>
+</tr>
+<tr>
+<td>✅ 权限粒度控制</td>
+<td>可扩展为 RBAC 权限模型，注解权限控制</td>
+</tr>
+<tr>
+<td>✅ 日志追踪</td>
+<td>把用户ID注入日志上下文（MDC）</td>
+</tr>
+<tr>
+<td>✅ 频率限制（限流）</td>
+<td>Gateway 层基于 IP&#x2F;用户ID 限流</td>
+</tr>
+<tr>
+<td>✅ 自定义异常响应格式</td>
+<td>使用 <code>ServerAccessDeniedHandler</code> 等替换默认返回</td>
+</tr>
+<tr>
+<td>✅ 多端隔离</td>
+<td>不同客户端（App&#x2F;Web）配置不同 client_id 和权限</td>
+</tr>
+<tr>
+<td>✅ 跨服务身份透传</td>
+<td>除请求头外，也可透传 JWT 本体（仅限可信服务）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📦-六、生产部署建议"><a href="#📦-六、生产部署建议" class="headerlink" title="📦 六、生产部署建议"></a>📦 六、生产部署建议</h2><table>
+<thead>
+<tr>
+<th>问题点</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Token 太长</td>
+<td>控制 JWT payload 大小（可只含 userId&#x2F;role）</td>
+</tr>
+<tr>
+<td>Token 被盗</td>
+<td>采用 HTTPS，支持黑名单注销机制</td>
+</tr>
+<tr>
+<td>高并发校验</td>
+<td>JWT 无需频繁远程校验（非对称签名）</td>
+</tr>
+<tr>
+<td>分布式 Session</td>
+<td>推荐 Token Stateless，前后端解耦</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧪-七、测试用例（Postman）"><a href="#🧪-七、测试用例（Postman）" class="headerlink" title="🧪 七、测试用例（Postman）"></a>🧪 七、测试用例（Postman）</h2><ul>
+<li><p>登录接口 → 获取 Token</p>
+</li>
+<li><p>携带 Token 请求 <code>/api/xxx</code></p>
+</li>
+<li><p>Token 错误 &#x2F; 过期 → 返回 401</p>
+</li>
+<li><p>请求 <code>/login</code> 接口不携带 Token → 正常访问</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧩-八、结合授权中心的完整流程"><a href="#🧩-八、结合授权中心的完整流程" class="headerlink" title="🧩 八、结合授权中心的完整流程"></a>🧩 八、结合授权中心的完整流程</h2><ol>
+<li><p>用户通过账号密码从授权中心 <code>/oauth2/token</code> 获取 Token</p>
+</li>
+<li><p>前端携带 <code>Authorization: Bearer xxx</code> 调用微服务 API</p>
+</li>
+<li><p>网关鉴权过滤器拦截请求，验证 Token，有效则将用户信息注入请求头</p>
+</li>
+<li><p>微服务读取请求头中的用户ID，实现业务逻辑</p>
+</li>
+</ol>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/16/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%BA%8C/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;16&#x2F;%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%BA%8C&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;16&#x2F;%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%BA%8C&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/15/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%B8%80/">微服务架构解决方案一<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BD%91%E5%85%B3%E6%95%B4%E5%90%88OAuth2-0%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF%E5%88%86%E6%9E%90"><span class="toc-text">网关整合OAuth2.0设计思路分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1%EF%BC%9F"><span class="toc-text">一、什么是网关服务？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD%E8%AE%BE%E8%AE%A1"><span class="toc-text">二、网关服务的核心功能设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%B7%AF%E7%94%B1%E8%BD%AC%E5%8F%91"><span class="toc-text">1. 路由转发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%9D%83%E9%99%90%E8%AE%A4%E8%AF%81"><span class="toc-text">2. 权限认证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E9%99%90%E6%B5%81%E4%B8%8E%E7%86%94%E6%96%AD"><span class="toc-text">3. 限流与熔断</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%97%A5%E5%BF%97%E4%B8%8E%E8%BF%BD%E8%B8%AA"><span class="toc-text">4. 日志与追踪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%8D%8F%E8%AE%AE%E8%BD%AC%E6%8D%A2%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%89"><span class="toc-text">5. 协议转换（可选）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BD%91%E5%85%B3%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">三、网关架构设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84"><span class="toc-text">1. 部署架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%9E%B6%E6%9E%84%E5%9B%BE%E7%A4%BA%E6%84%8F%EF%BC%9A"><span class="toc-text">2. 架构图示意：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span class="toc-text">四、技术选型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Spring-Cloud-Gateway-%E5%AE%9E%E7%8E%B0%E7%A4%BA%E4%BE%8B"><span class="toc-text">五、Spring Cloud Gateway 实现示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%90%E6%B5%81%E9%85%8D%E7%BD%AE%EF%BC%88%E5%9F%BA%E4%BA%8E-Redis%EF%BC%89"><span class="toc-text">限流配置（基于 Redis）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-text">六、最佳实践</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%BC%80%E6%BA%90%E7%BD%91%E5%85%B3%E6%8E%A8%E8%8D%90"><span class="toc-text">七、开源网关推荐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81OAuth2-0-%E7%AE%80%E8%A6%81%E5%9B%9E%E9%A1%BE"><span class="toc-text">一、OAuth2.0 简要回顾</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OAuth2-%E5%9B%9B%E7%A7%8D%E8%A7%92%E8%89%B2"><span class="toc-text">OAuth2 四种角色</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B4%E5%90%88-OAuth2-0-%E7%9A%84%E5%85%B8%E5%9E%8B%E6%9E%B6%E6%9E%84%E5%9B%BE"><span class="toc-text">二、整合 OAuth2.0 的典型架构图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BD%91%E5%85%B3%E4%B8%8E-OAuth2-%E7%9A%84%E8%81%8C%E8%B4%A3%E5%88%92%E5%88%86"><span class="toc-text">三、网关与 OAuth2 的职责划分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9D%97%E8%AF%A6%E8%A7%A3"><span class="toc-text">四、设计思路核心模块详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BD%91%E5%85%B3-Token-%E8%AE%A4%E8%AF%81%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B"><span class="toc-text">1. 网关 Token 认证处理流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BD%91%E5%85%B3%E4%B8%AD%E8%AE%A4%E8%AF%81%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%EF%BC%88%E4%BB%A5-Spring-Cloud-Gateway-%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">2. 网关中认证实现方式（以 Spring Cloud Gateway 为例）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%BD%91%E5%85%B3%E4%B8%AD%E7%9A%84%E7%94%A8%E6%88%B7%E4%B8%8A%E4%B8%8B%E6%96%87%E9%80%8F%E4%BC%A0"><span class="toc-text">3. 网关中的用户上下文透传</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Token-%E7%AD%96%E7%95%A5%E8%AE%BE%E8%AE%A1%EF%BC%88%E9%87%8D%E7%82%B9%EF%BC%89"><span class="toc-text">五、Token 策略设计（重点）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Token-%E7%B1%BB%E5%9E%8B%E9%80%89%E6%8B%A9%EF%BC%9A"><span class="toc-text">Token 类型选择：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Token-%E5%86%85%E5%AE%B9%E8%AE%BE%E8%AE%A1%EF%BC%88JWT-Payload-%E7%A4%BA%E4%BE%8B%EF%BC%89%EF%BC%9A"><span class="toc-text">Token 内容设计（JWT Payload 示例）：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Token-%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA%E5%BB%BA%E8%AE%AE%EF%BC%9A"><span class="toc-text">Token 安全加固建议：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E8%AE%BE%E8%AE%A1"><span class="toc-text">六、安全防护设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81Spring-Cloud-Gateway-OAuth2-%E5%8F%82%E8%80%83%E5%AE%9E%E7%8E%B0%EF%BC%88JWT%EF%BC%89"><span class="toc-text">七、Spring Cloud Gateway + OAuth2 参考实现（JWT）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%95%B4%E5%90%88-OAuth2-0-%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc-text">八、整合 OAuth2.0 的最佳实践建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E8%A1%A5%E5%85%85%EF%BC%9A%E6%8E%A8%E8%8D%90%E5%BC%80%E6%BA%90%E6%8E%88%E6%9D%83%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">九、补充：推荐开源授权服务器</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8E%88%E6%9D%83%E4%B8%AD%E5%BF%83%E5%AE%9E%E6%88%98"><span class="toc-text">授权中心实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E8%B4%A6%E5%8F%B7%E5%AF%86%E7%A0%81%E6%A8%A1%E5%BC%8F%E6%8E%88%E6%9D%83%EF%BC%88Resource-Owner-Password-Credentials-Grant%EF%BC%89"><span class="toc-text">✅ 一、什么是账号密码模式授权（Resource Owner Password Credentials Grant）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8F%97%EF%B8%8F-%E4%BA%8C%E3%80%81%E6%9E%B6%E6%9E%84%E5%9B%BE%EF%BC%88JWT-Spring-Authorization-Server%EF%BC%89"><span class="toc-text">🏗️ 二、架构图（JWT + Spring Authorization Server）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B0-%E4%B8%89%E3%80%81%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E9%80%89%E5%9E%8B"><span class="toc-text">🧰 三、核心组件选型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E5%9B%9B%E3%80%81%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84"><span class="toc-text">📦 四、项目实战代码结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%91%E2%80%8D%F0%9F%92%BB-%E4%BA%94%E3%80%81%E5%85%B3%E9%94%AE%E4%BB%A3%E7%A0%81%E8%AE%B2%E8%A7%A3"><span class="toc-text">🧑‍💻 五、关键代码讲解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%90%AF%E7%94%A8%E6%8E%88%E6%9D%83%E4%B8%AD%E5%BF%83%E9%85%8D%E7%BD%AE"><span class="toc-text">1️⃣ 启用授权中心配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E8%87%AA%E5%AE%9A%E4%B9%89%E7%94%A8%E6%88%B7%E8%AE%A4%E8%AF%81%E9%80%BB%E8%BE%91%EF%BC%88%E6%9F%A5%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%89"><span class="toc-text">2️⃣ 自定义用户认证逻辑（查数据库）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-Spring-Security-%E6%94%AF%E6%8C%81%E8%A1%A8%E5%8D%95%E7%99%BB%E5%BD%95%EF%BC%88%E7%94%A8%E4%BA%8E-Password-%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">3️⃣ Spring Security 支持表单登录（用于 Password 模式）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%91-%E5%85%AD%E3%80%81%E8%8E%B7%E5%8F%96-token-%E7%A4%BA%E4%BE%8B"><span class="toc-text">🔑 六、获取 token 示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%EF%BC%9A"><span class="toc-text">请求：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%93%8D%E5%BA%94%EF%BC%9A"><span class="toc-text">响应：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A1%EF%B8%8F-%E4%B8%83%E3%80%81%E5%AE%89%E5%85%A8%E5%BB%BA%E8%AE%AE"><span class="toc-text">🛡️ 七、安全建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%92%AC-%E5%85%AB%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%A7%A3%E7%AD%94"><span class="toc-text">💬 八、常见问题解答</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%B9%9D%E3%80%81%E9%A1%B9%E7%9B%AE%E6%89%A9%E5%B1%95%E5%BB%BA%E8%AE%AE"><span class="toc-text">🧩 九、项目扩展建议</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BD%91%E5%85%B3%E6%9C%8D%E5%8A%A1%E5%AE%9E%E7%8E%B0%E7%BB%9F%E4%B8%80%E8%AE%A4%E8%AF%81"><span class="toc-text">网关服务实现统一认证</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AD-%E4%B8%80%E3%80%81%E7%BB%9F%E4%B8%80%E8%AE%A4%E8%AF%81%E7%BD%91%E5%85%B3%E7%9A%84%E6%A0%B8%E5%BF%83%E7%9B%AE%E6%A0%87"><span class="toc-text">🧭 一、统一认证网关的核心目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8F%97%EF%B8%8F-%E4%BA%8C%E3%80%81%E6%9E%B6%E6%9E%84%E5%9B%BE%E8%A7%A3"><span class="toc-text">🏗️ 二、架构图解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B0-%E4%B8%89%E3%80%81%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%EF%BC%88Spring-Cloud-%E4%BD%93%E7%B3%BB%EF%BC%89"><span class="toc-text">🧰 三、技术选型（Spring Cloud 体系）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-%E5%9B%9B%E3%80%81%E6%A0%B8%E5%BF%83%E5%AE%9E%E7%8E%B0%E6%AD%A5%E9%AA%A4"><span class="toc-text">🧱 四、核心实现步骤</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%8A%A0%E5%85%A5-JWT-%E4%BE%9D%E8%B5%96%EF%BC%88Spring-Boot-3-x%EF%BC%89"><span class="toc-text">1️⃣ 加入 JWT 依赖（Spring Boot 3.x）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E7%BD%91%E5%85%B3%E9%85%8D%E7%BD%AE%E8%B5%84%E6%BA%90%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88JWT-%E9%AA%8C%E8%AF%81%EF%BC%89"><span class="toc-text">2️⃣ 网关配置资源服务器（JWT 验证）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%85%A8%E5%B1%80%E9%89%B4%E6%9D%83%E8%BF%87%E6%BB%A4%E5%99%A8%EF%BC%88%E7%BB%9F%E4%B8%80%E8%BA%AB%E4%BB%BD%E6%A0%A1%E9%AA%8C%EF%BC%89"><span class="toc-text">3️⃣ 自定义全局鉴权过滤器（统一身份校验）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-%E7%BD%91%E5%85%B3%E9%85%8D%E7%BD%AE%E7%99%BD%E5%90%8D%E5%8D%95%EF%BC%88%E6%97%A0%E9%9C%80%E9%89%B4%E6%9D%83%E7%9A%84%E6%8E%A5%E5%8F%A3%EF%BC%89"><span class="toc-text">4️⃣ 网关配置白名单（无需鉴权的接口）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-%E4%B8%8B%E6%B8%B8%E6%9C%8D%E5%8A%A1%E5%A6%82%E4%BD%95%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="toc-text">5️⃣ 下游服务如何获取用户信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%90-%E4%BA%94%E3%80%81%E5%A2%9E%E5%BC%BA%E5%8A%9F%E8%83%BD%E5%BB%BA%E8%AE%AE"><span class="toc-text">🔐 五、增强功能建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E5%85%AD%E3%80%81%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2%E5%BB%BA%E8%AE%AE"><span class="toc-text">📦 六、生产部署建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E4%B8%83%E3%80%81%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%EF%BC%88Postman%EF%BC%89"><span class="toc-text">🧪 七、测试用例（Postman）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E5%85%AB%E3%80%81%E7%BB%93%E5%90%88%E6%8E%88%E6%9D%83%E4%B8%AD%E5%BF%83%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="toc-text">🧩 八、结合授权中心的完整流程</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
