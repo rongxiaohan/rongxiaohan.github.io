@@ -1,0 +1,557 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>电商项目核心订单系统设计与实现 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、架构设计1.1 模块划分典型的订单子系统可以拆分...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">电商项目核心订单系统设计与实现</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">电商项目核心订单系统设计与实现</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 18, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1548</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、架构设计"><a href="#一、架构设计" class="headerlink" title="一、架构设计"></a>一、架构设计</h2><h3 id="1-1-模块划分"><a href="#1-1-模块划分" class="headerlink" title="1.1 模块划分"></a>1.1 模块划分</h3><p>典型的订单子系统可以拆分为以下核心模块：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>订单创建模块</td>
+<td>创建主订单、子订单、明细订单等</td>
+</tr>
+<tr>
+<td>订单查询模块</td>
+<td>多条件查询订单（分页、高性能）</td>
+</tr>
+<tr>
+<td>订单状态流转模块</td>
+<td>订单状态机驱动状态变更</td>
+</tr>
+<tr>
+<td>支付对接模块</td>
+<td>对接支付宝&#x2F;微信&#x2F;余额支付等</td>
+</tr>
+<tr>
+<td>订单关闭模块</td>
+<td>超时未支付关闭、自动取消</td>
+</tr>
+<tr>
+<td>订单履约模块</td>
+<td>拆单、发货、签收、售后</td>
+</tr>
+<tr>
+<td>营销核销模块</td>
+<td>优惠券&#x2F;积分&#x2F;满减逻辑核销</td>
+</tr>
+<tr>
+<td>订单异步处理</td>
+<td>创建、取消、关闭等异步解耦</td>
+</tr>
+<tr>
+<td>订单风控模块</td>
+<td>黑名单拦截、反作弊、限购等</td>
+</tr>
+<tr>
+<td>售后模块（可拆分）</td>
+<td>退货、退款、换货流程</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、核心流程设计"><a href="#二、核心流程设计" class="headerlink" title="二、核心流程设计"></a>二、核心流程设计</h2><h3 id="2-1-订单创建流程"><a href="#2-1-订单创建流程" class="headerlink" title="2.1 订单创建流程"></a>2.1 订单创建流程</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">用户点击下单 → 校验库存 → 校验优惠 → 预扣库存 → 创建订单 → 发送MQ → 延迟关闭订单定时任务<br></code></pre></td></tr></table></figure>
+
+<p>流程要点：</p>
+<ul>
+<li><p><strong>幂等性保证</strong>：防止用户重复下单</p>
+</li>
+<li><p><strong>库存预扣减</strong>：下单即锁库存，未支付释放库存</p>
+</li>
+<li><p><strong>价格快照</strong>：下单时记录商品&#x2F;营销的价格状态，防止后续变动</p>
+</li>
+<li><p><strong>分布式事务</strong>：下单 + 锁库存保持一致性</p>
+</li>
+</ul>
+<h3 id="2-2-订单支付流程"><a href="#2-2-订单支付流程" class="headerlink" title="2.2 订单支付流程"></a>2.2 订单支付流程</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">用户支付 → 第三方回调 → 校验签名 → 更新订单状态 → 发货流程<br></code></pre></td></tr></table></figure>
+
+<p>要点：</p>
+<ul>
+<li><p>订单状态从<code>待支付</code> → <code>已支付</code></p>
+</li>
+<li><p>支付回调需幂等处理</p>
+</li>
+<li><p>回调后发起配送逻辑&#x2F;生成履约单</p>
+</li>
+</ul>
+<h3 id="2-3-订单关闭流程"><a href="#2-3-订单关闭流程" class="headerlink" title="2.3 订单关闭流程"></a>2.3 订单关闭流程</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">延迟队列（MQ/Redis）监听订单超时 → 状态检查 → 释放库存 → 更新订单状态为已关闭<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、关键技术点设计"><a href="#三、关键技术点设计" class="headerlink" title="三、关键技术点设计"></a>三、关键技术点设计</h2><h3 id="3-1-状态流转（状态机）"><a href="#3-1-状态流转（状态机）" class="headerlink" title="3.1 状态流转（状态机）"></a>3.1 状态流转（状态机）</h3><p>订单生命周期状态：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs text">待支付 → 已支付 → 待发货 → 已发货 → 已收货 → 已完成<br>                       ↘ 售后中 ↘已取消<br></code></pre></td></tr></table></figure>
+
+<p>推荐引入<strong>状态机引擎（如 Spring StateMachine）</strong>控制状态跳转，防止非法状态变更。</p>
+<hr>
+<h3 id="3-2-分布式事务保障"><a href="#3-2-分布式事务保障" class="headerlink" title="3.2 分布式事务保障"></a>3.2 分布式事务保障</h3><p>常见方式：</p>
+<ul>
+<li><p><strong>可靠消息最终一致性</strong>（RocketMQ事务消息）</p>
+</li>
+<li><p><strong>本地消息表 + 补偿机制</strong></p>
+</li>
+<li><p><strong>TCC</strong>（Try Confirm Cancel）适用于资源隔离强的系统</p>
+</li>
+<li><p><strong>事务消息 + 状态回查</strong></p>
+</li>
+</ul>
+<hr>
+<h3 id="3-3-高并发防护机制"><a href="#3-3-高并发防护机制" class="headerlink" title="3.3 高并发防护机制"></a>3.3 高并发防护机制</h3><ul>
+<li><p><strong>订单接口限流</strong>（滑动窗口、漏桶、令牌桶）</p>
+</li>
+<li><p><strong>库存乐观锁 &#x2F; 分布式锁</strong></p>
+</li>
+<li><p><strong>布隆过滤器防止非法商品下单请求</strong></p>
+</li>
+<li><p><strong>用户风控校验（秒杀场景）</strong></p>
+</li>
+</ul>
+<hr>
+<h2 id="四、落地实现建议"><a href="#四、落地实现建议" class="headerlink" title="四、落地实现建议"></a>四、落地实现建议</h2><h3 id="4-1-技术选型"><a href="#4-1-技术选型" class="headerlink" title="4.1 技术选型"></a>4.1 技术选型</h3><ul>
+<li><p><strong>语言&#x2F;框架</strong>：Java + SpringBoot + MyBatisPlus</p>
+</li>
+<li><p><strong>存储</strong>：MySQL + Redis 缓存（热数据）+ Elasticsearch（搜索）</p>
+</li>
+<li><p><strong>中间件</strong>：RocketMQ（订单异步、延迟取消）、Kafka（日志收集）</p>
+</li>
+<li><p><strong>分布式协调</strong>：Nacos &#x2F; Zookeeper（服务注册、配置管理）</p>
+</li>
+<li><p><strong>分库分表</strong>：ShardingSphere 实现订单按用户分片</p>
+</li>
+<li><p><strong>监控</strong>：SkyWalking + Prometheus + Grafana</p>
+</li>
+</ul>
+<hr>
+<h3 id="4-2-数据库设计核心表"><a href="#4-2-数据库设计核心表" class="headerlink" title="4.2 数据库设计核心表"></a>4.2 数据库设计核心表</h3><table>
+<thead>
+<tr>
+<th>表名</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>order_main</code></td>
+<td>主订单表，用户整体订单</td>
+</tr>
+<tr>
+<td><code>order_item</code></td>
+<td>订单明细表，每个商品一条记录</td>
+</tr>
+<tr>
+<td><code>order_status_log</code></td>
+<td>订单状态流转记录</td>
+</tr>
+<tr>
+<td><code>order_payment</code></td>
+<td>支付记录表</td>
+</tr>
+<tr>
+<td><code>order_coupon</code></td>
+<td>营销优惠核销记录</td>
+</tr>
+<tr>
+<td><code>order_refund</code></td>
+<td>售后退货退款记录</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="4-3-异常场景处理"><a href="#4-3-异常场景处理" class="headerlink" title="4.3 异常场景处理"></a>4.3 异常场景处理</h3><table>
+<thead>
+<tr>
+<th>异常场景</th>
+<th>应对策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>支付成功但回调丢失</td>
+<td>定时任务轮询支付平台</td>
+</tr>
+<tr>
+<td>MQ消息消费失败</td>
+<td>消息重试 + 死信队列 + 人工告警</td>
+</tr>
+<tr>
+<td>库存与订单不一致</td>
+<td>分布式事务 &#x2F; 补偿逻辑</td>
+</tr>
+<tr>
+<td>数据库写入失败</td>
+<td>本地消息表异步写入重试</td>
+</tr>
+</tbody></table>
+<hr>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/18/%E7%94%B5%E5%95%86%E9%A1%B9%E7%9B%AE%E6%A0%B8%E5%BF%83%E8%AE%A2%E5%8D%95%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;18&#x2F;%E7%94%B5%E5%95%86%E9%A1%B9%E7%9B%AE%E6%A0%B8%E5%BF%83%E8%AE%A2%E5%8D%95%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;18&#x2F;%E7%94%B5%E5%95%86%E9%A1%B9%E7%9B%AE%E6%A0%B8%E5%BF%83%E8%AE%A2%E5%8D%95%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/17/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E4%B8%89/">微服务架构解决方案三<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">一、架构设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A8%A1%E5%9D%97%E5%88%92%E5%88%86"><span class="toc-text">1.1 模块划分</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%A0%B8%E5%BF%83%E6%B5%81%E7%A8%8B%E8%AE%BE%E8%AE%A1"><span class="toc-text">二、核心流程设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%AE%A2%E5%8D%95%E5%88%9B%E5%BB%BA%E6%B5%81%E7%A8%8B"><span class="toc-text">2.1 订单创建流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%AE%A2%E5%8D%95%E6%94%AF%E4%BB%98%E6%B5%81%E7%A8%8B"><span class="toc-text">2.2 订单支付流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AE%A2%E5%8D%95%E5%85%B3%E9%97%AD%E6%B5%81%E7%A8%8B"><span class="toc-text">2.3 订单关闭流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E7%82%B9%E8%AE%BE%E8%AE%A1"><span class="toc-text">三、关键技术点设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8A%B6%E6%80%81%E6%B5%81%E8%BD%AC%EF%BC%88%E7%8A%B6%E6%80%81%E6%9C%BA%EF%BC%89"><span class="toc-text">3.1 状态流转（状态机）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E4%BF%9D%E9%9A%9C"><span class="toc-text">3.2 分布式事务保障</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E9%AB%98%E5%B9%B6%E5%8F%91%E9%98%B2%E6%8A%A4%E6%9C%BA%E5%88%B6"><span class="toc-text">3.3 高并发防护机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%90%BD%E5%9C%B0%E5%AE%9E%E7%8E%B0%E5%BB%BA%E8%AE%AE"><span class="toc-text">四、落地实现建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span class="toc-text">4.1 技术选型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%A0%B8%E5%BF%83%E8%A1%A8"><span class="toc-text">4.2 数据库设计核心表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%BC%82%E5%B8%B8%E5%9C%BA%E6%99%AF%E5%A4%84%E7%90%86"><span class="toc-text">4.3 异常场景处理</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
