@@ -1,0 +1,612 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>电商缓存设计 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、缓存设计的目标
+提高读性能，降低延迟
+
+减轻数据...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">电商缓存设计</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">电商缓存设计</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 21, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1880</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、缓存设计的目标"><a href="#一、缓存设计的目标" class="headerlink" title="一、缓存设计的目标"></a>一、缓存设计的目标</h2><ul>
+<li><p>提高读性能，降低延迟</p>
+</li>
+<li><p>减轻数据库压力，降低成本</p>
+</li>
+<li><p>保证数据一致性（最终一致）</p>
+</li>
+<li><p>具备高可用、高并发能力</p>
+</li>
+<li><p>防止缓存穿透、击穿、雪崩等问题</p>
+</li>
+</ul>
+<hr>
+<h2 id="二、常见的缓存内容及粒度"><a href="#二、常见的缓存内容及粒度" class="headerlink" title="二、常见的缓存内容及粒度"></a>二、常见的缓存内容及粒度</h2><table>
+<thead>
+<tr>
+<th>缓存对象类型</th>
+<th>示例数据</th>
+<th>缓存粒度</th>
+<th>缓存类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>商品信息</td>
+<td>商品详情页、图片、价格</td>
+<td>商品ID维度</td>
+<td>读多写少，适合缓存</td>
+</tr>
+<tr>
+<td>库存数据</td>
+<td>可售库存量</td>
+<td>SKU维度</td>
+<td>强一致性要求，需设计合理机制</td>
+</tr>
+<tr>
+<td>订单信息</td>
+<td>订单详情</td>
+<td>订单号维度</td>
+<td>一致性要求高，一般短期缓存</td>
+</tr>
+<tr>
+<td>用户信息</td>
+<td>用户基础信息、收货地址</td>
+<td>用户ID维度</td>
+<td>中高频读取，可缓存</td>
+</tr>
+<tr>
+<td>营销信息</td>
+<td>秒杀信息、优惠券</td>
+<td>活动ID&#x2F;商品ID</td>
+<td>高频访问，变化频繁</td>
+</tr>
+<tr>
+<td>类目导航</td>
+<td>首页类目导航树</td>
+<td>全量结构</td>
+<td>缓变结构，可缓存较久</td>
+</tr>
+<tr>
+<td>购物车数据</td>
+<td>用户购物车商品列表</td>
+<td>用户ID维度</td>
+<td>实时性需求高，结合本地缓存或Redis</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、缓存架构选型"><a href="#三、缓存架构选型" class="headerlink" title="三、缓存架构选型"></a>三、缓存架构选型</h2><h3 id="✅-常见的缓存技术"><a href="#✅-常见的缓存技术" class="headerlink" title="✅ 常见的缓存技术"></a>✅ 常见的缓存技术</h3><ul>
+<li><p><strong>本地缓存</strong>（如 Caffeine、Guava）：适合热点数据，低延迟</p>
+</li>
+<li><p><strong>分布式缓存</strong>（如 Redis、Memcached）：适合共享数据，高并发</p>
+</li>
+<li><p><strong>多级缓存结构</strong>：本地 + Redis，减少网络开销</p>
+</li>
+<li><p><strong>CDN 缓存</strong>：页面级缓存、图片静态资源缓存</p>
+</li>
+</ul>
+<hr>
+<h2 id="四、缓存策略设计核心问题"><a href="#四、缓存策略设计核心问题" class="headerlink" title="四、缓存策略设计核心问题"></a>四、缓存策略设计核心问题</h2><h3 id="1-缓存更新策略"><a href="#1-缓存更新策略" class="headerlink" title="1. 缓存更新策略"></a>1. <strong>缓存更新策略</strong></h3><ul>
+<li><p><strong>Cache Aside（旁路缓存）</strong>：读时查缓存，缓存未命中则查数据库并回填</p>
+</li>
+<li><p><strong>Read Through</strong>：应用只读缓存，缓存负责从数据库加载</p>
+</li>
+<li><p><strong>Write Through &#x2F; Write Behind</strong>：写操作直接更新缓存，同时写入数据库或异步写入</p>
+</li>
+</ul>
+<blockquote>
+<p>电商推荐使用 Cache Aside 方案，灵活控制。</p>
+</blockquote>
+<hr>
+<h3 id="2-缓存失效策略"><a href="#2-缓存失效策略" class="headerlink" title="2. 缓存失效策略"></a>2. <strong>缓存失效策略</strong></h3><ul>
+<li><p>TTL（过期时间）：常用 <code>EX</code> 或 <code>PX</code></p>
+</li>
+<li><p>基于访问时间（LRU、LFU）：清理冷数据</p>
+</li>
+<li><p>定期刷新（预热机制）</p>
+</li>
+<li><p>特殊业务（如商品上下架、价格波动）应有定向刷新机制</p>
+</li>
+</ul>
+<hr>
+<h3 id="3-缓存一致性设计"><a href="#3-缓存一致性设计" class="headerlink" title="3. 缓存一致性设计"></a>3. <strong>缓存一致性设计</strong></h3><ul>
+<li><p>异步双删策略：</p>
+  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">update DB -&gt; delete cache -&gt; send MQ -&gt; consumer 再删一次缓存<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>延迟双删：</p>
+  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">update DB -&gt; delete cache -&gt; 延迟1秒再删一次<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>使用 Canal &#x2F; Binlog 异步监听数据库变更，进行 cache 更新</p>
+</li>
+</ul>
+<hr>
+<h3 id="4-热点数据处理"><a href="#4-热点数据处理" class="headerlink" title="4. 热点数据处理"></a>4. <strong>热点数据处理</strong></h3><ul>
+<li><p>热点缓存单独维护（如预热到本地缓存）</p>
+</li>
+<li><p>使用布隆过滤器、互斥锁控制缓存击穿</p>
+</li>
+<li><p>高频访问设置更长 TTL，甚至永不过期 + 定时刷新</p>
+</li>
+</ul>
+<hr>
+<h3 id="5-缓存穿透-击穿-雪崩防护"><a href="#5-缓存穿透-击穿-雪崩防护" class="headerlink" title="5. 缓存穿透 &#x2F; 击穿 &#x2F; 雪崩防护"></a>5. <strong>缓存穿透 &#x2F; 击穿 &#x2F; 雪崩防护</strong></h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>原因</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>穿透</strong></td>
+<td>请求的 key 根本不存在</td>
+<td>布隆过滤器、空值缓存</td>
+</tr>
+<tr>
+<td><strong>击穿</strong></td>
+<td>某个热点 key 过期瞬间大量请求直达 DB</td>
+<td>加互斥锁 &#x2F; 设置永不过期 TTL + 后台更新</td>
+</tr>
+<tr>
+<td><strong>雪崩</strong></td>
+<td>大量缓存集中过期</td>
+<td>设置过期时间随机值、服务限流、降级保护</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、典型场景缓存设计方案"><a href="#五、典型场景缓存设计方案" class="headerlink" title="五、典型场景缓存设计方案"></a>五、典型场景缓存设计方案</h2><h3 id="✅-商品详情页缓存设计"><a href="#✅-商品详情页缓存设计" class="headerlink" title="✅ 商品详情页缓存设计"></a>✅ 商品详情页缓存设计</h3><ul>
+<li><p>Redis Key：<code>product:detail:&#123;skuId&#125;</code></p>
+</li>
+<li><p>缓存内容：SKU信息、价格、库存、图片</p>
+</li>
+<li><p>缓存更新机制：</p>
+<ul>
+<li><p>商品变更时异步清理缓存</p>
+</li>
+<li><p>用户访问时缓存未命中触发 DB 加载并更新缓存</p>
+</li>
+</ul>
+</li>
+<li><p>空值缓存防止穿透</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-秒杀场景缓存设计"><a href="#✅-秒杀场景缓存设计" class="headerlink" title="✅ 秒杀场景缓存设计"></a>✅ 秒杀场景缓存设计</h3><ul>
+<li><p>缓存数据：秒杀活动信息、商品状态、限购条件</p>
+</li>
+<li><p>使用本地缓存 + Redis 组合</p>
+</li>
+<li><p>商品库存放入 Redis，避免频繁访问 DB</p>
+</li>
+<li><p>请求入口限流，避免并发压垮 Redis</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-购物车缓存设计"><a href="#✅-购物车缓存设计" class="headerlink" title="✅ 购物车缓存设计"></a>✅ 购物车缓存设计</h3><ul>
+<li><p>Redis Key：<code>cart:user:&#123;userId&#125;</code></p>
+</li>
+<li><p>使用 Hash 存储商品项</p>
+</li>
+<li><p>实时读写，不设置 TTL</p>
+</li>
+<li><p>可设置双写（缓存+DB），也可最终一致性</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-类目导航缓存"><a href="#✅-类目导航缓存" class="headerlink" title="✅ 类目导航缓存"></a>✅ 类目导航缓存</h3><ul>
+<li><p>Redis Key：<code>category:tree</code></p>
+</li>
+<li><p>全量结构缓存，适合页面缓存（CDN）</p>
+</li>
+<li><p>后台类目修改时清理缓存或定时刷新</p>
+</li>
+</ul>
+<hr>
+<h2 id="六、缓存与数据库关系管理"><a href="#六、缓存与数据库关系管理" class="headerlink" title="六、缓存与数据库关系管理"></a>六、缓存与数据库关系管理</h2><ul>
+<li><p>避免缓存过大占用 Redis 内存</p>
+</li>
+<li><p>热门数据才缓存，冷数据走 DB 查询</p>
+</li>
+<li><p>定期分析访问日志，筛选高频 Key 做缓存优化</p>
+</li>
+</ul>
+<hr>
+<h2 id="七、总结建议"><a href="#七、总结建议" class="headerlink" title="七、总结建议"></a>七、总结建议</h2><table>
+<thead>
+<tr>
+<th>实践建议</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>缓存分层设计</td>
+<td>本地 + 分布式，提高响应速度</td>
+</tr>
+<tr>
+<td>合理设置 TTL</td>
+<td>加随机过期，防止雪崩</td>
+</tr>
+<tr>
+<td>异步更新机制</td>
+<td>提高写入吞吐，保持一致性</td>
+</tr>
+<tr>
+<td>限流降级策略</td>
+<td>秒杀等高并发场景保护底层系统</td>
+</tr>
+<tr>
+<td>日志监控埋点</td>
+<td>缓存命中率、缓存慢查询监控</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/21/%E7%94%B5%E5%95%86%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;21&#x2F;%E7%94%B5%E5%95%86%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;21&#x2F;%E7%94%B5%E5%95%86%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/20/%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E5%9C%A8%E7%94%B5%E5%95%86%E4%B8%9A%E5%8A%A1%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF/">分布式事务在电商业务中的应用场景<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="toc-text">一、缓存设计的目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%93%E5%AD%98%E5%86%85%E5%AE%B9%E5%8F%8A%E7%B2%92%E5%BA%A6"><span class="toc-text">二、常见的缓存内容及粒度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E9%80%89%E5%9E%8B"><span class="toc-text">三、缓存架构选型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%93%E5%AD%98%E6%8A%80%E6%9C%AF"><span class="toc-text">✅ 常见的缓存技术</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5%E8%AE%BE%E8%AE%A1%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-text">四、缓存策略设计核心问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BC%93%E5%AD%98%E6%9B%B4%E6%96%B0%E7%AD%96%E7%95%A5"><span class="toc-text">1. 缓存更新策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88%E7%AD%96%E7%95%A5"><span class="toc-text">2. 缓存失效策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E8%AE%BE%E8%AE%A1"><span class="toc-text">3. 缓存一致性设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%83%AD%E7%82%B9%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86"><span class="toc-text">4. 热点数据处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F-%E5%87%BB%E7%A9%BF-%E9%9B%AA%E5%B4%A9%E9%98%B2%E6%8A%A4"><span class="toc-text">5. 缓存穿透 &#x2F; 击穿 &#x2F; 雪崩防护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="toc-text">五、典型场景缓存设计方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%95%86%E5%93%81%E8%AF%A6%E6%83%85%E9%A1%B5%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">✅ 商品详情页缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%A7%92%E6%9D%80%E5%9C%BA%E6%99%AF%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">✅ 秒杀场景缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E8%B4%AD%E7%89%A9%E8%BD%A6%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">✅ 购物车缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%B1%BB%E7%9B%AE%E5%AF%BC%E8%88%AA%E7%BC%93%E5%AD%98"><span class="toc-text">✅ 类目导航缓存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%85%B3%E7%B3%BB%E7%AE%A1%E7%90%86"><span class="toc-text">六、缓存与数据库关系管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93%E5%BB%BA%E8%AE%AE"><span class="toc-text">七、总结建议</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
