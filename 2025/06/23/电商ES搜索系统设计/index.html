@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>电商ES搜索系统设计 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、系统目标
+高性能：支持高并发搜索，响应时间 &l...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">电商ES搜索系统设计</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">电商ES搜索系统设计</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 23, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>4950</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、系统目标"><a href="#一、系统目标" class="headerlink" title="一、系统目标"></a>一、系统目标</h2><ul>
+<li><p><strong>高性能</strong>：支持高并发搜索，响应时间 &lt; 100ms</p>
+</li>
+<li><p><strong>高可用</strong>：ES集群 + 多副本保证稳定运行</p>
+</li>
+<li><p><strong>高可控</strong>：支持运营干预、权重调控</p>
+</li>
+<li><p><strong>高相关性</strong>：搜索结果准确、排序合理</p>
+</li>
+<li><p><strong>高实时性</strong>：商品变更秒级同步到ES</p>
+</li>
+</ul>
+<hr>
+<h2 id="二、整体架构图"><a href="#二、整体架构图" class="headerlink" title="二、整体架构图"></a>二、整体架构图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">       ┌─────────────┐<br>       │ 用户请求    │<br>       └────┬────────┘<br>            ▼<br>     ┌──────────────────┐<br>     │ 搜索服务（API层）│ ← SpringBoot + 限流、鉴权<br>     └────┬────────────┘<br>          ▼<br>┌─────────────────────────────┐<br>│ 查询处理层（改写 + 分词）    │ ← 关键词预处理、词义增强<br>└────┬────────────────────────┘<br>     ▼<br>┌─────────────────────────────┐<br>│ Elasticsearch 查询构建模块 │ ← 构建DSL查询语句<br>└────┬────────────────────────┘<br>     ▼<br>┌──────────────────────┐<br>│ Elasticsearch集群    │ ← 商品索引、类目索引等<br>└────┬─────────────────┘<br>     ▼<br>┌─────────────────────────────┐<br>│ 商品数据服务（同步模块）    │ ← Kafka/RocketMQ/Canal 实时同步<br>└────┬────────────────────────┘<br>     ▼<br>┌──────────────────────┐<br>│ MySQL / Redis / OSS  │ ← 商品库、库存、媒体等<br>└──────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、ES核心索引设计（Mapping）"><a href="#三、ES核心索引设计（Mapping）" class="headerlink" title="三、ES核心索引设计（Mapping）"></a>三、ES核心索引设计（Mapping）</h2><h3 id="1-商品索引字段（简化版）"><a href="#1-商品索引字段（简化版）" class="headerlink" title="1. 商品索引字段（简化版）"></a>1. 商品索引字段（简化版）</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs json">PUT /product_index<br><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;mappings&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;properties&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;product_id&quot;</span><span class="hljs-punctuation">:</span>    <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;keyword&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span>         <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;text&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;analyzer&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ik_max_word&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;brand&quot;</span><span class="hljs-punctuation">:</span>         <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;keyword&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;category&quot;</span><span class="hljs-punctuation">:</span>      <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;keyword&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;price&quot;</span><span class="hljs-punctuation">:</span>         <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;double&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;stock&quot;</span><span class="hljs-punctuation">:</span>         <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;integer&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;sales&quot;</span><span class="hljs-punctuation">:</span>         <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;long&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;tags&quot;</span><span class="hljs-punctuation">:</span>          <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;keyword&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;create_time&quot;</span><span class="hljs-punctuation">:</span>   <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;date&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-attr">&quot;sku_attributes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;nested&quot;</span><span class="hljs-punctuation">,</span><br>        <span class="hljs-attr">&quot;properties&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;attr_name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;keyword&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;attr_value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;keyword&quot;</span> <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、典型搜索功能与DSL实现"><a href="#四、典型搜索功能与DSL实现" class="headerlink" title="四、典型搜索功能与DSL实现"></a>四、典型搜索功能与DSL实现</h2><h3 id="1-关键词搜索-高亮-分页"><a href="#1-关键词搜索-高亮-分页" class="headerlink" title="1. 关键词搜索 + 高亮 + 分页"></a>1. <strong>关键词搜索 + 高亮 + 分页</strong></h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs json">POST /product_index/_search<br><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;match&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;苹果手机&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;highlight&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;fields&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;from&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;size&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">20</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-筛选：品牌、类目、价格区间、属性过滤"><a href="#2-筛选：品牌、类目、价格区间、属性过滤" class="headerlink" title="2. 筛选：品牌、类目、价格区间、属性过滤"></a>2. <strong>筛选：品牌、类目、价格区间、属性过滤</strong></h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;bool&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;must&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;match&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;title&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;手机&quot;</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;filter&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>      <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;term&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;brand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Apple&quot;</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;term&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;category&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;手机&quot;</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;range&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;price&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;gte&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">3000</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;lte&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">8000</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>      <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;nested&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;path&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sku_attributes&quot;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;query&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;bool&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>              <span class="hljs-attr">&quot;must&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>                <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;term&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;sku_attributes.attr_name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;颜色&quot;</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>                <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;term&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;sku_attributes.attr_value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;黑色&quot;</span> <span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">&#125;</span><br>              <span class="hljs-punctuation">]</span><br>            <span class="hljs-punctuation">&#125;</span><br>          <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">]</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-排序：综合排序-价格-销量-时间"><a href="#3-排序：综合排序-价格-销量-时间" class="headerlink" title="3. 排序：综合排序 &#x2F; 价格 &#x2F; 销量 &#x2F; 时间"></a>3. <strong>排序：综合排序 &#x2F; 价格 &#x2F; 销量 &#x2F; 时间</strong></h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;sort&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><br>  <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;sales&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;desc&quot;</span> <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;price&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;asc&quot;</span> <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">]</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="4-聚合：商品分类-品牌-属性聚合用于侧边栏筛选"><a href="#4-聚合：商品分类-品牌-属性聚合用于侧边栏筛选" class="headerlink" title="4. 聚合：商品分类 &#x2F; 品牌 &#x2F; 属性聚合用于侧边栏筛选"></a>4. <strong>聚合：商品分类 &#x2F; 品牌 &#x2F; 属性聚合用于侧边栏筛选</strong></h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-attr">&quot;aggs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;category_agg&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;terms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;field&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;category&quot;</span> <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;brand_agg&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;terms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;field&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;brand&quot;</span> <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;attr_agg&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;nested&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;path&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sku_attributes&quot;</span><br>    <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>    <span class="hljs-attr">&quot;aggs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;attr_name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;terms&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span> <span class="hljs-attr">&quot;field&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sku_attributes.attr_name&quot;</span> <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、数据同步方案"><a href="#五、数据同步方案" class="headerlink" title="五、数据同步方案"></a>五、数据同步方案</h2><h3 id="实时同步流程（商品上架-下架、价格变更）："><a href="#实时同步流程（商品上架-下架、价格变更）：" class="headerlink" title="实时同步流程（商品上架&#x2F;下架、价格变更）："></a>实时同步流程（商品上架&#x2F;下架、价格变更）：</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">MySQL Binlog → Canal → Kafka → 商品索引服务（消费者） → ES 更新索引<br></code></pre></td></tr></table></figure>
+
+<h3 id="注意事项："><a href="#注意事项：" class="headerlink" title="注意事项："></a>注意事项：</h3><ul>
+<li><p>使用商品版本号（version）防止乱序写入</p>
+</li>
+<li><p>建立幂等写入逻辑</p>
+</li>
+<li><p>使用批量 Bulk API 提升写入效率</p>
+</li>
+</ul>
+<hr>
+<h2 id="六、性能优化建议"><a href="#六、性能优化建议" class="headerlink" title="六、性能优化建议"></a>六、性能优化建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>优化策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>热门搜索</td>
+<td>缓存 ES 查询结果（Redis）</td>
+</tr>
+<tr>
+<td>分页翻页深</td>
+<td>使用 <code>search_after</code> 替代深分页</td>
+</tr>
+<tr>
+<td>精准命中</td>
+<td>使用 <code>keyword</code> 精准字段</td>
+</tr>
+<tr>
+<td>商品过滤</td>
+<td>利用 <code>filter</code> 避免打分计算</td>
+</tr>
+<tr>
+<td>并发查询</td>
+<td>多线程异步组合召回查询</td>
+</tr>
+<tr>
+<td>写入同步</td>
+<td>使用批量写入 + 幂等处理</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="七、搜索个性化扩展"><a href="#七、搜索个性化扩展" class="headerlink" title="七、搜索个性化扩展"></a>七、搜索个性化扩展</h2><ul>
+<li><p><strong>用户画像 + Embedding 向量召回</strong>（Milvus &#x2F; ES KNN）</p>
+</li>
+<li><p><strong>智能排序模型（CTR预估）</strong>：结合销量、评分、用户点击率</p>
+</li>
+<li><p><strong>运营干预排序</strong>：通过 ES 的 function_score 控制权重</p>
+</li>
+</ul>
+<hr>
+<h2 id="八、运维监控"><a href="#八、运维监控" class="headerlink" title="八、运维监控"></a>八、运维监控</h2><ul>
+<li><p><strong>慢查询分析</strong>：开启 slowlog</p>
+</li>
+<li><p><strong>QPS、延迟</strong>：Prometheus + Grafana</p>
+</li>
+<li><p><strong>写入失败告警</strong>：ES _bulk 响应监控</p>
+</li>
+<li><p><strong>节点状态健康检查</strong>：ES Cat API + Alarm系统</p>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/23/%E7%94%B5%E5%95%86ES%E6%90%9C%E7%B4%A2%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;23&#x2F;%E7%94%B5%E5%95%86ES%E6%90%9C%E7%B4%A2%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;23&#x2F;%E7%94%B5%E5%95%86ES%E6%90%9C%E7%B4%A2%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/22/%E7%94%B5%E5%95%86%E9%99%90%E6%B5%81%E7%86%94%E6%96%AD%E6%96%B9%E6%A1%88/">电商限流熔断方案<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%B3%BB%E7%BB%9F%E7%9B%AE%E6%A0%87"><span class="toc-text">一、系统目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E5%9B%BE"><span class="toc-text">二、整体架构图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81ES%E6%A0%B8%E5%BF%83%E7%B4%A2%E5%BC%95%E8%AE%BE%E8%AE%A1%EF%BC%88Mapping%EF%BC%89"><span class="toc-text">三、ES核心索引设计（Mapping）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%95%86%E5%93%81%E7%B4%A2%E5%BC%95%E5%AD%97%E6%AE%B5%EF%BC%88%E7%AE%80%E5%8C%96%E7%89%88%EF%BC%89"><span class="toc-text">1. 商品索引字段（简化版）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%85%B8%E5%9E%8B%E6%90%9C%E7%B4%A2%E5%8A%9F%E8%83%BD%E4%B8%8EDSL%E5%AE%9E%E7%8E%B0"><span class="toc-text">四、典型搜索功能与DSL实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%B3%E9%94%AE%E8%AF%8D%E6%90%9C%E7%B4%A2-%E9%AB%98%E4%BA%AE-%E5%88%86%E9%A1%B5"><span class="toc-text">1. 关键词搜索 + 高亮 + 分页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%AD%9B%E9%80%89%EF%BC%9A%E5%93%81%E7%89%8C%E3%80%81%E7%B1%BB%E7%9B%AE%E3%80%81%E4%BB%B7%E6%A0%BC%E5%8C%BA%E9%97%B4%E3%80%81%E5%B1%9E%E6%80%A7%E8%BF%87%E6%BB%A4"><span class="toc-text">2. 筛选：品牌、类目、价格区间、属性过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%8E%92%E5%BA%8F%EF%BC%9A%E7%BB%BC%E5%90%88%E6%8E%92%E5%BA%8F-%E4%BB%B7%E6%A0%BC-%E9%94%80%E9%87%8F-%E6%97%B6%E9%97%B4"><span class="toc-text">3. 排序：综合排序 &#x2F; 价格 &#x2F; 销量 &#x2F; 时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E8%81%9A%E5%90%88%EF%BC%9A%E5%95%86%E5%93%81%E5%88%86%E7%B1%BB-%E5%93%81%E7%89%8C-%E5%B1%9E%E6%80%A7%E8%81%9A%E5%90%88%E7%94%A8%E4%BA%8E%E4%BE%A7%E8%BE%B9%E6%A0%8F%E7%AD%9B%E9%80%89"><span class="toc-text">4. 聚合：商品分类 &#x2F; 品牌 &#x2F; 属性聚合用于侧边栏筛选</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5%E6%96%B9%E6%A1%88"><span class="toc-text">五、数据同步方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E5%90%8C%E6%AD%A5%E6%B5%81%E7%A8%8B%EF%BC%88%E5%95%86%E5%93%81%E4%B8%8A%E6%9E%B6-%E4%B8%8B%E6%9E%B6%E3%80%81%E4%BB%B7%E6%A0%BC%E5%8F%98%E6%9B%B4%EF%BC%89%EF%BC%9A"><span class="toc-text">实时同步流程（商品上架&#x2F;下架、价格变更）：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%EF%BC%9A"><span class="toc-text">注意事项：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">六、性能优化建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%90%9C%E7%B4%A2%E4%B8%AA%E6%80%A7%E5%8C%96%E6%89%A9%E5%B1%95"><span class="toc-text">七、搜索个性化扩展</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E8%BF%90%E7%BB%B4%E7%9B%91%E6%8E%A7"><span class="toc-text">八、运维监控</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
