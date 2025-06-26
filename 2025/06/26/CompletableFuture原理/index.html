@@ -1,0 +1,503 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>CompletableFuture原理 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="CompletableFuture 是 Java 8 ...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">CompletableFuture原理</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">CompletableFuture原理</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 26, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2501</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <p><code>CompletableFuture</code> 是 Java 8 引入的异步编程工具类，它基于 <strong><code>Future</code> 接口的扩展</strong>，支持非阻塞、链式异步任务组合。其底层原理结合了：</p>
+<ul>
+<li><p><strong>ForkJoinPool 线程池</strong></p>
+</li>
+<li><p><strong>CAS（Compare-And-Swap）无锁算法</strong></p>
+</li>
+<li><p><strong>任务链（链式回调）</strong></p>
+</li>
+<li><p><strong>内存语义保证（使用 <code>Unsafe</code>）</strong></p>
+</li>
+</ul>
+<hr>
+<h2 id="一、基本结构概览"><a href="#一、基本结构概览" class="headerlink" title="一、基本结构概览"></a>一、基本结构概览</h2><p><code>CompletableFuture&lt;T&gt;</code> 继承结构如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CompletableFuture</span>&lt;T&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Future</span>&lt;T&gt;, CompletionStage&lt;T&gt;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>Future</strong>：支持 <code>get()</code> 等阻塞操作。</p>
+</li>
+<li><p><strong>CompletionStage</strong>：定义了大量链式异步方法（如 <code>thenApply</code>, <code>thenCompose</code> 等）。</p>
+</li>
+</ul>
+<p>内部关键字段：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">volatile</span> Object result; <span class="hljs-comment">// 存储计算结果或异常</span><br><span class="hljs-keyword">volatile</span> Completion stack; <span class="hljs-comment">// 回调链（栈结构）</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、核心原理"><a href="#二、核心原理" class="headerlink" title="二、核心原理"></a>二、核心原理</h2><h3 id="1-异步任务执行机制"><a href="#1-异步任务执行机制" class="headerlink" title="1. 异步任务执行机制"></a>1. 异步任务执行机制</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java">CompletableFuture.supplyAsync(() -&gt; &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">1</span>;<br>&#125;);<br></code></pre></td></tr></table></figure>
+
+<p>默认使用 <code>ForkJoinPool.commonPool()</code> 进行执行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">Executor</span> <span class="hljs-variable">asyncPool</span> <span class="hljs-operator">=</span> ForkJoinPool.commonPool();<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>如果你使用 <code>supplyAsync(Supplier, Executor)</code> 可自定义线程池。</p>
+</li>
+<li><p>本质上通过 <code>Executor.execute(Runnable)</code> 提交任务。</p>
+</li>
+</ul>
+<hr>
+<h3 id="2-回调注册机制（任务链）"><a href="#2-回调注册机制（任务链）" class="headerlink" title="2. 回调注册机制（任务链）"></a>2. 回调注册机制（任务链）</h3><p>每次调用 <code>thenApply / thenAccept</code> 等方法时，会构造一个 <strong>新的 <code>CompletableFuture</code> 实例</strong>，并将其包装成一个 <code>Completion</code> 节点（比如 <code>ThenApply</code>、<code>UniApply</code> 等）挂在当前 future 的 <code>stack</code> 上。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> &lt;U&gt; CompletableFuture&lt;U&gt; <span class="hljs-title function_">thenApply</span><span class="hljs-params">(Function&lt;? <span class="hljs-built_in">super</span> T, ? extends U&gt; fn)</span> &#123;<br>    <span class="hljs-keyword">return</span> uniApplyStage(<span class="hljs-literal">null</span>, fn);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>uniApplyStage</code> 创建一个 <code>UniApply</code> 节点并注册到 <code>stack</code></p>
+</li>
+<li><p>等当前任务完成后会触发该节点执行</p>
+</li>
+</ul>
+<hr>
+<h3 id="3-任务完成触发执行链（trigger）"><a href="#3-任务完成触发执行链（trigger）" class="headerlink" title="3. 任务完成触发执行链（trigger）"></a>3. 任务完成触发执行链（trigger）</h3><p>当 <code>future.complete(value)</code> 或任务执行完成时，会调用：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java">postComplete() &#123;<br>    Completion h;<br>    <span class="hljs-keyword">while</span> ((h = stack) != <span class="hljs-literal">null</span>)<br>        <span class="hljs-keyword">if</span> (tryPush(h))<br>            h.tryFire(); <span class="hljs-comment">// 逐个触发执行</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>使用自旋 CAS 设置回调链为 null，保证线程安全。</p>
+</li>
+<li><p><code>tryFire()</code> 是各回调节点的核心逻辑。</p>
+</li>
+</ul>
+<hr>
+<h3 id="4-结果存储-原子性保证"><a href="#4-结果存储-原子性保证" class="headerlink" title="4. 结果存储 &amp; 原子性保证"></a>4. 结果存储 &amp; 原子性保证</h3><p>所有结果、异常都统一存储在 <code>result</code> 字段：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 正常完成</span><br>result = value;<br><br><span class="hljs-comment">// 异常完成</span><br>result = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AltResult</span>(Throwable ex);<br></code></pre></td></tr></table></figure>
+
+<p>内部使用 <code>Unsafe</code> 的 <code>compareAndSwapObject()</code> 方法保证并发下结果只被设置一次：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">UNSAFE.compareAndSwapObject(<span class="hljs-built_in">this</span>, RESULT, <span class="hljs-literal">null</span>, r);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、组合机制（Compose、Combine）"><a href="#三、组合机制（Compose、Combine）" class="headerlink" title="三、组合机制（Compose、Combine）"></a>三、组合机制（Compose、Combine）</h2><ul>
+<li><p><code>thenCompose()</code>：扁平化嵌套 future</p>
+</li>
+<li><p><code>thenCombine()</code>：两个 future 同时完成后执行</p>
+</li>
+<li><p><code>anyOf() / allOf()</code>：多个任务聚合</p>
+</li>
+</ul>
+<p>底层都是构造 <code>BiCompletion</code>、<code>OrCompletion</code> 等节点，依赖多个前置任务完成后再触发 <code>tryFire()</code>。</p>
+<hr>
+<h2 id="四、异常处理机制"><a href="#四、异常处理机制" class="headerlink" title="四、异常处理机制"></a>四、异常处理机制</h2><p>提供了完整的异常处理支持：</p>
+<ul>
+<li><p><code>exceptionally()</code>：遇到异常恢复</p>
+</li>
+<li><p><code>handle()</code>：统一处理正常&#x2F;异常结果</p>
+</li>
+<li><p><code>whenComplete()</code>：任务完成就执行，无论成功失败</p>
+</li>
+</ul>
+<p>底层都是包装成 <code>BiCompletion</code> 节点，统一在回调中处理 <code>result instanceof AltResult</code> 判断。</p>
+<hr>
+<h2 id="五、线程模型与阻塞策略"><a href="#五、线程模型与阻塞策略" class="headerlink" title="五、线程模型与阻塞策略"></a>五、线程模型与阻塞策略</h2><ul>
+<li><p>主动阻塞：<code>get()</code>、<code>join()</code> 方法阻塞当前线程</p>
+</li>
+<li><p>异步触发：非阻塞链式调用使用线程池调度执行</p>
+</li>
+<li><p>避免死锁：<code>ForkJoinPool</code> 内部处理了线程窃取等机制</p>
+</li>
+</ul>
+<hr>
+<h2 id="总结图解（简化）"><a href="#总结图解（简化）" class="headerlink" title="总结图解（简化）"></a>总结图解（简化）</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">supplyAsync()                thenApply()         thenAccept()<br>   ↓                             ↓                   ↓<br>CompletableFuture A ─────► CompletableFuture B ──► CompletableFuture C<br>   执行任务              注册回调B（挂在A.stack）    注册回调C（挂在B.stack）<br></code></pre></td></tr></table></figure>
+
+<p>当 A 完成 ⇒ 执行 B 的回调 ⇒ B 完成 ⇒ 执行 C 的回调</p>
+<hr>
+<h2 id="总结要点"><a href="#总结要点" class="headerlink" title="总结要点"></a>总结要点</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线程模型</td>
+<td>默认使用 ForkJoinPool 并行执行</td>
+</tr>
+<tr>
+<td>回调链结构</td>
+<td>使用 <code>Completion</code> 单向链表结构（栈）</td>
+</tr>
+<tr>
+<td>异步触发机制</td>
+<td><code>postComplete()</code> 遍历 <code>stack</code> 并触发</td>
+</tr>
+<tr>
+<td>线程安全</td>
+<td>CAS + volatile 保证可见性与原子性</td>
+</tr>
+<tr>
+<td>异常处理</td>
+<td>基于 <code>AltResult</code> 和封装节点执行</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/26/CompletableFuture%E5%8E%9F%E7%90%86/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;26&#x2F;CompletableFuture%E5%8E%9F%E7%90%86&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;26&#x2F;CompletableFuture%E5%8E%9F%E7%90%86&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/25/%E7%94%B5%E5%95%86%E7%B3%BB%E7%BB%9F%E6%B5%81%E9%87%8F%E7%AE%A1%E6%8E%A7%E6%96%B9%E6%A1%88%E8%AE%BE%E8%AE%A1/">电商系统流量管控方案设计<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9F%BA%E6%9C%AC%E7%BB%93%E6%9E%84%E6%A6%82%E8%A7%88"><span class="toc-text">一、基本结构概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86"><span class="toc-text">二、核心原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E6%9C%BA%E5%88%B6"><span class="toc-text">1. 异步任务执行机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%9B%9E%E8%B0%83%E6%B3%A8%E5%86%8C%E6%9C%BA%E5%88%B6%EF%BC%88%E4%BB%BB%E5%8A%A1%E9%93%BE%EF%BC%89"><span class="toc-text">2. 回调注册机制（任务链）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%BB%BB%E5%8A%A1%E5%AE%8C%E6%88%90%E8%A7%A6%E5%8F%91%E6%89%A7%E8%A1%8C%E9%93%BE%EF%BC%88trigger%EF%BC%89"><span class="toc-text">3. 任务完成触发执行链（trigger）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%BB%93%E6%9E%9C%E5%AD%98%E5%82%A8-%E5%8E%9F%E5%AD%90%E6%80%A7%E4%BF%9D%E8%AF%81"><span class="toc-text">4. 结果存储 &amp; 原子性保证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%84%E5%90%88%E6%9C%BA%E5%88%B6%EF%BC%88Compose%E3%80%81Combine%EF%BC%89"><span class="toc-text">三、组合机制（Compose、Combine）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86%E6%9C%BA%E5%88%B6"><span class="toc-text">四、异常处理机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E4%B8%8E%E9%98%BB%E5%A1%9E%E7%AD%96%E7%95%A5"><span class="toc-text">五、线程模型与阻塞策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%9B%BE%E8%A7%A3%EF%BC%88%E7%AE%80%E5%8C%96%EF%BC%89"><span class="toc-text">总结图解（简化）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E8%A6%81%E7%82%B9"><span class="toc-text">总结要点</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
