@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>ThreadLocal详解 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、ThreadLocal 是什么？它的本质是：为每...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">ThreadLocal详解</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">ThreadLocal详解</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 27, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2463</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、ThreadLocal-是什么？"><a href="#一、ThreadLocal-是什么？" class="headerlink" title="一、ThreadLocal 是什么？"></a>一、ThreadLocal 是什么？</h2><p>它的本质是：<strong>为每一个线程提供一个变量副本，线程之间互不干扰。</strong></p>
+<p>使用场景举例：</p>
+<ul>
+<li><p>每个线程有自己独立的用户上下文信息</p>
+</li>
+<li><p>数据库连接、事务管理</p>
+</li>
+<li><p>防止对象共享导致的线程安全问题（如 <code>SimpleDateFormat</code>）</p>
+</li>
+</ul>
+<hr>
+<h2 id="二、基本使用方式"><a href="#二、基本使用方式" class="headerlink" title="二、基本使用方式"></a>二、基本使用方式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java">ThreadLocal&lt;String&gt; local = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;&gt;();<br><br>local.set(<span class="hljs-string">&quot;hello&quot;</span>);<br><span class="hljs-type">String</span> <span class="hljs-variable">val</span> <span class="hljs-operator">=</span> local.get();<br>local.remove(); <span class="hljs-comment">// 避免内存泄漏</span><br></code></pre></td></tr></table></figure>
+
+<p>也可以使用 <code>withInitial</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">ThreadLocal&lt;String&gt; local = ThreadLocal.withInitial(() -&gt; <span class="hljs-string">&quot;default&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、底层原理详解"><a href="#三、底层原理详解" class="headerlink" title="三、底层原理详解"></a>三、底层原理详解</h2><p>每个线程有一个 ThreadLocalMap，用于存储本线程自己的所有 ThreadLocal 变量。</p>
+<h3 id="✅-源码结构（关键类）"><a href="#✅-源码结构（关键类）" class="headerlink" title="✅ 源码结构（关键类）"></a>✅ 源码结构（关键类）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java">ThreadLocal&lt;T&gt; &#123;<br>    <span class="hljs-comment">// ThreadLocal 本身只是 key</span><br>    <span class="hljs-keyword">public</span> T <span class="hljs-title function_">get</span><span class="hljs-params">()</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">set</span><span class="hljs-params">(T value)</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">remove</span><span class="hljs-params">()</span><br>&#125;<br><br>Thread &#123;<br>    ThreadLocalMap threadLocals; <span class="hljs-comment">// 每个线程一个 map</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-数据存储过程"><a href="#✅-数据存储过程" class="headerlink" title="✅ 数据存储过程"></a>✅ 数据存储过程</h3><p>以 <code>local.set(&quot;abc&quot;)</code> 为例：</p>
+<ol>
+<li><p>获取当前线程：<code>Thread currentThread = Thread.currentThread();</code></p>
+</li>
+<li><p>获取 <code>currentThread.threadLocals</code></p>
+</li>
+<li><p>将当前 <code>ThreadLocal</code> 对象作为 key，value 存储进去</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">ThreadLocalMap.Entry[] table; <span class="hljs-comment">// 存储结构</span><br></code></pre></td></tr></table></figure>
+
+<p>注意：Entry 的 key 是 ThreadLocal 的弱引用（<code>WeakReference&lt;ThreadLocal&lt;?&gt;&gt;</code>）</p>
+<hr>
+<h2 id="四、内存泄漏问题（重点）"><a href="#四、内存泄漏问题（重点）" class="headerlink" title="四、内存泄漏问题（重点）"></a>四、内存泄漏问题（重点）</h2><p>由于 <code>ThreadLocalMap</code> 的 Entry 中 key 是弱引用：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Entry</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">WeakReference</span>&lt;ThreadLocal&lt;?&gt;&gt; &#123;<br>    Object value;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="✅-问题来源："><a href="#✅-问题来源：" class="headerlink" title="✅ 问题来源："></a>✅ 问题来源：</h3><ul>
+<li>如果 ThreadLocal 对象被回收（key&#x3D;null），而我们<strong>未调用 remove()</strong> 清理，value 依然强引用存在 ⇒ 内存泄漏。</li>
+</ul>
+<h3 id="✅-正确做法："><a href="#✅-正确做法：" class="headerlink" title="✅ 正确做法："></a>✅ 正确做法：</h3><ul>
+<li><p>手动调用 <code>remove()</code>，及时清理不再使用的 ThreadLocal 值。</p>
+</li>
+<li><p>推荐配合 try-finally 使用：</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">try</span> &#123;<br>    local.set(...);<br>    <span class="hljs-comment">// 业务逻辑</span><br>&#125; <span class="hljs-keyword">finally</span> &#123;<br>    local.remove(); <span class="hljs-comment">// 防止内存泄漏</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、ThreadLocalMap-的特殊设计"><a href="#五、ThreadLocalMap-的特殊设计" class="headerlink" title="五、ThreadLocalMap 的特殊设计"></a>五、ThreadLocalMap 的特殊设计</h2><h3 id="✅-自定义的-Map：ThreadLocal-ThreadLocalMap"><a href="#✅-自定义的-Map：ThreadLocal-ThreadLocalMap" class="headerlink" title="✅ 自定义的 Map：ThreadLocal.ThreadLocalMap"></a>✅ 自定义的 Map：ThreadLocal.ThreadLocalMap</h3><ul>
+<li><p>key：弱引用 <code>ThreadLocal</code></p>
+</li>
+<li><p>value：任意对象</p>
+</li>
+<li><p>非标准 HashMap，采用开放地址法处理冲突</p>
+</li>
+</ul>
+<h3 id="✅-清理机制（惰性清理）"><a href="#✅-清理机制（惰性清理）" class="headerlink" title="✅ 清理机制（惰性清理）"></a>✅ 清理机制（惰性清理）</h3><ul>
+<li><p>在 <code>get/set/remove</code> 操作时，顺带清理那些 key&#x3D;null 的 Entry</p>
+</li>
+<li><p>不会主动扫描清理（性能考虑）</p>
+</li>
+</ul>
+<hr>
+<h2 id="六、InheritableThreadLocal-子类（值传递）"><a href="#六、InheritableThreadLocal-子类（值传递）" class="headerlink" title="六、InheritableThreadLocal 子类（值传递）"></a>六、InheritableThreadLocal 子类（值传递）</h2><p>如果希望子线程继承父线程中的值，可使用：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">ThreadLocal&lt;String&gt; local = <span class="hljs-keyword">new</span> <span class="hljs-title class_">InheritableThreadLocal</span>&lt;&gt;();<br></code></pre></td></tr></table></figure>
+
+<p>特点：</p>
+<ul>
+<li><p>子线程在创建时，会将父线程的 ThreadLocalMap 拷贝到自己线程中</p>
+</li>
+<li><p>仅拷贝当时的值，后续修改互不影响</p>
+</li>
+</ul>
+<hr>
+<h2 id="七、使用场景总结"><a href="#七、使用场景总结" class="headerlink" title="七、使用场景总结"></a>七、使用场景总结</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>请求上下文存储</td>
+<td>Web 请求中存储用户信息、日志 TraceId</td>
+</tr>
+<tr>
+<td>DB&#x2F;事务管理</td>
+<td>为每个线程维护独立连接，避免共享连接出错</td>
+</tr>
+<tr>
+<td>线程不安全对象</td>
+<td>如 <code>SimpleDateFormat</code>, <code>Random</code>, 使用 ThreadLocal 包装</td>
+</tr>
+<tr>
+<td>第三方框架</td>
+<td>MyBatis、Spring Security、SLF4J MDC 中大量使用</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、线程池-ThreadLocal-的陷阱"><a href="#八、线程池-ThreadLocal-的陷阱" class="headerlink" title="八、线程池 + ThreadLocal 的陷阱"></a>八、线程池 + ThreadLocal 的陷阱</h2><p>线程池中的线程是复用的：</p>
+<ul>
+<li><p>上一个任务设置了 ThreadLocal</p>
+</li>
+<li><p>没有 <code>remove()</code>，下一个任务可能意外读到旧数据！</p>
+</li>
+</ul>
+<h3 id="✅-推荐方案："><a href="#✅-推荐方案：" class="headerlink" title="✅ 推荐方案："></a>✅ 推荐方案：</h3><ul>
+<li><p>业务代码中手动 <code>remove()</code>（必要）</p>
+</li>
+<li><p>或使用阿里开源的 <a target="_blank" rel="noopener" href="https://github.com/alibaba/transmittable-thread-local"><strong>TransmittableThreadLocal</strong></a>，支持在线程池中值传递且自动清理。</p>
+</li>
+</ul>
+<hr>
+<h2 id="九、类图关系图（简化）"><a href="#九、类图关系图（简化）" class="headerlink" title="九、类图关系图（简化）"></a>九、类图关系图（简化）</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">Thread<br> └── ThreadLocalMap (threadLocals)<br>      └── Entry[] table<br>             └── key: WeakReference&lt;ThreadLocal&gt;<br>             └── value: Object<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十、总结精要"><a href="#十、总结精要" class="headerlink" title="十、总结精要"></a>十、总结精要</h2><table>
+<thead>
+<tr>
+<th>关键点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>隔离性</td>
+<td>每个线程独立存储变量</td>
+</tr>
+<tr>
+<td>弱引用</td>
+<td>Entry 中 key 是 ThreadLocal 的弱引用</td>
+</tr>
+<tr>
+<td>内存泄漏</td>
+<td>未调用 remove 时，value 可能泄漏</td>
+</tr>
+<tr>
+<td>惰性清理</td>
+<td>不定时清理无效 Entry，仅在访问时处理</td>
+</tr>
+<tr>
+<td>线程池陷阱</td>
+<td>线程复用必须 remove，或使用 TTL</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/27/ThreadLocal%E8%AF%A6%E8%A7%A3/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;27&#x2F;ThreadLocal%E8%AF%A6%E8%A7%A3&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;27&#x2F;ThreadLocal%E8%AF%A6%E8%A7%A3&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/26/CompletableFuture%E5%8E%9F%E7%90%86/">CompletableFuture原理<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81ThreadLocal-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">一、ThreadLocal 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-text">二、基本使用方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3"><span class="toc-text">三、底层原理详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84%EF%BC%88%E5%85%B3%E9%94%AE%E7%B1%BB%EF%BC%89"><span class="toc-text">✅ 源码结构（关键类）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E8%BF%87%E7%A8%8B"><span class="toc-text">✅ 数据存储过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E9%97%AE%E9%A2%98%EF%BC%88%E9%87%8D%E7%82%B9%EF%BC%89"><span class="toc-text">四、内存泄漏问题（重点）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E9%97%AE%E9%A2%98%E6%9D%A5%E6%BA%90%EF%BC%9A"><span class="toc-text">✅ 问题来源：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%AD%A3%E7%A1%AE%E5%81%9A%E6%B3%95%EF%BC%9A"><span class="toc-text">✅ 正确做法：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81ThreadLocalMap-%E7%9A%84%E7%89%B9%E6%AE%8A%E8%AE%BE%E8%AE%A1"><span class="toc-text">五、ThreadLocalMap 的特殊设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E8%87%AA%E5%AE%9A%E4%B9%89%E7%9A%84-Map%EF%BC%9AThreadLocal-ThreadLocalMap"><span class="toc-text">✅ 自定义的 Map：ThreadLocal.ThreadLocalMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%B8%85%E7%90%86%E6%9C%BA%E5%88%B6%EF%BC%88%E6%83%B0%E6%80%A7%E6%B8%85%E7%90%86%EF%BC%89"><span class="toc-text">✅ 清理机制（惰性清理）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81InheritableThreadLocal-%E5%AD%90%E7%B1%BB%EF%BC%88%E5%80%BC%E4%BC%A0%E9%80%92%EF%BC%89"><span class="toc-text">六、InheritableThreadLocal 子类（值传递）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E6%80%BB%E7%BB%93"><span class="toc-text">七、使用场景总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E7%BA%BF%E7%A8%8B%E6%B1%A0-ThreadLocal-%E7%9A%84%E9%99%B7%E9%98%B1"><span class="toc-text">八、线程池 + ThreadLocal 的陷阱</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%8E%A8%E8%8D%90%E6%96%B9%E6%A1%88%EF%BC%9A"><span class="toc-text">✅ 推荐方案：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E7%B1%BB%E5%9B%BE%E5%85%B3%E7%B3%BB%E5%9B%BE%EF%BC%88%E7%AE%80%E5%8C%96%EF%BC%89"><span class="toc-text">九、类图关系图（简化）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%80%BB%E7%BB%93%E7%B2%BE%E8%A6%81"><span class="toc-text">十、总结精要</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
