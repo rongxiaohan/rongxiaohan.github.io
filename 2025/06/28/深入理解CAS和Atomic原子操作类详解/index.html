@@ -1,0 +1,546 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>深入理解CAS和Atomic原子操作类详解 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、什么是 CAS（Compare And Swap...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">深入理解CAS和Atomic原子操作类详解</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">深入理解CAS和Atomic原子操作类详解</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 28, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2581</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、什么是-CAS（Compare-And-Swap）"><a href="#一、什么是-CAS（Compare-And-Swap）" class="headerlink" title="一、什么是 CAS（Compare And Swap）"></a>一、什么是 CAS（Compare And Swap）</h2><p>CAS 是一种 <strong>乐观锁机制</strong>，它认为冲突是偶发的，不加锁而是不断尝试更新。</p>
+<h3 id="CAS-三个操作数："><a href="#CAS-三个操作数：" class="headerlink" title="CAS 三个操作数："></a>CAS 三个操作数：</h3><ol>
+<li><p><strong>内存位置 V</strong>：要更新的变量。</p>
+</li>
+<li><p><strong>预期值 A</strong>：期望 V 当前是 A。</p>
+</li>
+<li><p><strong>新值 B</strong>：若 V &#x3D;&#x3D; A，则将 V 更新为 B。</p>
+</li>
+</ol>
+<h3 id="CAS-原子操作流程："><a href="#CAS-原子操作流程：" class="headerlink" title="CAS 原子操作流程："></a>CAS 原子操作流程：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">boolean</span> <span class="hljs-title function_">cas</span><span class="hljs-params">(V, A, B)</span> &#123;<br>    <span class="hljs-keyword">if</span> (V == A) &#123;<br>        V = B;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>JVM 使用 <code>Unsafe</code> 类中的 <code>compareAndSwapInt</code>、<code>compareAndSwapLong</code> 实现。</p>
+<hr>
+<h2 id="二、CAS-的底层实现原理"><a href="#二、CAS-的底层实现原理" class="headerlink" title="二、CAS 的底层实现原理"></a>二、CAS 的底层实现原理</h2><p>CAS 操作是依赖 <strong>CPU 原语支持的</strong>，在 x86 上通常是 <code>lock cmpxchg</code> 指令。JVM 底层使用的是 <code>sun.misc.Unsafe</code> 类的 native 方法。</p>
+<h3 id="例子（部分反编译）："><a href="#例子（部分反编译）：" class="headerlink" title="例子（部分反编译）："></a>例子（部分反编译）：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AtomicInteger</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Number</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">Unsafe</span> <span class="hljs-variable">unsafe</span> <span class="hljs-operator">=</span> Unsafe.getUnsafe();<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">long</span> valueOffset;<br><br>    <span class="hljs-keyword">static</span> &#123;<br>        valueOffset = unsafe.objectFieldOffset(AtomicInteger.class.getDeclaredField(<span class="hljs-string">&quot;value&quot;</span>));<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">volatile</span> <span class="hljs-type">int</span> value;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">compareAndSet</span><span class="hljs-params">(<span class="hljs-type">int</span> expect, <span class="hljs-type">int</span> update)</span> &#123;<br>        <span class="hljs-keyword">return</span> unsafe.compareAndSwapInt(<span class="hljs-built_in">this</span>, valueOffset, expect, update);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、CAS-的优点"><a href="#三、CAS-的优点" class="headerlink" title="三、CAS 的优点"></a>三、CAS 的优点</h2><ol>
+<li><p><strong>无锁机制</strong>：避免了加锁上下文切换的性能消耗。</p>
+</li>
+<li><p><strong>原子性强</strong>：底层 CPU 保证指令不会被中断，天然原子。</p>
+</li>
+<li><p><strong>适用于轻量级并发场景</strong>：比如计数器、自旋锁。</p>
+</li>
+</ol>
+<hr>
+<h2 id="四、CAS-的缺点及补救措施"><a href="#四、CAS-的缺点及补救措施" class="headerlink" title="四、CAS 的缺点及补救措施"></a>四、CAS 的缺点及补救措施</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>描述</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ABA 问题</td>
+<td>变量从 A 变为 B，又变回 A，CAS 仍成功</td>
+<td>使用 <code>AtomicStampedReference</code> 或 <code>AtomicMarkableReference</code></td>
+</tr>
+<tr>
+<td>自旋时间长</td>
+<td>竞争激烈时，线程不断重试，浪费 CPU</td>
+<td>设置退避策略（如 <code>LongAdder</code> 分段）</td>
+</tr>
+<tr>
+<td>只能一个变量</td>
+<td>CAS 只能保证一个变量的原子性</td>
+<td>多变量需使用 <code>AtomicReference</code> 封装对象</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、Java-原子类详解"><a href="#五、Java-原子类详解" class="headerlink" title="五、Java 原子类详解"></a>五、Java 原子类详解</h2><h3 id="1-AtomicInteger-AtomicLong"><a href="#1-AtomicInteger-AtomicLong" class="headerlink" title="1. AtomicInteger &#x2F; AtomicLong"></a>1. <strong>AtomicInteger &#x2F; AtomicLong</strong></h3><p>基础整型原子操作类，适用于计数器、ID 生成器等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">AtomicInteger</span> <span class="hljs-variable">ai</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">AtomicInteger</span>(<span class="hljs-number">0</span>);<br>ai.incrementAndGet(); <span class="hljs-comment">// +1</span><br>ai.compareAndSet(<span class="hljs-number">1</span>, <span class="hljs-number">5</span>); <span class="hljs-comment">// 如果值是1，改为5</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-AtomicReference"><a href="#2-AtomicReference" class="headerlink" title="2. AtomicReference"></a>2. <strong>AtomicReference<T></strong></h3><p>对对象引用的原子更新。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">AtomicReference&lt;User&gt; ref = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AtomicReference</span>&lt;&gt;(user1);<br>ref.compareAndSet(user1, user2);<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-AtomicStampedReference"><a href="#3-AtomicStampedReference" class="headerlink" title="3. AtomicStampedReference"></a>3. <strong>AtomicStampedReference</strong></h3><p>解决 ABA 问题：为引用附加一个版本戳。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">AtomicStampedReference&lt;Integer&gt; ref = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AtomicStampedReference</span>&lt;&gt;(<span class="hljs-number">100</span>, <span class="hljs-number">0</span>);<br><span class="hljs-type">int</span>[] stampHolder = <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[<span class="hljs-number">1</span>];<br><span class="hljs-type">Integer</span> <span class="hljs-variable">value</span> <span class="hljs-operator">=</span> ref.get(stampHolder);<br>ref.compareAndSet(value, <span class="hljs-number">101</span>, stampHolder[<span class="hljs-number">0</span>], stampHolder[<span class="hljs-number">0</span>] + <span class="hljs-number">1</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-AtomicIntegerArray-AtomicReferenceArray"><a href="#4-AtomicIntegerArray-AtomicReferenceArray" class="headerlink" title="4. AtomicIntegerArray &#x2F; AtomicReferenceArray"></a>4. <strong>AtomicIntegerArray &#x2F; AtomicReferenceArray</strong></h3><p>数组的原子操作版本，内部使用偏移量计算。</p>
+<hr>
+<h2 id="六、LongAdder-vs-AtomicLong"><a href="#六、LongAdder-vs-AtomicLong" class="headerlink" title="六、LongAdder vs AtomicLong"></a>六、LongAdder vs AtomicLong</h2><p><code>LongAdder</code> 是 <code>AtomicLong</code> 的高并发优化版本。</p>
+<ul>
+<li><p>CAS 自旋冲突时会退避，分段计数。</p>
+</li>
+<li><p>内部维护多个变量，减少竞争。</p>
+</li>
+<li><p>高并发写多读少场景优选。</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">LongAdder</span> <span class="hljs-variable">adder</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">LongAdder</span>();<br>adder.increment();<br><span class="hljs-type">int</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> adder.intValue();<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、应用场景"><a href="#七、应用场景" class="headerlink" title="七、应用场景"></a>七、应用场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐原子类</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>并发计数器</td>
+<td><code>AtomicInteger</code>, <code>LongAdder</code></td>
+</tr>
+<tr>
+<td>原子引用更新</td>
+<td><code>AtomicReference</code></td>
+</tr>
+<tr>
+<td>多线程安全更新对象状态</td>
+<td><code>AtomicStampedReference</code></td>
+</tr>
+<tr>
+<td>并发限流器</td>
+<td><code>AtomicInteger</code></td>
+</tr>
+<tr>
+<td>高性能缓存命中统计</td>
+<td><code>LongAdder</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、CAS-与锁的选择对比"><a href="#八、CAS-与锁的选择对比" class="headerlink" title="八、CAS 与锁的选择对比"></a>八、CAS 与锁的选择对比</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>CAS（原子类）</th>
+<th>锁（如 ReentrantLock）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>性能</td>
+<td>高</td>
+<td>较低（上下文切换）</td>
+</tr>
+<tr>
+<td>公平性</td>
+<td>无</td>
+<td>可控制</td>
+</tr>
+<tr>
+<td>死锁</td>
+<td>无</td>
+<td>可能</td>
+</tr>
+<tr>
+<td>粒度</td>
+<td>变量级</td>
+<td>代码块&#x2F;对象级</td>
+</tr>
+<tr>
+<td>编程复杂度</td>
+<td>低</td>
+<td>中</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="九、小结"><a href="#九、小结" class="headerlink" title="九、小结"></a>九、小结</h2><table>
+<thead>
+<tr>
+<th>项</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CAS 是什么</td>
+<td>无锁的原子更新机制</td>
+</tr>
+<tr>
+<td>Java 中体现</td>
+<td><code>Atomic*</code> 原子类（Unsafe + CAS）</td>
+</tr>
+<tr>
+<td>优势</td>
+<td>高性能，无锁</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>ABA、只能更新一个变量</td>
+</tr>
+<tr>
+<td>解决方案</td>
+<td><code>AtomicStampedReference</code>、<code>LongAdder</code> 等</td>
+</tr>
+</tbody></table>
+<hr>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/28/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3CAS%E5%92%8CAtomic%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%B1%BB%E8%AF%A6%E8%A7%A3/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;28&#x2F;%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3CAS%E5%92%8CAtomic%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%B1%BB%E8%AF%A6%E8%A7%A3&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;28&#x2F;%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3CAS%E5%92%8CAtomic%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%B1%BB%E8%AF%A6%E8%A7%A3&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/27/ThreadLocal%E8%AF%A6%E8%A7%A3/">ThreadLocal详解<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-CAS%EF%BC%88Compare-And-Swap%EF%BC%89"><span class="toc-text">一、什么是 CAS（Compare And Swap）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CAS-%E4%B8%89%E4%B8%AA%E6%93%8D%E4%BD%9C%E6%95%B0%EF%BC%9A"><span class="toc-text">CAS 三个操作数：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CAS-%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B%EF%BC%9A"><span class="toc-text">CAS 原子操作流程：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81CAS-%E7%9A%84%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-text">二、CAS 的底层实现原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E5%AD%90%EF%BC%88%E9%83%A8%E5%88%86%E5%8F%8D%E7%BC%96%E8%AF%91%EF%BC%89%EF%BC%9A"><span class="toc-text">例子（部分反编译）：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81CAS-%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-text">三、CAS 的优点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81CAS-%E7%9A%84%E7%BC%BA%E7%82%B9%E5%8F%8A%E8%A1%A5%E6%95%91%E6%8E%AA%E6%96%BD"><span class="toc-text">四、CAS 的缺点及补救措施</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Java-%E5%8E%9F%E5%AD%90%E7%B1%BB%E8%AF%A6%E8%A7%A3"><span class="toc-text">五、Java 原子类详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-AtomicInteger-AtomicLong"><span class="toc-text">1. AtomicInteger &#x2F; AtomicLong</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-AtomicReference"><span class="toc-text">2. AtomicReference</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-AtomicStampedReference"><span class="toc-text">3. AtomicStampedReference</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-AtomicIntegerArray-AtomicReferenceArray"><span class="toc-text">4. AtomicIntegerArray &#x2F; AtomicReferenceArray</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81LongAdder-vs-AtomicLong"><span class="toc-text">六、LongAdder vs AtomicLong</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">七、应用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81CAS-%E4%B8%8E%E9%94%81%E7%9A%84%E9%80%89%E6%8B%A9%E5%AF%B9%E6%AF%94"><span class="toc-text">八、CAS 与锁的选择对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-text">九、小结</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
