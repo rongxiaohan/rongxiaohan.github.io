@@ -1,0 +1,540 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>项目分析 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+✅ 项目一：天籁银发项目
+项目背景：  面向退伍老兵...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">项目分析</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">项目分析</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 28, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1516</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="✅-项目一：天籁银发项目"><a href="#✅-项目一：天籁银发项目" class="headerlink" title="✅ 项目一：天籁银发项目"></a>✅ 项目一：天籁银发项目</h2><ul>
+<li><p><strong>项目背景</strong>：<br>  面向退伍老兵及社区老人群体的听力障碍筛查，涵盖龙岗医院与社区行动。</p>
+</li>
+<li><p><strong>技术栈</strong>：<br>  Spring Cloud、Spring Boot、MyBatis、Redisson、Redis、MySQL、RocketMQ</p>
+</li>
+<li><p><strong>核心功能</strong>：</p>
+<ul>
+<li><p>听力筛查流程设计（状态机控制分贝调整）</p>
+</li>
+<li><p>微信小程序第三方平台开发</p>
+</li>
+<li><p>微信&#x2F;支付宝支付集成及超时订单处理</p>
+</li>
+<li><p>限额秒杀活动（针对退伍老兵助听器发放）</p>
+</li>
+<li><p>PC端扫码登录、验证码登录及防刷机制</p>
+</li>
+<li><p>日志筛查统计并发送邮件</p>
+</li>
+<li><p>PC后台省市区志愿者机构树状结构展示</p>
+</li>
+</ul>
+</li>
+<li><p><strong>技术难点与解决方案</strong>：</p>
+<ul>
+<li><p><strong>秒杀超卖问题</strong>：使用 Lua 脚本和 Redis SETNX 优化，避免分布式锁并发瓶颈</p>
+</li>
+<li><p><strong>支付并发问题</strong>：状态机 + 乐观锁确保订单状态一致性</p>
+</li>
+<li><p><strong>筛查流程乱序</strong>：引入状态机流程控制</p>
+</li>
+</ul>
+</li>
+<li><p><strong>创新亮点</strong>：</p>
+<ul>
+<li><p>状态机+乐观锁统一订单状态判定流程</p>
+</li>
+<li><p>使用懒汉式缓存防止数据库击穿</p>
+</li>
+<li><p>Redis&#x2F;Lua 脚本替代分布式锁解决秒杀并发性能问题</p>
+</li>
+</ul>
+</li>
+<li><p><strong>量化指标</strong>：</p>
+<ul>
+<li><p>秒杀服务响应能力提升 300%</p>
+</li>
+<li><p>订单状态误判率降至 0%</p>
+</li>
+</ul>
+</li>
+<li><p><strong>个人贡献</strong>：</p>
+<ul>
+<li>项目整体架构设计、核心功能编码、关键并发问题解决全部由本人独立完成</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="✅-项目二：亲友同屏（畅听助手-App-子系统）"><a href="#✅-项目二：亲友同屏（畅听助手-App-子系统）" class="headerlink" title="✅ 项目二：亲友同屏（畅听助手 App 子系统）"></a>✅ 项目二：亲友同屏（畅听助手 App 子系统）</h2><ul>
+<li><p><strong>项目背景</strong>：<br>  中国联通 &amp; 中国聋人协会联合开发，专为听障人士提供辅助沟通服务。</p>
+</li>
+<li><p><strong>技术栈</strong>：<br>  Spring Cloud、Spring Boot、MyBatis、Redisson、Redis、MySQL、RocketMQ、Socket.IO</p>
+</li>
+<li><p><strong>核心功能</strong>：</p>
+<ul>
+<li><p>实时视频共享 &amp; 语音转文字系统</p>
+</li>
+<li><p>聊天室功能（消息展示+辅助转译）</p>
+</li>
+<li><p>风险内容识别与防诈骗机制</p>
+</li>
+</ul>
+</li>
+<li><p><strong>技术难点与解决方案</strong>：</p>
+<ul>
+<li><p><strong>Socket.IO 无法跨集群通信</strong>：使用 Redis 发布订阅机制构建统一通信平台</p>
+</li>
+<li><p><strong>正则敏感词过滤低效</strong>：引入 Trie 前缀树进行敏感词检索加速</p>
+</li>
+</ul>
+</li>
+<li><p><strong>创新亮点</strong>：</p>
+<ul>
+<li><p>Redis Pub&#x2F;Sub 实现 Socket.IO 跨集群通信</p>
+</li>
+<li><p>敏感词过滤系统由正则迁移为 Trie 树结构，响应时间明显优化</p>
+</li>
+</ul>
+</li>
+<li><p><strong>量化指标</strong>：</p>
+<ul>
+<li><p>RT 降低 50%，Socket 连接数提升 200%</p>
+</li>
+<li><p>敏感词过滤效率提升 30%</p>
+</li>
+</ul>
+</li>
+<li><p><strong>个人贡献</strong>：</p>
+<ul>
+<li><p>完成分布式通信架构改造</p>
+</li>
+<li><p>敏感词过滤系统重构</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="✅-项目三：莉美易-SaaS-平台"><a href="#✅-项目三：莉美易-SaaS-平台" class="headerlink" title="✅ 项目三：莉美易 SaaS 平台"></a>✅ 项目三：莉美易 SaaS 平台</h2><ul>
+<li><p><strong>项目背景</strong>：<br>  面向美容行业的多租户客户管理系统</p>
+</li>
+<li><p><strong>技术栈</strong>：<br>  Spring Cloud、Spring Boot、MyBatis、Redisson、Redis、MySQL、RocketMQ、Socket.IO</p>
+</li>
+<li><p><strong>核心功能</strong>：</p>
+<ul>
+<li><p><strong>店务管理</strong>：员工排班打卡、客服聊天、提成设置</p>
+</li>
+<li><p><strong>订单管理</strong>：商品&#x2F;卡项&#x2F;退款流程、支付对接</p>
+</li>
+<li><p><strong>用户管理</strong>：客户等级、预约等</p>
+</li>
+<li><p><strong>促销活动</strong>：三人成团拼团系统</p>
+</li>
+<li><p><strong>商品卡项</strong>：SKU&#x2F;SPU、库存、会员卡&#x2F;次卡管理</p>
+</li>
+<li><p><strong>权限控制</strong>：老板、店长、美容师等角色权限划分</p>
+</li>
+<li><p><strong>数据分析</strong>：T+1日报表、门店盈亏分析</p>
+</li>
+</ul>
+</li>
+<li><p><strong>技术难点与解决方案</strong>：</p>
+<ul>
+<li><p>第三方打卡地图接口改为使用 Redis GEO 进行定位打卡</p>
+</li>
+<li><p>每日数据统计耗时高，使用 <code>CompletableFuture</code> 异步编排</p>
+</li>
+</ul>
+</li>
+<li><p><strong>创新亮点</strong>：</p>
+<ul>
+<li><p>Redis GEO 实现低成本、高效打卡定位</p>
+</li>
+<li><p>异步任务优化日报生成耗时</p>
+</li>
+</ul>
+</li>
+<li><p><strong>量化指标</strong>：</p>
+<ul>
+<li>异步编排方案使日报统计耗时降低 80%</li>
+</ul>
+</li>
+<li><p><strong>个人贡献</strong>：</p>
+<ul>
+<li><p>独立设计与开发拼团促销系统</p>
+</li>
+<li><p>权限系统、Redis GEO、数据统计逻辑优化与落地</p>
+</li>
+</ul>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/28/%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;28&#x2F;%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;28&#x2F;%E9%A1%B9%E7%9B%AE%E5%88%86%E6%9E%90&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2025/06/28/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3CAS%E5%92%8CAtomic%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%B1%BB%E8%AF%A6%E8%A7%A3/"><i class="iconfont iconleft"></i>深入理解CAS和Atomic原子操作类详解</a>
+    <a href="/2025/06/27/ThreadLocal%E8%AF%A6%E8%A7%A3/">ThreadLocal详解<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E9%A1%B9%E7%9B%AE%E4%B8%80%EF%BC%9A%E5%A4%A9%E7%B1%81%E9%93%B6%E5%8F%91%E9%A1%B9%E7%9B%AE"><span class="toc-text">✅ 项目一：天籁银发项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E9%A1%B9%E7%9B%AE%E4%BA%8C%EF%BC%9A%E4%BA%B2%E5%8F%8B%E5%90%8C%E5%B1%8F%EF%BC%88%E7%95%85%E5%90%AC%E5%8A%A9%E6%89%8B-App-%E5%AD%90%E7%B3%BB%E7%BB%9F%EF%BC%89"><span class="toc-text">✅ 项目二：亲友同屏（畅听助手 App 子系统）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E9%A1%B9%E7%9B%AE%E4%B8%89%EF%BC%9A%E8%8E%89%E7%BE%8E%E6%98%93-SaaS-%E5%B9%B3%E5%8F%B0"><span class="toc-text">✅ 项目三：莉美易 SaaS 平台</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
