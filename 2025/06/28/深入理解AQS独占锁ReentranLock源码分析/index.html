@@ -1,0 +1,497 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>深入理解AQS独占锁ReentranLock源码分析 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、整体架构总览1234ReentrantLock ...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">深入理解AQS独占锁ReentranLock源码分析</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">深入理解AQS独占锁ReentranLock源码分析</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 28, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>3493</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、整体架构总览"><a href="#一、整体架构总览" class="headerlink" title="一、整体架构总览"></a>一、整体架构总览</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">ReentrantLock<br> └── Sync（继承自 AQS）<br>      ├── NonfairSync（非公平锁）<br>      └── FairSync（公平锁）<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>ReentrantLock</code> 内部定义了一个 <code>Sync</code> 抽象类，继承自 <code>AbstractQueuedSynchronizer</code>。</p>
+</li>
+<li><p>分别提供了 <code>公平锁</code> 和 <code>非公平锁</code> 两种实现方式。</p>
+</li>
+</ul>
+<hr>
+<h2 id="二、关键成员变量"><a href="#二、关键成员变量" class="headerlink" title="二、关键成员变量"></a>二、关键成员变量</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> Sync sync;<br><br><span class="hljs-keyword">public</span> <span class="hljs-title function_">ReentrantLock</span><span class="hljs-params">()</span> &#123;<br>    sync = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NonfairSync</span>(); <span class="hljs-comment">// 默认非公平锁</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、AQS-核心属性回顾"><a href="#三、AQS-核心属性回顾" class="headerlink" title="三、AQS 核心属性回顾"></a>三、AQS 核心属性回顾</h2><p>AQS 使用一个 <code>volatile int state</code> 表示同步状态。</p>
+<ul>
+<li><p>对于独占锁：state&#x3D;0 表示锁空闲，&gt;0 表示已被线程持有，值表示重入次数。</p>
+</li>
+<li><p><code>exclusiveOwnerThread</code> 记录当前持有锁的线程。</p>
+</li>
+</ul>
+<hr>
+<h2 id="四、独占锁获取流程分析（lock-方法）"><a href="#四、独占锁获取流程分析（lock-方法）" class="headerlink" title="四、独占锁获取流程分析（lock 方法）"></a>四、独占锁获取流程分析（lock 方法）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">lock</span><span class="hljs-params">()</span> &#123;<br>    sync.lock();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="以非公平锁为例：NonfairSync-lock"><a href="#以非公平锁为例：NonfairSync-lock" class="headerlink" title="以非公平锁为例：NonfairSync.lock()"></a>以非公平锁为例：<code>NonfairSync.lock()</code></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">final</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">lock</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">if</span> (compareAndSetState(<span class="hljs-number">0</span>, <span class="hljs-number">1</span>)) &#123;<br>        setExclusiveOwnerThread(Thread.currentThread());<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        acquire(<span class="hljs-number">1</span>); <span class="hljs-comment">// AQS 模板方法</span><br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="第一步：尝试直接-CAS-抢锁"><a href="#第一步：尝试直接-CAS-抢锁" class="headerlink" title="第一步：尝试直接 CAS 抢锁"></a>第一步：尝试直接 CAS 抢锁</h4><ul>
+<li><p>成功：设置为当前线程，获取锁成功。</p>
+</li>
+<li><p>失败：进入 <code>acquire(1)</code> → AQS 模板方法。</p>
+</li>
+</ul>
+<hr>
+<h3 id="AQS-acquire-int-arg"><a href="#AQS-acquire-int-arg" class="headerlink" title="AQS.acquire(int arg)"></a>AQS.acquire(int arg)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">acquire</span><span class="hljs-params">(<span class="hljs-type">int</span> arg)</span> &#123;<br>    <span class="hljs-keyword">if</span> (!tryAcquire(arg) &amp;&amp;<br>        acquireQueued(addWaiter(Node.EXCLUSIVE), arg))<br>        selfInterrupt();<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="流程图："><a href="#流程图：" class="headerlink" title="流程图："></a>流程图：</h4><ol>
+<li><p><code>tryAcquire(arg)</code>：尝试抢锁（由子类实现，重写）</p>
+</li>
+<li><p>失败则构建 Node 节点，加入队列</p>
+</li>
+<li><p>自旋等待并阻塞（park）</p>
+</li>
+</ol>
+<hr>
+<h3 id="tryAcquire-int-arg-—-独占式尝试获取锁"><a href="#tryAcquire-int-arg-—-独占式尝试获取锁" class="headerlink" title="tryAcquire(int arg) — 独占式尝试获取锁"></a>tryAcquire(int arg) — 独占式尝试获取锁</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">tryAcquire</span><span class="hljs-params">(<span class="hljs-type">int</span> acquires)</span> &#123;<br>    <span class="hljs-keyword">final</span> <span class="hljs-type">Thread</span> <span class="hljs-variable">current</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>    <span class="hljs-type">int</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> getState();<br>    <span class="hljs-keyword">if</span> (c == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">if</span> (compareAndSetState(<span class="hljs-number">0</span>, acquires)) &#123;<br>            setExclusiveOwnerThread(current);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125;<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (current == getExclusiveOwnerThread()) &#123;<br>        <span class="hljs-comment">// 可重入</span><br>        <span class="hljs-type">int</span> <span class="hljs-variable">nextc</span> <span class="hljs-operator">=</span> c + acquires;<br>        setState(nextc);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="关键点说明："><a href="#关键点说明：" class="headerlink" title="关键点说明："></a>关键点说明：</h3><ul>
+<li><p>锁未被持有：CAS 设置为 1，成功则获得锁。</p>
+</li>
+<li><p>当前线程已持有：可重入，直接 +1。</p>
+</li>
+<li><p>否则：返回 false，入队列等待。</p>
+</li>
+</ul>
+<hr>
+<h2 id="五、等待队列的构建过程"><a href="#五、等待队列的构建过程" class="headerlink" title="五、等待队列的构建过程"></a>五、等待队列的构建过程</h2><p>当 CAS 失败，需要加入 AQS 的同步队列。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">addWaiter(Node.EXCLUSIVE)<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>使用 CLH 队列，线程节点不断排队等待</p>
+</li>
+<li><p>自旋配合 <code>LockSupport.park()</code> 进行阻塞</p>
+</li>
+</ul>
+<hr>
+<h2 id="六、独占锁释放流程分析（unlock-方法）"><a href="#六、独占锁释放流程分析（unlock-方法）" class="headerlink" title="六、独占锁释放流程分析（unlock 方法）"></a>六、独占锁释放流程分析（unlock 方法）</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">unlock</span><span class="hljs-params">()</span> &#123;<br>    sync.release(<span class="hljs-number">1</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="AQS-release-int-arg"><a href="#AQS-release-int-arg" class="headerlink" title="AQS.release(int arg)"></a>AQS.release(int arg)</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">release</span><span class="hljs-params">(<span class="hljs-type">int</span> arg)</span> &#123;<br>    <span class="hljs-keyword">if</span> (tryRelease(arg)) &#123;<br>        <span class="hljs-type">Node</span> <span class="hljs-variable">h</span> <span class="hljs-operator">=</span> head;<br>        <span class="hljs-keyword">if</span> (h != <span class="hljs-literal">null</span> &amp;&amp; h.waitStatus != <span class="hljs-number">0</span>)<br>            unparkSuccessor(h);<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="tryRelease-int-arg-—-尝试释放锁"><a href="#tryRelease-int-arg-—-尝试释放锁" class="headerlink" title="tryRelease(int arg) — 尝试释放锁"></a>tryRelease(int arg) — 尝试释放锁</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">tryRelease</span><span class="hljs-params">(<span class="hljs-type">int</span> releases)</span> &#123;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> getState() - releases;<br>    <span class="hljs-keyword">if</span> (Thread.currentThread() != getExclusiveOwnerThread())<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalMonitorStateException</span>();<br>    <span class="hljs-type">boolean</span> <span class="hljs-variable">free</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>    <span class="hljs-keyword">if</span> (c == <span class="hljs-number">0</span>) &#123;<br>        free = <span class="hljs-literal">true</span>;<br>        setExclusiveOwnerThread(<span class="hljs-literal">null</span>);<br>    &#125;<br>    setState(c);<br>    <span class="hljs-keyword">return</span> free;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li><p>如果 <code>state == 0</code>，表示彻底释放锁（无重入）</p>
+</li>
+<li><p>调用 <code>unparkSuccessor(head)</code> 唤醒下一个等待节点</p>
+</li>
+</ul>
+<hr>
+<h2 id="七、总结流程图（简略）"><a href="#七、总结流程图（简略）" class="headerlink" title="七、总结流程图（简略）"></a>七、总结流程图（简略）</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">线程1调用lock() → CAS设置state成功 → 获得锁<br><br>线程2调用lock() → CAS失败 → 入队列等待 → 被park()<br><br>线程1调用unlock() → state减1 → 变为0时unpark线程2<br><br>线程2被唤醒，自旋+CAS成功 → 获取锁<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="八、公平锁与非公平锁的区别"><a href="#八、公平锁与非公平锁的区别" class="headerlink" title="八、公平锁与非公平锁的区别"></a>八、公平锁与非公平锁的区别</h2><h3 id="公平锁（FairSync）"><a href="#公平锁（FairSync）" class="headerlink" title="公平锁（FairSync）"></a>公平锁（FairSync）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">tryAcquire</span><span class="hljs-params">(<span class="hljs-type">int</span> acquires)</span> &#123;<br>    <span class="hljs-keyword">final</span> <span class="hljs-type">Thread</span> <span class="hljs-variable">current</span> <span class="hljs-operator">=</span> Thread.currentThread();<br>    <span class="hljs-type">int</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> getState();<br>    <span class="hljs-keyword">if</span> (c == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">if</span> (!hasQueuedPredecessors() &amp;&amp;<br>            compareAndSetState(<span class="hljs-number">0</span>, acquires)) &#123;<br>            setExclusiveOwnerThread(current);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125;<br>    &#125;<br>    ...<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>增加了 <code>hasQueuedPredecessors()</code> 判断，保障先来先得</li>
+</ul>
+<h3 id="非公平锁"><a href="#非公平锁" class="headerlink" title="非公平锁"></a>非公平锁</h3><ul>
+<li>直接尝试 CAS 抢锁，提高吞吐，但可能造成“饥饿”</li>
+</ul>
+<hr>
+<h2 id="九、ReentrantLock-支持可重入的秘密"><a href="#九、ReentrantLock-支持可重入的秘密" class="headerlink" title="九、ReentrantLock 支持可重入的秘密"></a>九、ReentrantLock 支持可重入的秘密</h2><p>通过判断当前线程是否是 <code>exclusiveOwnerThread</code>，并在 <code>state</code> 上进行叠加和递减，实现锁的多次获取与释放。</p>
+<hr>
+<h2 id="十、面试常问点归纳"><a href="#十、面试常问点归纳" class="headerlink" title="十、面试常问点归纳"></a>十、面试常问点归纳</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ReentrantLock 是否公平？</td>
+<td>默认非公平，可配置</td>
+</tr>
+<tr>
+<td>为什么支持重入？</td>
+<td>通过 state + exclusiveOwnerThread</td>
+</tr>
+<tr>
+<td>AQS 底层结构是什么？</td>
+<td>CLH 双向链表</td>
+</tr>
+<tr>
+<td>park 和 unpark 是什么？</td>
+<td>LockSupport 实现线程阻塞与唤醒</td>
+</tr>
+<tr>
+<td>锁是否可中断？</td>
+<td>lockInterruptibly() 支持</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/06/28/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3AQS%E7%8B%AC%E5%8D%A0%E9%94%81ReentranLock%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;28&#x2F;%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3AQS%E7%8B%AC%E5%8D%A0%E9%94%81ReentranLock%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;06&#x2F;28&#x2F;%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3AQS%E7%8B%AC%E5%8D%A0%E9%94%81ReentranLock%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/28/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3CAS%E5%92%8CAtomic%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C%E7%B1%BB%E8%AF%A6%E8%A7%A3/">深入理解CAS和Atomic原子操作类详解<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E6%80%BB%E8%A7%88"><span class="toc-text">一、整体架构总览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%85%B3%E9%94%AE%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F"><span class="toc-text">二、关键成员变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81AQS-%E6%A0%B8%E5%BF%83%E5%B1%9E%E6%80%A7%E5%9B%9E%E9%A1%BE"><span class="toc-text">三、AQS 核心属性回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%8B%AC%E5%8D%A0%E9%94%81%E8%8E%B7%E5%8F%96%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90%EF%BC%88lock-%E6%96%B9%E6%B3%95%EF%BC%89"><span class="toc-text">四、独占锁获取流程分析（lock 方法）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A5%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81%E4%B8%BA%E4%BE%8B%EF%BC%9ANonfairSync-lock"><span class="toc-text">以非公平锁为例：NonfairSync.lock()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AQS-acquire-int-arg"><span class="toc-text">AQS.acquire(int arg)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tryAcquire-int-arg-%E2%80%94-%E7%8B%AC%E5%8D%A0%E5%BC%8F%E5%B0%9D%E8%AF%95%E8%8E%B7%E5%8F%96%E9%94%81"><span class="toc-text">tryAcquire(int arg) — 独占式尝试获取锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E7%82%B9%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="toc-text">关键点说明：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%AD%89%E5%BE%85%E9%98%9F%E5%88%97%E7%9A%84%E6%9E%84%E5%BB%BA%E8%BF%87%E7%A8%8B"><span class="toc-text">五、等待队列的构建过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%8B%AC%E5%8D%A0%E9%94%81%E9%87%8A%E6%94%BE%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90%EF%BC%88unlock-%E6%96%B9%E6%B3%95%EF%BC%89"><span class="toc-text">六、独占锁释放流程分析（unlock 方法）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AQS-release-int-arg"><span class="toc-text">AQS.release(int arg)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tryRelease-int-arg-%E2%80%94-%E5%B0%9D%E8%AF%95%E9%87%8A%E6%94%BE%E9%94%81"><span class="toc-text">tryRelease(int arg) — 尝试释放锁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93%E6%B5%81%E7%A8%8B%E5%9B%BE%EF%BC%88%E7%AE%80%E7%95%A5%EF%BC%89"><span class="toc-text">七、总结流程图（简略）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%85%AC%E5%B9%B3%E9%94%81%E4%B8%8E%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">八、公平锁与非公平锁的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AC%E5%B9%B3%E9%94%81%EF%BC%88FairSync%EF%BC%89"><span class="toc-text">公平锁（FairSync）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81"><span class="toc-text">非公平锁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81ReentrantLock-%E6%94%AF%E6%8C%81%E5%8F%AF%E9%87%8D%E5%85%A5%E7%9A%84%E7%A7%98%E5%AF%86"><span class="toc-text">九、ReentrantLock 支持可重入的秘密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E9%97%AE%E7%82%B9%E5%BD%92%E7%BA%B3"><span class="toc-text">十、面试常问点归纳</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
