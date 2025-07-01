@@ -1,0 +1,429 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>基于Nacos配置中心动态调整线程池参数 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+
+✅ 目标实现通过 Nacos 配置中心，动态调整线...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">基于Nacos配置中心动态调整线程池参数</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">基于Nacos配置中心动态调整线程池参数</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 01, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>3592</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<hr>
+<h2 id="✅-目标实现"><a href="#✅-目标实现" class="headerlink" title="✅ 目标实现"></a>✅ 目标实现</h2><p>通过 Nacos 配置中心，<strong>动态调整线程池的以下参数</strong>：</p>
+<ul>
+<li><p><code>corePoolSize</code></p>
+</li>
+<li><p><code>maximumPoolSize</code></p>
+</li>
+<li><p><code>keepAliveTime</code></p>
+</li>
+<li><p><code>拒绝策略</code>（可选）</p>
+</li>
+<li><p><strong>可选：队列容量（需自定义队列）</strong></p>
+</li>
+</ul>
+<hr>
+<h2 id="🧩-技术栈"><a href="#🧩-技术栈" class="headerlink" title="🧩 技术栈"></a>🧩 技术栈</h2><ul>
+<li><p>Spring Boot</p>
+</li>
+<li><p>Spring Cloud Alibaba Nacos Config</p>
+</li>
+<li><p><code>ThreadPoolExecutor</code>（+ 可选自定义队列）</p>
+</li>
+</ul>
+<hr>
+<h2 id="📦-示例结构"><a href="#📦-示例结构" class="headerlink" title="📦 示例结构"></a>📦 示例结构</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs text">src<br>├── config/<br>│   └── ThreadPoolConfigListener.java      # 监听 Nacos 配置变更<br>├── pool/<br>│   └── DynamicThreadPoolManager.java      # 管理线程池实例<br>└── application.yml                        # 引入 Nacos<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="📝-第一步：Nacos-中配置线程池参数"><a href="#📝-第一步：Nacos-中配置线程池参数" class="headerlink" title="📝 第一步：Nacos 中配置线程池参数"></a>📝 第一步：Nacos 中配置线程池参数</h2><h3 id="示例-Data-ID-thread-pool-config-yml"><a href="#示例-Data-ID-thread-pool-config-yml" class="headerlink" title="示例 Data ID: thread-pool-config.yml"></a>示例 Data ID: <code>thread-pool-config.yml</code></h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">thread:</span><br>  <span class="hljs-attr">corePoolSize:</span> <span class="hljs-number">4</span><br>  <span class="hljs-attr">maxPoolSize:</span> <span class="hljs-number">10</span><br>  <span class="hljs-attr">keepAliveTime:</span> <span class="hljs-number">30</span><br>  <span class="hljs-attr">queueCapacity:</span> <span class="hljs-number">200</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🛠-第二步：线程池管理器"><a href="#🛠-第二步：线程池管理器" class="headerlink" title="🛠 第二步：线程池管理器"></a>🛠 第二步：线程池管理器</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">DynamicThreadPoolManager</span> &#123;<br><br>    <span class="hljs-keyword">private</span> ThreadPoolExecutor executor;<br>    <span class="hljs-keyword">private</span> ResizableBlockingQueue&lt;Runnable&gt; queue;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">DynamicThreadPoolManager</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-built_in">this</span>.queue = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ResizableBlockingQueue</span>&lt;&gt;(<span class="hljs-number">200</span>);<br>        <span class="hljs-built_in">this</span>.executor = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadPoolExecutor</span>(<br>            <span class="hljs-number">2</span>,<br>            <span class="hljs-number">5</span>,<br>            <span class="hljs-number">60</span>,<br>            TimeUnit.SECONDS,<br>            queue,<br>            <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadPoolExecutor</span>.AbortPolicy()<br>        );<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> ThreadPoolExecutor <span class="hljs-title function_">getExecutor</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">return</span> executor;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">updatePool</span><span class="hljs-params">(<span class="hljs-type">int</span> core, <span class="hljs-type">int</span> max, <span class="hljs-type">long</span> keepAlive, <span class="hljs-type">int</span> capacity)</span> &#123;<br>        executor.setCorePoolSize(core);<br>        executor.setMaximumPoolSize(max);<br>        executor.setKeepAliveTime(keepAlive, TimeUnit.SECONDS);<br>        queue.setCapacity(capacity);<br>        System.out.println(<span class="hljs-string">&quot;[线程池更新] core=&quot;</span> + core + <span class="hljs-string">&quot;, max=&quot;</span> + max + <span class="hljs-string">&quot;, keepAlive=&quot;</span> + keepAlive + <span class="hljs-string">&quot;, capacity=&quot;</span> + capacity);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔁-第三步：监听-Nacos-配置变化"><a href="#🔁-第三步：监听-Nacos-配置变化" class="headerlink" title="🔁 第三步：监听 Nacos 配置变化"></a>🔁 第三步：监听 Nacos 配置变化</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-meta">@RefreshScope</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadPoolConfigListener</span> &#123;<br><br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> DynamicThreadPoolManager manager;<br><br>    <span class="hljs-meta">@NacosValue(value = &quot;$&#123;thread.corePoolSize:2&#125;&quot;, autoRefreshed = true)</span><br>    <span class="hljs-keyword">private</span> Integer corePoolSize;<br><br>    <span class="hljs-meta">@NacosValue(value = &quot;$&#123;thread.maxPoolSize:5&#125;&quot;, autoRefreshed = true)</span><br>    <span class="hljs-keyword">private</span> Integer maxPoolSize;<br><br>    <span class="hljs-meta">@NacosValue(value = &quot;$&#123;thread.keepAliveTime:60&#125;&quot;, autoRefreshed = true)</span><br>    <span class="hljs-keyword">private</span> Long keepAliveTime;<br><br>    <span class="hljs-meta">@NacosValue(value = &quot;$&#123;thread.queueCapacity:100&#125;&quot;, autoRefreshed = true)</span><br>    <span class="hljs-keyword">private</span> Integer queueCapacity;<br><br>    <span class="hljs-meta">@NacosConfigListener(dataId = &quot;thread-pool-config.yml&quot;, type = ConfigType.YAML)</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">onChange</span><span class="hljs-params">(String content)</span> &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-type">Yaml</span> <span class="hljs-variable">yaml</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Yaml</span>();<br>            Map&lt;String, Object&gt; map = yaml.load(content);<br>            Map&lt;String, Object&gt; thread = (Map&lt;String, Object&gt;) map.get(<span class="hljs-string">&quot;thread&quot;</span>);<br><br>            <span class="hljs-type">Integer</span> <span class="hljs-variable">core</span> <span class="hljs-operator">=</span> (Integer) thread.get(<span class="hljs-string">&quot;corePoolSize&quot;</span>);<br>            <span class="hljs-type">Integer</span> <span class="hljs-variable">max</span> <span class="hljs-operator">=</span> (Integer) thread.get(<span class="hljs-string">&quot;maxPoolSize&quot;</span>);<br>            <span class="hljs-type">Integer</span> <span class="hljs-variable">queue</span> <span class="hljs-operator">=</span> (Integer) thread.get(<span class="hljs-string">&quot;queueCapacity&quot;</span>);<br>            <span class="hljs-type">Long</span> <span class="hljs-variable">keepAlive</span> <span class="hljs-operator">=</span> Long.valueOf(thread.get(<span class="hljs-string">&quot;keepAliveTime&quot;</span>).toString());<br><br>            manager.updatePool(core, max, keepAlive, queue);<br>        &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>            e.printStackTrace();<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔂-可选：支持多线程池"><a href="#🔂-可选：支持多线程池" class="headerlink" title="🔂 可选：支持多线程池"></a>🔂 可选：支持多线程池</h2><p>可以扩展为管理多个线程池实例，比如：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">threadpools:</span><br>  <span class="hljs-attr">poolA:</span><br>    <span class="hljs-attr">corePoolSize:</span> <span class="hljs-number">4</span><br>    <span class="hljs-attr">maxPoolSize:</span> <span class="hljs-number">10</span><br>  <span class="hljs-attr">poolB:</span><br>    <span class="hljs-attr">corePoolSize:</span> <span class="hljs-number">8</span><br>    <span class="hljs-attr">maxPoolSize:</span> <span class="hljs-number">20</span><br></code></pre></td></tr></table></figure>
+
+<p>然后根据 <code>map.keySet()</code> 管理多个线程池，用 <code>Map&lt;String, ThreadPoolExecutor&gt;</code> 存储。</p>
+<hr>
+<h2 id="🧠-实战建议"><a href="#🧠-实战建议" class="headerlink" title="🧠 实战建议"></a>🧠 实战建议</h2><ul>
+<li><p>配合监控工具（如 Micrometer + Prometheus）观测核心参数变化是否生效。</p>
+</li>
+<li><p>可以引入 <a target="_blank" rel="noopener" href="https://github.com/dromara/dynamic-tp">Dromara&#x2F;dynamic-tp</a>：一个支持 Nacos 动态线程池的成熟框架，开箱即用 + Dashboard。</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧪-测试验证"><a href="#🧪-测试验证" class="headerlink" title="🧪 测试验证"></a>🧪 测试验证</h2><p>修改 Nacos 中 <code>thread-pool-config.yml</code> 配置，保存后即可触发 <code>onChange()</code> 方法并生效。可以在业务任务中打日志，查看线程池是否响应新配置。</p>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/01/%E5%9F%BA%E4%BA%8ENacos%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E5%8A%A8%E6%80%81%E8%B0%83%E6%95%B4%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;01&#x2F;%E5%9F%BA%E4%BA%8ENacos%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E5%8A%A8%E6%80%81%E8%B0%83%E6%95%B4%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;01&#x2F;%E5%9F%BA%E4%BA%8ENacos%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E5%8A%A8%E6%80%81%E8%B0%83%E6%95%B4%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/06/30/%E7%BA%BF%E7%A8%8B%E6%B1%A0ThreadPollExecutor%E5%AE%9E%E6%88%98%E5%8F%8A%E5%85%B6%E5%8E%9F%E7%90%86/">线程池ThreadPollExecutor实战及其原理<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E7%9B%AE%E6%A0%87%E5%AE%9E%E7%8E%B0"><span class="toc-text">✅ 目标实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E6%8A%80%E6%9C%AF%E6%A0%88"><span class="toc-text">🧩 技术栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E7%A4%BA%E4%BE%8B%E7%BB%93%E6%9E%84"><span class="toc-text">📦 示例结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%9D-%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9ANacos-%E4%B8%AD%E9%85%8D%E7%BD%AE%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0"><span class="toc-text">📝 第一步：Nacos 中配置线程池参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B-Data-ID-thread-pool-config-yml"><span class="toc-text">示例 Data ID: thread-pool-config.yml</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%AE%A1%E7%90%86%E5%99%A8"><span class="toc-text">🛠 第二步：线程池管理器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E7%9B%91%E5%90%AC-Nacos-%E9%85%8D%E7%BD%AE%E5%8F%98%E5%8C%96"><span class="toc-text">🔁 第三步：监听 Nacos 配置变化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%82-%E5%8F%AF%E9%80%89%EF%BC%9A%E6%94%AF%E6%8C%81%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="toc-text">🔂 可选：支持多线程池</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E5%AE%9E%E6%88%98%E5%BB%BA%E8%AE%AE"><span class="toc-text">🧠 实战建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E6%B5%8B%E8%AF%95%E9%AA%8C%E8%AF%81"><span class="toc-text">🧪 测试验证</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
