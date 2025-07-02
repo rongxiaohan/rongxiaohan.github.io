@@ -1,0 +1,758 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>基于Nacos配置中心动态调整线程池参数 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+✅ 1. == 和 equals 的区别
+== 比较...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">基于Nacos配置中心动态调整线程池参数</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">基于Nacos配置中心动态调整线程池参数</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 01, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2761</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h3 id="✅-1-和-equals-的区别"><a href="#✅-1-和-equals-的区别" class="headerlink" title="✅ 1. == 和 equals 的区别"></a>✅ 1. <code>==</code> 和 <code>equals</code> 的区别</h3><ul>
+<li><p><code>==</code> 比较的是<strong>引用地址是否相等</strong></p>
+</li>
+<li><p><code>equals</code> 比较的是<strong>内容是否相等</strong>（可重写）</p>
+</li>
+<li><p>对于基本类型，<code>==</code> 比较的是值；引用类型默认按地址比，除非重写 <code>equals</code></p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-2-ConcurrentHashMap-的扩容机制"><a href="#✅-2-ConcurrentHashMap-的扩容机制" class="headerlink" title="✅ 2. ConcurrentHashMap 的扩容机制"></a>✅ 2. <code>ConcurrentHashMap</code> 的扩容机制</h3><ul>
+<li><p>JDK8 使用分段 CAS + <code>synchronized</code> 控制每个桶</p>
+</li>
+<li><p>扩容时采用<strong>协作转移（transfer）机制</strong></p>
+</li>
+<li><p>多线程抢占迁移数据，底层用 <code>ForwardingNode</code> 占位</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-3-ConcurrentHashMap-原理及-JDK7-vs-JDK8-区别"><a href="#✅-3-ConcurrentHashMap-原理及-JDK7-vs-JDK8-区别" class="headerlink" title="✅ 3. ConcurrentHashMap 原理及 JDK7 vs JDK8 区别"></a>✅ 3. <code>ConcurrentHashMap</code> 原理及 JDK7 vs JDK8 区别</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>JDK7</th>
+<th>JDK8</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>并发控制</td>
+<td>Segment 分段锁</td>
+<td>CAS + synchronized</td>
+</tr>
+<tr>
+<td>底层结构</td>
+<td>Segment → HashEntry[]</td>
+<td>Node[] + 链表&#x2F;红黑树</td>
+</tr>
+<tr>
+<td>扩容方式</td>
+<td>全表加锁</td>
+<td>多线程协作扩容</td>
+</tr>
+<tr>
+<td>是否支持 null key</td>
+<td>❌ 不支持</td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-4-CopyOnWriteArrayList-原理"><a href="#✅-4-CopyOnWriteArrayList-原理" class="headerlink" title="✅ 4. CopyOnWriteArrayList 原理"></a>✅ 4. <code>CopyOnWriteArrayList</code> 原理</h3><ul>
+<li><p>采用 <strong>写时复制（Copy-On-Write）</strong></p>
+</li>
+<li><p>每次写操作都复制整个数组 → 写开销大</p>
+</li>
+<li><p>读操作无锁、线程安全，适用于<strong>读多写少场景</strong></p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-5-final-关键字作用"><a href="#✅-5-final-关键字作用" class="headerlink" title="✅ 5. final 关键字作用"></a>✅ 5. <code>final</code> 关键字作用</h3><ul>
+<li><p>修饰变量：值不可变（引用不可变但对象内容可变）</p>
+</li>
+<li><p>修饰方法：不可重写</p>
+</li>
+<li><p>修饰类：不可被继承</p>
+</li>
+<li><p>编译器可做优化，如内联替代等</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-6-hashCode-与-equals-的关系"><a href="#✅-6-hashCode-与-equals-的关系" class="headerlink" title="✅ 6. hashCode 与 equals 的关系"></a>✅ 6. <code>hashCode</code> 与 <code>equals</code> 的关系</h3><ul>
+<li><p>若两个对象 <code>equals</code> 相等，则它们的 <code>hashCode</code> 必须相等</p>
+</li>
+<li><p>若两个对象 <code>hashCode</code> 相等，不一定 <code>equals</code> 相等</p>
+</li>
+<li><p>用于 HashMap、HashSet 判断键值是否重复</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-7-HashMap-扩容机制原理"><a href="#✅-7-HashMap-扩容机制原理" class="headerlink" title="✅ 7. HashMap 扩容机制原理"></a>✅ 7. <code>HashMap</code> 扩容机制原理</h3><ul>
+<li><p>扩容条件：元素数 &gt; 容量 × 负载因子</p>
+</li>
+<li><p>每次扩容容量翻倍</p>
+</li>
+<li><p>重新 hash 和分桶（JDK8 中桶内链表长度 &gt; 8 且容量 &gt; 64 时转红黑树）</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-8-HashMap-vs-Hashtable"><a href="#✅-8-HashMap-vs-Hashtable" class="headerlink" title="✅ 8. HashMap vs Hashtable"></a>✅ 8. HashMap vs Hashtable</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>HashMap</th>
+<th>Hashtable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>线程安全</td>
+<td>❌ 否</td>
+<td>✅ 是（所有方法 <code>synchronized</code>）</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>高</td>
+<td>低（锁粒度粗）</td>
+</tr>
+<tr>
+<td>是否允许 null</td>
+<td>✅ 允许一个 null key 和多个 null value</td>
+<td>❌ 都不允许</td>
+</tr>
+<tr>
+<td>推荐</td>
+<td>✅ 现代项目首选，配合 <code>ConcurrentHashMap</code></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-9-Java-异常体系"><a href="#✅-9-Java-异常体系" class="headerlink" title="✅ 9. Java 异常体系"></a>✅ 9. Java 异常体系</h3><ul>
+<li><p><code>Throwable</code> 是顶级父类，分为：</p>
+<ul>
+<li><p><code>Error</code>：严重错误，程序无法处理（如 OOM）</p>
+</li>
+<li><p><code>Exception</code>：程序可以处理</p>
+<ul>
+<li><p><code>Checked</code>：必须处理（如 IOException）</p>
+</li>
+<li><p><code>Unchecked</code>：运行时异常（如 NullPointerException）</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="✅-10-JDK-vs-JRE-vs-JVM"><a href="#✅-10-JDK-vs-JRE-vs-JVM" class="headerlink" title="✅ 10. JDK vs JRE vs JVM"></a>✅ 10. JDK vs JRE vs JVM</h3><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>含义</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>JDK</td>
+<td>Java Development Kit</td>
+<td>Java 开发环境（包含 JRE + 编译工具）</td>
+</tr>
+<tr>
+<td>JRE</td>
+<td>Java Runtime Environment</td>
+<td>Java 运行环境（包含 JVM + 核心库）</td>
+</tr>
+<tr>
+<td>JVM</td>
+<td>Java Virtual Machine</td>
+<td>Java 程序运行的虚拟机（平台无关）</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-11-List-vs-Set"><a href="#✅-11-List-vs-Set" class="headerlink" title="✅ 11. List vs Set"></a>✅ 11. List vs Set</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>List</th>
+<th>Set</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>是否有序</td>
+<td>✅ 有</td>
+<td>❌ 一般无序（TreeSet 除外）</td>
+</tr>
+<tr>
+<td>是否可重复</td>
+<td>✅ 是</td>
+<td>❌ 否</td>
+</tr>
+<tr>
+<td>常用实现</td>
+<td>ArrayList、LinkedList</td>
+<td>HashSet、TreeSet</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-12-String-StringBuffer-StringBuilder"><a href="#✅-12-String-StringBuffer-StringBuilder" class="headerlink" title="✅ 12. String &#x2F; StringBuffer &#x2F; StringBuilder"></a>✅ 12. String &#x2F; StringBuffer &#x2F; StringBuilder</h3><table>
+<thead>
+<tr>
+<th>类</th>
+<th>是否可变</th>
+<th>线程安全</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>String</td>
+<td>❌ 不可变</td>
+<td>✅ 安全</td>
+<td>适合少量拼接、常量值</td>
+</tr>
+<tr>
+<td>StringBuffer</td>
+<td>✅ 可变</td>
+<td>✅ 安全</td>
+<td>多线程场景下的拼接</td>
+</tr>
+<tr>
+<td>StringBuilder</td>
+<td>✅ 可变</td>
+<td>❌ 不安全</td>
+<td>单线程高性能拼接 ✅</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-13-StringBuffer-vs-StringBuilder"><a href="#✅-13-StringBuffer-vs-StringBuilder" class="headerlink" title="✅ 13. StringBuffer vs StringBuilder"></a>✅ 13. StringBuffer vs StringBuilder</h3><ul>
+<li><p>都是可变字符序列，功能类似</p>
+</li>
+<li><p><code>StringBuffer</code> 方法带 <code>synchronized</code>，线程安全但慢</p>
+</li>
+<li><p><code>StringBuilder</code> 不加锁，适合单线程</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-14-JDK1-7-vs-1-8-中-HashMap-的底层变化"><a href="#✅-14-JDK1-7-vs-1-8-中-HashMap-的底层变化" class="headerlink" title="✅ 14. JDK1.7 vs 1.8 中 HashMap 的底层变化"></a>✅ 14. JDK1.7 vs 1.8 中 HashMap 的底层变化</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>JDK1.7</th>
+<th>JDK1.8</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>桶结构</td>
+<td>链表</td>
+<td>链表 + 红黑树</td>
+</tr>
+<tr>
+<td>扩容方式</td>
+<td>头插法（易死循环）</td>
+<td>尾插法（顺序保持）</td>
+</tr>
+<tr>
+<td>并发支持</td>
+<td>不安全</td>
+<td>同样不安全，但优化冲突性能</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-15-JDK1-7-vs-1-8-虚拟机变化（JVM）"><a href="#✅-15-JDK1-7-vs-1-8-虚拟机变化（JVM）" class="headerlink" title="✅ 15. JDK1.7 vs 1.8 虚拟机变化（JVM）"></a>✅ 15. JDK1.7 vs 1.8 虚拟机变化（JVM）</h3><table>
+<thead>
+<tr>
+<th>变化点</th>
+<th>JDK7</th>
+<th>JDK8</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>永久代</td>
+<td>有 PermGen（类信息存放）</td>
+<td>❌ 被移除</td>
+</tr>
+<tr>
+<td>元空间</td>
+<td>❌ 无</td>
+<td>✅ Metaspace（使用 native 内存）</td>
+</tr>
+<tr>
+<td>Lambda 表达式</td>
+<td>❌ 不支持</td>
+<td>✅ 支持（字节码层面调用 <code>invokedynamic</code>）</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-16-ArrayList-vs-LinkedList"><a href="#✅-16-ArrayList-vs-LinkedList" class="headerlink" title="✅ 16. ArrayList vs LinkedList"></a>✅ 16. ArrayList vs LinkedList</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>ArrayList</th>
+<th>LinkedList</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>底层结构</td>
+<td>数组</td>
+<td>双向链表</td>
+</tr>
+<tr>
+<td>随机访问</td>
+<td>✅ 快</td>
+<td>❌ 慢</td>
+</tr>
+<tr>
+<td>插入删除</td>
+<td>❌ 慢（涉及数组移动）</td>
+<td>✅ 快（指针操作）</td>
+</tr>
+<tr>
+<td>空间利用</td>
+<td>连续空间</td>
+<td>离散节点，略低</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-17-HashMap-的-put-方法简述（阿里一面常考）"><a href="#✅-17-HashMap-的-put-方法简述（阿里一面常考）" class="headerlink" title="✅ 17. HashMap 的 put 方法简述（阿里一面常考）"></a>✅ 17. HashMap 的 put 方法简述（阿里一面常考）</h3><ul>
+<li><p>根据 key 的 hash 值计算桶索引</p>
+</li>
+<li><p>若桶为空，直接插入；否则遍历链表&#x2F;树</p>
+</li>
+<li><p>若 key 已存在，覆盖 value</p>
+</li>
+<li><p>若链表长度 &gt; 8 且容量 ≥ 64，转为红黑树</p>
+</li>
+<li><p>若 size 超过阈值，触发扩容</p>
+</li>
+</ul>
+<hr>
+<h3 id="✅-18-接口-vs-抽象类"><a href="#✅-18-接口-vs-抽象类" class="headerlink" title="✅ 18. 接口 vs 抽象类"></a>✅ 18. 接口 vs 抽象类</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>接口（interface）</th>
+<th>抽象类（abstract class）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>多继承</td>
+<td>✅ 支持</td>
+<td>❌ 不支持</td>
+</tr>
+<tr>
+<td>成员类型</td>
+<td>常量 + 抽象方法（JDK8 支持 default）</td>
+<td>可以有变量、构造器</td>
+</tr>
+<tr>
+<td>使用场景</td>
+<td>标准规范</td>
+<td>公共实现逻辑复用</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-19-泛型中的-extends-vs-super"><a href="#✅-19-泛型中的-extends-vs-super" class="headerlink" title="✅ 19. 泛型中的 extends vs super"></a>✅ 19. 泛型中的 <code>extends</code> vs <code>super</code></h3><table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>表示</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;? extends T&gt;</code></td>
+<td>上界通配符</td>
+<td>读取时安全（可向下转型），不能添加</td>
+</tr>
+<tr>
+<td><code>&lt;? super T&gt;</code></td>
+<td>下界通配符</td>
+<td>添加元素安全（向上转型），读取需 Object 转换</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="✅-20-深拷贝-vs-浅拷贝"><a href="#✅-20-深拷贝-vs-浅拷贝" class="headerlink" title="✅ 20. 深拷贝 vs 浅拷贝"></a>✅ 20. 深拷贝 vs 浅拷贝</h3><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>浅拷贝</td>
+<td>只复制对象的引用</td>
+<td><code>clone()</code> 默认行为</td>
+</tr>
+<tr>
+<td>深拷贝</td>
+<td>对象 + 嵌套引用都复制一份新内存</td>
+<td><code>序列化 + 反序列化</code> 或手动递归拷贝</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/01/Java%E5%9F%BA%E7%A1%80%E9%9D%A2%E8%AF%95%E9%A2%98/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;01&#x2F;Java%E5%9F%BA%E7%A1%80%E9%9D%A2%E8%AF%95%E9%A2%98&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;01&#x2F;Java%E5%9F%BA%E7%A1%80%E9%9D%A2%E8%AF%95%E9%A2%98&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/01/%E5%9F%BA%E4%BA%8ENacos%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E5%8A%A8%E6%80%81%E8%B0%83%E6%95%B4%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8F%82%E6%95%B0/">基于Nacos配置中心动态调整线程池参数<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-1-%E5%92%8C-equals-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">✅ 1. &#x3D;&#x3D; 和 equals 的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-2-ConcurrentHashMap-%E7%9A%84%E6%89%A9%E5%AE%B9%E6%9C%BA%E5%88%B6"><span class="toc-text">✅ 2. ConcurrentHashMap 的扩容机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-3-ConcurrentHashMap-%E5%8E%9F%E7%90%86%E5%8F%8A-JDK7-vs-JDK8-%E5%8C%BA%E5%88%AB"><span class="toc-text">✅ 3. ConcurrentHashMap 原理及 JDK7 vs JDK8 区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-4-CopyOnWriteArrayList-%E5%8E%9F%E7%90%86"><span class="toc-text">✅ 4. CopyOnWriteArrayList 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-5-final-%E5%85%B3%E9%94%AE%E5%AD%97%E4%BD%9C%E7%94%A8"><span class="toc-text">✅ 5. final 关键字作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-6-hashCode-%E4%B8%8E-equals-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">✅ 6. hashCode 与 equals 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-7-HashMap-%E6%89%A9%E5%AE%B9%E6%9C%BA%E5%88%B6%E5%8E%9F%E7%90%86"><span class="toc-text">✅ 7. HashMap 扩容机制原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-8-HashMap-vs-Hashtable"><span class="toc-text">✅ 8. HashMap vs Hashtable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-9-Java-%E5%BC%82%E5%B8%B8%E4%BD%93%E7%B3%BB"><span class="toc-text">✅ 9. Java 异常体系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-10-JDK-vs-JRE-vs-JVM"><span class="toc-text">✅ 10. JDK vs JRE vs JVM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-11-List-vs-Set"><span class="toc-text">✅ 11. List vs Set</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-12-String-StringBuffer-StringBuilder"><span class="toc-text">✅ 12. String &#x2F; StringBuffer &#x2F; StringBuilder</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-13-StringBuffer-vs-StringBuilder"><span class="toc-text">✅ 13. StringBuffer vs StringBuilder</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-14-JDK1-7-vs-1-8-%E4%B8%AD-HashMap-%E7%9A%84%E5%BA%95%E5%B1%82%E5%8F%98%E5%8C%96"><span class="toc-text">✅ 14. JDK1.7 vs 1.8 中 HashMap 的底层变化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-15-JDK1-7-vs-1-8-%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%8F%98%E5%8C%96%EF%BC%88JVM%EF%BC%89"><span class="toc-text">✅ 15. JDK1.7 vs 1.8 虚拟机变化（JVM）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-16-ArrayList-vs-LinkedList"><span class="toc-text">✅ 16. ArrayList vs LinkedList</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-17-HashMap-%E7%9A%84-put-%E6%96%B9%E6%B3%95%E7%AE%80%E8%BF%B0%EF%BC%88%E9%98%BF%E9%87%8C%E4%B8%80%E9%9D%A2%E5%B8%B8%E8%80%83%EF%BC%89"><span class="toc-text">✅ 17. HashMap 的 put 方法简述（阿里一面常考）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-18-%E6%8E%A5%E5%8F%A3-vs-%E6%8A%BD%E8%B1%A1%E7%B1%BB"><span class="toc-text">✅ 18. 接口 vs 抽象类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-19-%E6%B3%9B%E5%9E%8B%E4%B8%AD%E7%9A%84-extends-vs-super"><span class="toc-text">✅ 19. 泛型中的 extends vs super</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-20-%E6%B7%B1%E6%8B%B7%E8%B4%9D-vs-%E6%B5%85%E6%8B%B7%E8%B4%9D"><span class="toc-text">✅ 20. 深拷贝 vs 浅拷贝</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
