@@ -1,0 +1,467 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Java并发面试题 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🧵 一、线程基础与通信1. Thread 和 Ru...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Java并发面试题</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Java并发面试题</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 03, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2076</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h3 id="🧵-一、线程基础与通信"><a href="#🧵-一、线程基础与通信" class="headerlink" title="🧵 一、线程基础与通信"></a>🧵 一、线程基础与通信</h3><p><strong>1. Thread 和 Runnable 区别</strong><br>Thread是类，Runnable是接口；Thread是重写<code>run()</code>，Runnable实现<code>run()</code>；推荐用Runnable实现，便于资源共享。</p>
+<p><strong>2. sleep、wait、join、yield 区别</strong></p>
+<ul>
+<li><p><code>sleep</code>：暂停线程，<strong>不释放锁</strong>；</p>
+</li>
+<li><p><code>wait</code>：等待并释放锁，需<code>notify/notifyAll</code>唤醒；</p>
+</li>
+<li><p><code>join</code>：等待某线程执行完；</p>
+</li>
+<li><p><code>yield</code>：让出CPU，但可能立刻被抢回。</p>
+</li>
+</ul>
+<p><strong>3. 线程间通信方式</strong><br>常用方式包括：共享变量、<code>wait/notify</code>、<code>Condition</code>、<code>BlockingQueue</code>、<code>Thread.join()</code>。</p>
+<p><strong>4. 如何查看死锁</strong><br>使用 <code>jstack</code> 命令查看线程堆栈，找“Found one Java-level deadlock”。</p>
+<p><strong>5. 守护线程</strong><br>后台线程，JVM无用户线程时自动退出。如GC线程。</p>
+<p><strong>6. 线程生命周期与状态</strong><br><code>NEW -&gt; RUNNABLE -&gt; BLOCKED/WAITING/TIMED_WAITING -&gt; TERMINATED</code>。</p>
+<hr>
+<h3 id="🧩-二、并发基础概念"><a href="#🧩-二、并发基础概念" class="headerlink" title="🧩 二、并发基础概念"></a>🧩 二、并发基础概念</h3><p><strong>7. 并发、并行、串行区别</strong></p>
+<ul>
+<li><p>并发：多个任务<strong>交替执行</strong>（单核也可）；</p>
+</li>
+<li><p>并行：多个任务<strong>同时执行</strong>（多核）；</p>
+</li>
+<li><p>串行：任务一个接一个执行。</p>
+</li>
+</ul>
+<p><strong>8. 并发三大特性</strong><br>原子性、可见性、有序性。</p>
+<p><strong>9. 对线程安全的理解</strong><br>多线程访问共享资源时数据一致，行为符合预期；通过同步手段保障。</p>
+<p><strong>10. 如何保证线程安全</strong><br>使用<code>Synchronized</code>、<code>Lock</code>、<code>volatile</code>、线程安全集合、避免共享等。</p>
+<p><strong>11. 如何保证线程执行顺序</strong><br>可用<code>join</code>、<code>CountDownLatch</code>、<code>CyclicBarrier</code>、<code>Condition</code>、信号量<code>Semaphore</code>。</p>
+<hr>
+<h3 id="🔒-三、锁机制与同步"><a href="#🔒-三、锁机制与同步" class="headerlink" title="🔒 三、锁机制与同步"></a>🔒 三、锁机制与同步</h3><p><strong>12. Synchronized 锁升级过程</strong><br>偏向锁 → 轻量级锁 → 重量级锁，随着竞争加剧逐级升级。</p>
+<p><strong>13. Synchronized vs ReentrantLock</strong></p>
+<ul>
+<li><p>前者为关键字，后者为类；</p>
+</li>
+<li><p>Lock更灵活（中断、公平锁、条件等待）；</p>
+</li>
+<li><p>Lock需手动释放，Synchronized自动释放。</p>
+</li>
+</ul>
+<p><strong>14. ReentrantLock：lock() vs tryLock()</strong></p>
+<ul>
+<li><p><code>lock()</code>：阻塞直到拿到锁；</p>
+</li>
+<li><p><code>tryLock()</code>：尝试拿锁，不阻塞（可带超时时间）。</p>
+</li>
+</ul>
+<p><strong>15. 公平锁 vs 非公平锁实现</strong></p>
+<ul>
+<li><p>公平锁：线程按顺序排队（队列）</p>
+</li>
+<li><p>非公平锁：新线程可插队；默认非公平，提高吞吐量。</p>
+</li>
+</ul>
+<p><strong>16. CountDownLatch vs Semaphore 区别</strong></p>
+<ul>
+<li><p>CountDownLatch：一次性倒计时，常用于<strong>线程等待</strong>；</p>
+</li>
+<li><p>Semaphore：许可控制，可<strong>限流或资源控制</strong>，支持释放。</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔁-四、AQS-与原理"><a href="#🔁-四、AQS-与原理" class="headerlink" title="🔁 四、AQS 与原理"></a>🔁 四、AQS 与原理</h3><p><strong>17. AQS 是什么</strong><br>AbstractQueuedSynchronizer，用于构建锁和同步器的基础框架。通过<strong>CLH队列 + state状态变量</strong> 实现独占、共享锁。</p>
+<p><strong>18. AQS 实现可重入锁原理</strong><br>ReentrantLock用AQS实现；state记录重入次数，当前线程重复加锁不会阻塞。</p>
+<hr>
+<h3 id="💡-五、ThreadLocal-专题"><a href="#💡-五、ThreadLocal-专题" class="headerlink" title="💡 五、ThreadLocal 专题"></a>💡 五、ThreadLocal 专题</h3><p><strong>19. ThreadLocal 底层原理</strong><br>每个线程维护一个ThreadLocalMap，key是ThreadLocal对象，value是变量副本。</p>
+<p><strong>20. ThreadLocal 内存泄露及避免</strong><br>key为弱引用，value为强引用，未清理时容易泄露；**建议使用完调用<code>remove()</code>**。</p>
+<hr>
+<h3 id="☕-六、volatile-与原子性"><a href="#☕-六、volatile-与原子性" class="headerlink" title="☕ 六、volatile 与原子性"></a>☕ 六、volatile 与原子性</h3><p><strong>21. volatile vs synchronized 区别</strong></p>
+<ul>
+<li><p>volatile：只保证可见性、有序性，不保证原子性；</p>
+</li>
+<li><p>synchronized：三性全保证。</p>
+</li>
+</ul>
+<p><strong>22. DCL为何需要volatile（1&amp;2）</strong><br>防止指令重排导致对象未初始化完成就被引用。</p>
+<hr>
+<h3 id="⚙️-七、线程池原理"><a href="#⚙️-七、线程池原理" class="headerlink" title="⚙️ 七、线程池原理"></a>⚙️ 七、线程池原理</h3><p><strong>23. 为什么使用线程池</strong><br>减少线程创建销毁开销、统一管理资源、提高系统响应速度。</p>
+<p><strong>24. 线程池参数解释</strong><br>核心线程数、最大线程数、队列、拒绝策略、线程工厂。</p>
+<p><strong>25. 线程池执行流程</strong><br>任务来时：核心线程未满→直接执行；满了→入队列；队列满→创建新线程；线程满→执行拒绝策略。</p>
+<p><strong>26. FixedThreadPool 用的阻塞队列？</strong><br>使用 <code>LinkedBlockingQueue</code>，无界队列。</p>
+<p><strong>27. 提交任务时队列满了，会发生什么</strong><br>执行拒绝策略（默认是AbortPolicy，抛异常）。</p>
+<p><strong>28. 线程池复用原理</strong><br>线程执行完任务不销毁，等待新任务，从队列中取继续执行。</p>
+<p><strong>29. 队列为什么在线程前创建？</strong><br>提高资源利用率，避免频繁创建销毁线程。</p>
+<p><strong>30. 阻塞队列作用</strong><br>缓存任务，降低线程竞争；当线程繁忙时进行排队处理。</p>
+<hr>
+<h3 id="✨-八、算法题：字符串排序"><a href="#✨-八、算法题：字符串排序" class="headerlink" title="✨ 八、算法题：字符串排序"></a>✨ 八、算法题：字符串排序</h3><p><strong>31. 如何快速对字符串排序</strong><br>转为char数组，使用<code>Arrays.sort(char[])</code>；或自定义排序规则。</p>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/03/Java%E5%B9%B6%E5%8F%91%E9%9D%A2%E8%AF%95%E9%A2%98/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;03&#x2F;Java%E5%B9%B6%E5%8F%91%E9%9D%A2%E8%AF%95%E9%A2%98&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;03&#x2F;Java%E5%B9%B6%E5%8F%91%E9%9D%A2%E8%AF%95%E9%A2%98&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/02/Java%E5%9F%BA%E7%A1%80%E9%9D%A2%E8%AF%95%E9%A2%98/">Java基础面试题<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%B5-%E4%B8%80%E3%80%81%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E4%B8%8E%E9%80%9A%E4%BF%A1"><span class="toc-text">🧵 一、线程基础与通信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%BA%8C%E3%80%81%E5%B9%B6%E5%8F%91%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-text">🧩 二、并发基础概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%92-%E4%B8%89%E3%80%81%E9%94%81%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%90%8C%E6%AD%A5"><span class="toc-text">🔒 三、锁机制与同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%81-%E5%9B%9B%E3%80%81AQS-%E4%B8%8E%E5%8E%9F%E7%90%86"><span class="toc-text">🔁 四、AQS 与原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E4%BA%94%E3%80%81ThreadLocal-%E4%B8%93%E9%A2%98"><span class="toc-text">💡 五、ThreadLocal 专题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%98%95-%E5%85%AD%E3%80%81volatile-%E4%B8%8E%E5%8E%9F%E5%AD%90%E6%80%A7"><span class="toc-text">☕ 六、volatile 与原子性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%B8%83%E3%80%81%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8E%9F%E7%90%86"><span class="toc-text">⚙️ 七、线程池原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%A8-%E5%85%AB%E3%80%81%E7%AE%97%E6%B3%95%E9%A2%98%EF%BC%9A%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8E%92%E5%BA%8F"><span class="toc-text">✨ 八、算法题：字符串排序</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
