@@ -1,0 +1,778 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SSM和Springboot面试题 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="✅ Part 1：Spring 核心概念与设计模式🔹...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">SSM和Springboot面试题</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">SSM和Springboot面试题</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 06, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>4356</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <h2 id="✅-Part-1：Spring-核心概念与设计模式"><a href="#✅-Part-1：Spring-核心概念与设计模式" class="headerlink" title="✅ Part 1：Spring 核心概念与设计模式"></a>✅ Part 1：Spring 核心概念与设计模式</h2><h3 id="🔹-什么是-Spring？"><a href="#🔹-什么是-Spring？" class="headerlink" title="🔹 什么是 Spring？"></a>🔹 什么是 Spring？</h3><p>Spring 是一个开源的轻量级 Java 企业级开发框架，核心目标是实现 <strong>IoC（控制反转）</strong> 和 <strong>AOP（面向切面编程）</strong>，帮助开发者降低耦合、提升开发效率，构建松耦合、高内聚的企业应用。</p>
+<hr>
+<h3 id="🔹-什么是-Bean-的自动装配？有哪些方式？"><a href="#🔹-什么是-Bean-的自动装配？有哪些方式？" class="headerlink" title="🔹 什么是 Bean 的自动装配？有哪些方式？"></a>🔹 什么是 Bean 的自动装配？有哪些方式？</h3><p>Bean 自动装配是指 Spring 自动将满足条件的 Bean 注入到依赖的地方。</p>
+<p>常见方式有：</p>
+<ul>
+<li><p><code>@Autowired</code>：按类型注入</p>
+</li>
+<li><p><code>@Qualifier</code>：配合 <code>@Autowired</code> 按名称注入</p>
+</li>
+<li><p><code>@Resource</code>：按名称注入（来自 JSR-250）</p>
+</li>
+<li><p>构造器注入（推荐，适用于不可变依赖）</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-如何理解-Spring-Boot-的-Starter？"><a href="#🔹-如何理解-Spring-Boot-的-Starter？" class="headerlink" title="🔹 如何理解 Spring Boot 的 Starter？"></a>🔹 如何理解 Spring Boot 的 Starter？</h3><p><code>starter</code> 是 Spring Boot 的模块化依赖规范，每个 Starter 提供一组自动配置好的依赖和默认配置，让你“开箱即用”。</p>
+<p>例子：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.boot<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>封装了：</p>
+<ul>
+<li><p>Spring MVC</p>
+</li>
+<li><p>Jackson</p>
+</li>
+<li><p>嵌入式 Tomcat 等</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-如何实现一个-IOC-容器？"><a href="#🔹-如何实现一个-IOC-容器？" class="headerlink" title="🔹 如何实现一个 IOC 容器？"></a>🔹 如何实现一个 IOC 容器？</h3><p>简单版实现：</p>
+<ol>
+<li><p>解析配置文件或注解</p>
+</li>
+<li><p>实例化 Bean（反射）</p>
+</li>
+<li><p>完成依赖注入（setter &#x2F; 构造器）</p>
+</li>
+<li><p>存入 Bean 容器（Map）</p>
+</li>
+<li><p>支持 Aware 回调、生命周期、单例池管理等</p>
+</li>
+</ol>
+<hr>
+<h3 id="🔹-对-IOC-的理解？"><a href="#🔹-对-IOC-的理解？" class="headerlink" title="🔹 对 IOC 的理解？"></a>🔹 对 IOC 的理解？</h3><p>IOC（Inversion of Control）即控制反转，是一种由容器负责对象的创建与依赖管理的思想。开发者无需自己 new 对象，Spring 容器负责控制对象的生命周期与依赖注入。</p>
+<hr>
+<h3 id="🔹-Spring-用到了哪些设计模式？"><a href="#🔹-Spring-用到了哪些设计模式？" class="headerlink" title="🔹 Spring 用到了哪些设计模式？"></a>🔹 Spring 用到了哪些设计模式？</h3><ul>
+<li><p><strong>工厂模式</strong>：创建 Bean 对象</p>
+</li>
+<li><p><strong>单例模式</strong>：默认 Bean 是单例</p>
+</li>
+<li><p><strong>代理模式</strong>：AOP、事务增强</p>
+</li>
+<li><p><strong>模板方法模式</strong>：JdbcTemplate 等封装流程</p>
+</li>
+<li><p><strong>策略模式</strong>：Resource、事务管理器选择</p>
+</li>
+<li><p><strong>观察者模式</strong>：事件发布机制（ApplicationEvent）</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-简述-Spring-Bean-的生命周期"><a href="#🔹-简述-Spring-Bean-的生命周期" class="headerlink" title="🔹 简述 Spring Bean 的生命周期"></a>🔹 简述 Spring Bean 的生命周期</h3><ol>
+<li><p>实例化（反射）</p>
+</li>
+<li><p>依赖注入</p>
+</li>
+<li><p>Aware 接口回调（如 BeanNameAware）</p>
+</li>
+<li><p>BeanPostProcessor 前置处理</p>
+</li>
+<li><p>初始化（@PostConstruct、InitializingBean）</p>
+</li>
+<li><p>BeanPostProcessor 后置处理</p>
+</li>
+<li><p>Bean 可用</p>
+</li>
+<li><p>销毁（@PreDestroy、DisposableBean）</p>
+</li>
+</ol>
+<hr>
+<h3 id="🔹-Spring-如何处理循环依赖？"><a href="#🔹-Spring-如何处理循环依赖？" class="headerlink" title="🔹 Spring 如何处理循环依赖？"></a>🔹 Spring 如何处理循环依赖？</h3><p>对于单例 Bean，Spring 采用三级缓存解决循环依赖：</p>
+<ol>
+<li><p>一级缓存：成品对象</p>
+</li>
+<li><p>二级缓存：提前暴露的半成品（早期对象）</p>
+</li>
+<li><p>三级缓存：ObjectFactory（创建 Bean 的回调）</p>
+</li>
+</ol>
+<p>通过提前暴露引用，避免构造死循环。⚠️ 不支持构造器循环依赖。</p>
+<hr>
+<h3 id="🔹-Spring-中后置处理器的作用？"><a href="#🔹-Spring-中后置处理器的作用？" class="headerlink" title="🔹 Spring 中后置处理器的作用？"></a>🔹 Spring 中后置处理器的作用？</h3><p><code>BeanPostProcessor</code> 是 Spring 提供的扩展接口，可在 Bean 初始化前后做增强：</p>
+<ul>
+<li><p>创建代理对象（AOP）</p>
+</li>
+<li><p>注解处理（如 @Autowired）</p>
+</li>
+<li><p>自定义增强逻辑</p>
+</li>
+</ul>
+<hr>
+<hr>
+<h2 id="✅-Part-2：AOP-与事务机制"><a href="#✅-Part-2：AOP-与事务机制" class="headerlink" title="✅ Part 2：AOP 与事务机制"></a>✅ Part 2：AOP 与事务机制</h2><h3 id="🔹-对-AOP-的理解"><a href="#🔹-对-AOP-的理解" class="headerlink" title="🔹 对 AOP 的理解"></a>🔹 对 AOP 的理解</h3><p>AOP（面向切面编程）用于横切关注点的解耦，如日志、权限、事务。通过代理对象在方法执行前后插入逻辑。</p>
+<p>核心术语：</p>
+<ul>
+<li><p>JoinPoint：连接点</p>
+</li>
+<li><p>Pointcut：切入点表达式</p>
+</li>
+<li><p>Advice：增强逻辑</p>
+</li>
+<li><p>Aspect：切面类</p>
+</li>
+<li><p>Weaving：织入代理过程</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-如何实现-AOP，项目哪些地方用到了-AOP？"><a href="#🔹-如何实现-AOP，项目哪些地方用到了-AOP？" class="headerlink" title="🔹 如何实现 AOP，项目哪些地方用到了 AOP？"></a>🔹 如何实现 AOP，项目哪些地方用到了 AOP？</h3><ul>
+<li><p><strong>基于 JDK 动态代理</strong>（接口）或 <strong>CGLIB 代理</strong>（类）</p>
+</li>
+<li><p>实现方式：<code>@Aspect</code> + <code>@Around</code> &#x2F; <code>@Before</code> &#x2F; <code>@After</code></p>
+</li>
+<li><p>项目中常见应用：</p>
+<ul>
+<li><p>日志收集</p>
+</li>
+<li><p>数据权限校验</p>
+</li>
+<li><p>异常报警</p>
+</li>
+<li><p>Redis 缓存切面</p>
+</li>
+<li><p>@Transactional</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-Spring-的事务机制？"><a href="#🔹-Spring-的事务机制？" class="headerlink" title="🔹 Spring 的事务机制？"></a>🔹 Spring 的事务机制？</h3><p>基于 AOP 实现，使用 <code>@Transactional</code> 实现声明式事务控制，事务拦截器负责在方法调用前后开启、提交或回滚事务。</p>
+<hr>
+<h3 id="🔹-Spring-中-Transactional-失效的几种场景？"><a href="#🔹-Spring-中-Transactional-失效的几种场景？" class="headerlink" title="🔹 Spring 中 @Transactional 失效的几种场景？"></a>🔹 Spring 中 @Transactional 失效的几种场景？</h3><ol>
+<li><p><strong>自调用失效</strong>：本类方法调用不会触发代理；</p>
+</li>
+<li><p><strong>方法不是 public</strong>；</p>
+</li>
+<li><p><strong>异常未抛出</strong>或为非运行时异常；</p>
+</li>
+<li><p><strong>配置错误</strong>：如未扫描 <code>@EnableTransactionManagement</code>；</p>
+</li>
+<li><p><strong>代理对象未生效</strong>：未通过 Spring 容器创建 Bean。</p>
+</li>
+</ol>
+<hr>
+<h3 id="🔹-Spring-的事务传播机制（常用）？"><a href="#🔹-Spring-的事务传播机制（常用）？" class="headerlink" title="🔹 Spring 的事务传播机制（常用）？"></a>🔹 Spring 的事务传播机制（常用）？</h3><ul>
+<li><p><code>REQUIRED</code>（默认）：有就加入，无则新建</p>
+</li>
+<li><p><code>REQUIRES_NEW</code>：每次都新建</p>
+</li>
+<li><p><code>NESTED</code>：嵌套事务（依赖保存点）</p>
+</li>
+<li><p><code>SUPPORTS</code>：有就用，没有就不用</p>
+</li>
+<li><p><code>NOT_SUPPORTED</code>：挂起事务</p>
+</li>
+<li><p><code>NEVER</code>：必须无事务</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-Spring-中事务实现方式和隔离级别？"><a href="#🔹-Spring-中事务实现方式和隔离级别？" class="headerlink" title="🔹 Spring 中事务实现方式和隔离级别？"></a>🔹 Spring 中事务实现方式和隔离级别？</h3><ul>
+<li><p>事务通过 <code>TransactionInterceptor</code> 统一处理；</p>
+</li>
+<li><p>底层调用数据库连接的事务控制；</p>
+</li>
+<li><p>隔离级别包括：</p>
+<ul>
+<li><p><code>READ_COMMITTED</code></p>
+</li>
+<li><p><code>REPEATABLE_READ</code></p>
+</li>
+<li><p><code>SERIALIZABLE</code></p>
+</li>
+<li><p><code>READ_UNCOMMITTED</code>（不推荐）</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<hr>
+<h2 id="✅-Part-3：Spring-Boot-原理与注解"><a href="#✅-Part-3：Spring-Boot-原理与注解" class="headerlink" title="✅ Part 3：Spring Boot 原理与注解"></a>✅ Part 3：Spring Boot 原理与注解</h2><h3 id="🔹-Spring-Boot-自动配置原理？"><a href="#🔹-Spring-Boot-自动配置原理？" class="headerlink" title="🔹 Spring Boot 自动配置原理？"></a>🔹 Spring Boot 自动配置原理？</h3><ul>
+<li><p><code>@SpringBootApplication</code> &#x3D; <code>@EnableAutoConfiguration</code></p>
+</li>
+<li><p>底层使用 <code>spring.factories</code> SPI 机制加载 <code>@Configuration</code> 配置类</p>
+</li>
+<li><p>条件装配：<code>@ConditionalOnXxx</code></p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-常见-Spring-Boot-注解及实现？"><a href="#🔹-常见-Spring-Boot-注解及实现？" class="headerlink" title="🔹 常见 Spring Boot 注解及实现？"></a>🔹 常见 Spring Boot 注解及实现？</h3><table>
+<thead>
+<tr>
+<th>注解</th>
+<th>作用</th>
+<th>底层实现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@SpringBootApplication</code></td>
+<td>启动入口，自动装配</td>
+<td><code>@ComponentScan</code> + <code>@EnableAutoConfiguration</code></td>
+</tr>
+<tr>
+<td><code>@ConfigurationProperties</code></td>
+<td>属性绑定</td>
+<td>反射绑定字段</td>
+</tr>
+<tr>
+<td><code>@EnableAutoConfiguration</code></td>
+<td>加载自动配置</td>
+<td><code>spring.factories</code></td>
+</tr>
+<tr>
+<td><code>@ConditionalOnXxx</code></td>
+<td>条件加载 Bean</td>
+<td><code>Condition</code> 接口判断</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="🔹-Spring-Boot-是如何启动-Tomcat-的？"><a href="#🔹-Spring-Boot-是如何启动-Tomcat-的？" class="headerlink" title="🔹 Spring Boot 是如何启动 Tomcat 的？"></a>🔹 Spring Boot 是如何启动 Tomcat 的？</h3><ul>
+<li><p>引入 <code>spring-boot-starter-web</code>；</p>
+</li>
+<li><p>自动装配 <code>EmbeddedWebServerFactory</code>（Tomcat 工厂）；</p>
+</li>
+<li><p>调用 <code>TomcatWebServer.start()</code> 启动内嵌服务器；</p>
+</li>
+<li><p>自动扫描 <code>@RestController</code> &#x2F; <code>@RequestMapping</code> 处理请求。</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-Spring-Boot-配置文件加载顺序？"><a href="#🔹-Spring-Boot-配置文件加载顺序？" class="headerlink" title="🔹 Spring Boot 配置文件加载顺序？"></a>🔹 Spring Boot 配置文件加载顺序？</h3><p>优先级从高到低（高的覆盖低的）：</p>
+<ol>
+<li><p>命令行参数</p>
+</li>
+<li><p><code>application.properties</code> &#x2F; <code>yaml</code>（<code>resources/config/</code> &gt; <code>resources/</code>）</p>
+</li>
+<li><p>外部配置（环境变量、系统变量）</p>
+</li>
+<li><p><code>@PropertySource</code></p>
+</li>
+<li><p>默认配置文件</p>
+</li>
+</ol>
+<hr>
+<hr>
+<h2 id="✅-Part-4：Spring-MVC-流程与组件"><a href="#✅-Part-4：Spring-MVC-流程与组件" class="headerlink" title="✅ Part 4：Spring MVC 流程与组件"></a>✅ Part 4：Spring MVC 流程与组件</h2><h3 id="🔹-SpringMVC-工作流程？"><a href="#🔹-SpringMVC-工作流程？" class="headerlink" title="🔹 SpringMVC 工作流程？"></a>🔹 SpringMVC 工作流程？</h3><ol>
+<li><p>请求由 <code>DispatcherServlet</code> 接收；</p>
+</li>
+<li><p>通过 <code>HandlerMapping</code> 找到目标 Controller；</p>
+</li>
+<li><p>执行目标方法（HandlerAdapter）；</p>
+</li>
+<li><p>返回 ModelAndView；</p>
+</li>
+<li><p>渲染 View；</p>
+</li>
+<li><p>响应结果返回客户端。</p>
+</li>
+</ol>
+<hr>
+<h3 id="🔹-SpringMVC-九大组件？"><a href="#🔹-SpringMVC-九大组件？" class="headerlink" title="🔹 SpringMVC 九大组件？"></a>🔹 SpringMVC 九大组件？</h3><ol>
+<li><p><code>DispatcherServlet</code></p>
+</li>
+<li><p><code>HandlerMapping</code></p>
+</li>
+<li><p><code>HandlerAdapter</code></p>
+</li>
+<li><p><code>Controller</code></p>
+</li>
+<li><p><code>ViewResolver</code></p>
+</li>
+<li><p><code>View</code></p>
+</li>
+<li><p><code>ModelAndView</code></p>
+</li>
+<li><p><code>LocaleResolver</code></p>
+</li>
+<li><p><code>ExceptionResolver</code></p>
+</li>
+</ol>
+<hr>
+<h3 id="🔹-控制器是单例的吗？"><a href="#🔹-控制器是单例的吗？" class="headerlink" title="🔹 控制器是单例的吗？"></a>🔹 控制器是单例的吗？</h3><p>是的，SpringMVC 默认 Controller 是单例，但线程不安全，Spring 通过将请求参数放在 ThreadLocal 中解决线程隔离问题。</p>
+<hr>
+<h3 id="🔹-Spring、SpringMVC、SpringBoot-区别？"><a href="#🔹-Spring、SpringMVC、SpringBoot-区别？" class="headerlink" title="🔹 Spring、SpringMVC、SpringBoot 区别？"></a>🔹 Spring、SpringMVC、SpringBoot 区别？</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Spring</th>
+<th>SpringMVC</th>
+<th>Spring Boot</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定位</td>
+<td>容器 + AOP + DI</td>
+<td>Web 请求处理框架</td>
+<td>全家桶快速开发框架</td>
+</tr>
+<tr>
+<td>关注点</td>
+<td>Bean 生命周期、AOP</td>
+<td>路由、Controller 调度</td>
+<td>自动配置、内嵌容器</td>
+</tr>
+<tr>
+<td>配置复杂度</td>
+<td>高</td>
+<td>中</td>
+<td>低</td>
+</tr>
+</tbody></table>
+<hr>
+<hr>
+<h2 id="✅-Part-5：MyBatis-核心原理与用法"><a href="#✅-Part-5：MyBatis-核心原理与用法" class="headerlink" title="✅ Part 5：MyBatis 核心原理与用法"></a>✅ Part 5：MyBatis 核心原理与用法</h2><h3 id="🔹-和-的区别？"><a href="#🔹-和-的区别？" class="headerlink" title="🔹 #{} 和 ${} 的区别？"></a>🔹 #{} 和 ${} 的区别？</h3><ul>
+<li><p><code>#&#123;&#125;：</code> 预编译参数，防 SQL 注入（推荐）</p>
+</li>
+<li><p><code>$&#123;&#125;</code>：字符串拼接，适用于动态表名、列名</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-MyBatis-插件运行原理及开发流程？"><a href="#🔹-MyBatis-插件运行原理及开发流程？" class="headerlink" title="🔹 MyBatis 插件运行原理及开发流程？"></a>🔹 MyBatis 插件运行原理及开发流程？</h3><ul>
+<li><p>拦截器基于责任链模式；</p>
+</li>
+<li><p>拦截点：Executor、StatementHandler、ParameterHandler、ResultSetHandler；</p>
+</li>
+<li><p>插件注册：<code>@Intercepts(&#123;@Signature(...)&#125;)</code></p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-MyBatis-优点与缺点？"><a href="#🔹-MyBatis-优点与缺点？" class="headerlink" title="🔹 MyBatis 优点与缺点？"></a>🔹 MyBatis 优点与缺点？</h3><p><strong>优点：</strong></p>
+<ul>
+<li><p>SQL 灵活可控</p>
+</li>
+<li><p>学习曲线平缓</p>
+</li>
+<li><p>易于扩展（插件）</p>
+</li>
+</ul>
+<p><strong>缺点：</strong></p>
+<ul>
+<li><p>手写 SQL 成本高</p>
+</li>
+<li><p>维护复杂度上升</p>
+</li>
+<li><p>动态 SQL 可读性差</p>
+</li>
+</ul>
+<hr>
+<h3 id="🔹-MyBatis-与-Hibernate-的区别？"><a href="#🔹-MyBatis-与-Hibernate-的区别？" class="headerlink" title="🔹 MyBatis 与 Hibernate 的区别？"></a>🔹 MyBatis 与 Hibernate 的区别？</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>MyBatis</th>
+<th>Hibernate</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>类型</td>
+<td>半自动 ORM</td>
+<td>全自动 ORM</td>
+</tr>
+<tr>
+<td>SQL 控制</td>
+<td>手写 SQL</td>
+<td>自动生成</td>
+</tr>
+<tr>
+<td>性能</td>
+<td>SQL 优化强</td>
+<td>性能依赖缓存和映射</td>
+</tr>
+<tr>
+<td>动态支持</td>
+<td>强</td>
+<td>弱</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="🔹-ApplicationContext-和-BeanFactory-区别？"><a href="#🔹-ApplicationContext-和-BeanFactory-区别？" class="headerlink" title="🔹 ApplicationContext 和 BeanFactory 区别？"></a>🔹 ApplicationContext 和 BeanFactory 区别？</h3><ul>
+<li><p><code>BeanFactory</code> 是最基本的 IoC 容器（懒加载）；</p>
+</li>
+<li><p><code>ApplicationContext</code> 是增强型容器，支持：</p>
+<ul>
+<li><p>国际化</p>
+</li>
+<li><p>事件发布</p>
+</li>
+<li><p>AOP</p>
+</li>
+<li><p>Bean 后处理器</p>
+</li>
+</ul>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/06/SSM%E5%92%8CSpringboot%E9%9D%A2%E8%AF%95%E9%A2%98/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;06&#x2F;SSM%E5%92%8CSpringboot%E9%9D%A2%E8%AF%95%E9%A2%98&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;06&#x2F;SSM%E5%92%8CSpringboot%E9%9D%A2%E8%AF%95%E9%A2%98&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/05/Redis%E9%9D%A2%E8%AF%95%E9%A2%98/">Redis面试题<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-Part-1%EF%BC%9ASpring-%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%E4%B8%8E%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F"><span class="toc-text">✅ Part 1：Spring 核心概念与设计模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E4%BB%80%E4%B9%88%E6%98%AF-Spring%EF%BC%9F"><span class="toc-text">🔹 什么是 Spring？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E4%BB%80%E4%B9%88%E6%98%AF-Bean-%E7%9A%84%E8%87%AA%E5%8A%A8%E8%A3%85%E9%85%8D%EF%BC%9F%E6%9C%89%E5%93%AA%E4%BA%9B%E6%96%B9%E5%BC%8F%EF%BC%9F"><span class="toc-text">🔹 什么是 Bean 的自动装配？有哪些方式？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3-Spring-Boot-%E7%9A%84-Starter%EF%BC%9F"><span class="toc-text">🔹 如何理解 Spring Boot 的 Starter？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA-IOC-%E5%AE%B9%E5%99%A8%EF%BC%9F"><span class="toc-text">🔹 如何实现一个 IOC 容器？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E5%AF%B9-IOC-%E7%9A%84%E7%90%86%E8%A7%A3%EF%BC%9F"><span class="toc-text">🔹 对 IOC 的理解？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-%E7%94%A8%E5%88%B0%E4%BA%86%E5%93%AA%E4%BA%9B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%EF%BC%9F"><span class="toc-text">🔹 Spring 用到了哪些设计模式？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E7%AE%80%E8%BF%B0-Spring-Bean-%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">🔹 简述 Spring Bean 的生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%EF%BC%9F"><span class="toc-text">🔹 Spring 如何处理循环依赖？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-%E4%B8%AD%E5%90%8E%E7%BD%AE%E5%A4%84%E7%90%86%E5%99%A8%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="toc-text">🔹 Spring 中后置处理器的作用？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-Part-2%EF%BC%9AAOP-%E4%B8%8E%E4%BA%8B%E5%8A%A1%E6%9C%BA%E5%88%B6"><span class="toc-text">✅ Part 2：AOP 与事务机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E5%AF%B9-AOP-%E7%9A%84%E7%90%86%E8%A7%A3"><span class="toc-text">🔹 对 AOP 的理解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0-AOP%EF%BC%8C%E9%A1%B9%E7%9B%AE%E5%93%AA%E4%BA%9B%E5%9C%B0%E6%96%B9%E7%94%A8%E5%88%B0%E4%BA%86-AOP%EF%BC%9F"><span class="toc-text">🔹 如何实现 AOP，项目哪些地方用到了 AOP？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-%E7%9A%84%E4%BA%8B%E5%8A%A1%E6%9C%BA%E5%88%B6%EF%BC%9F"><span class="toc-text">🔹 Spring 的事务机制？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-%E4%B8%AD-Transactional-%E5%A4%B1%E6%95%88%E7%9A%84%E5%87%A0%E7%A7%8D%E5%9C%BA%E6%99%AF%EF%BC%9F"><span class="toc-text">🔹 Spring 中 @Transactional 失效的几种场景？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-%E7%9A%84%E4%BA%8B%E5%8A%A1%E4%BC%A0%E6%92%AD%E6%9C%BA%E5%88%B6%EF%BC%88%E5%B8%B8%E7%94%A8%EF%BC%89%EF%BC%9F"><span class="toc-text">🔹 Spring 的事务传播机制（常用）？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-%E4%B8%AD%E4%BA%8B%E5%8A%A1%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F%E5%92%8C%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%EF%BC%9F"><span class="toc-text">🔹 Spring 中事务实现方式和隔离级别？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-Part-3%EF%BC%9ASpring-Boot-%E5%8E%9F%E7%90%86%E4%B8%8E%E6%B3%A8%E8%A7%A3"><span class="toc-text">✅ Part 3：Spring Boot 原理与注解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-Boot-%E8%87%AA%E5%8A%A8%E9%85%8D%E7%BD%AE%E5%8E%9F%E7%90%86%EF%BC%9F"><span class="toc-text">🔹 Spring Boot 自动配置原理？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E5%B8%B8%E8%A7%81-Spring-Boot-%E6%B3%A8%E8%A7%A3%E5%8F%8A%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="toc-text">🔹 常见 Spring Boot 注解及实现？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-Boot-%E6%98%AF%E5%A6%82%E4%BD%95%E5%90%AF%E5%8A%A8-Tomcat-%E7%9A%84%EF%BC%9F"><span class="toc-text">🔹 Spring Boot 是如何启动 Tomcat 的？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring-Boot-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%8A%A0%E8%BD%BD%E9%A1%BA%E5%BA%8F%EF%BC%9F"><span class="toc-text">🔹 Spring Boot 配置文件加载顺序？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-Part-4%EF%BC%9ASpring-MVC-%E6%B5%81%E7%A8%8B%E4%B8%8E%E7%BB%84%E4%BB%B6"><span class="toc-text">✅ Part 4：Spring MVC 流程与组件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-SpringMVC-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%EF%BC%9F"><span class="toc-text">🔹 SpringMVC 工作流程？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-SpringMVC-%E4%B9%9D%E5%A4%A7%E7%BB%84%E4%BB%B6%EF%BC%9F"><span class="toc-text">🔹 SpringMVC 九大组件？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E6%8E%A7%E5%88%B6%E5%99%A8%E6%98%AF%E5%8D%95%E4%BE%8B%E7%9A%84%E5%90%97%EF%BC%9F"><span class="toc-text">🔹 控制器是单例的吗？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-Spring%E3%80%81SpringMVC%E3%80%81SpringBoot-%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">🔹 Spring、SpringMVC、SpringBoot 区别？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-Part-5%EF%BC%9AMyBatis-%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E4%B8%8E%E7%94%A8%E6%B3%95"><span class="toc-text">✅ Part 5：MyBatis 核心原理与用法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-%E5%92%8C-%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">🔹 #{} 和 ${} 的区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-MyBatis-%E6%8F%92%E4%BB%B6%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86%E5%8F%8A%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B%EF%BC%9F"><span class="toc-text">🔹 MyBatis 插件运行原理及开发流程？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-MyBatis-%E4%BC%98%E7%82%B9%E4%B8%8E%E7%BC%BA%E7%82%B9%EF%BC%9F"><span class="toc-text">🔹 MyBatis 优点与缺点？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-MyBatis-%E4%B8%8E-Hibernate-%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">🔹 MyBatis 与 Hibernate 的区别？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%B9-ApplicationContext-%E5%92%8C-BeanFactory-%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">🔹 ApplicationContext 和 BeanFactory 区别？</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
