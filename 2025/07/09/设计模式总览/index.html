@@ -1,0 +1,511 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>设计模式总览 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+✅ 一、创建型模式（5种）关注如何创建对象，隐藏实例...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">设计模式总览</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">设计模式总览</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 09, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1030</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="✅-一、创建型模式（5种）"><a href="#✅-一、创建型模式（5种）" class="headerlink" title="✅ 一、创建型模式（5种）"></a>✅ 一、创建型模式（5种）</h2><p>关注如何创建对象，隐藏实例化逻辑。</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>单例模式</strong>（Singleton）</td>
+<td>保证一个类只有一个实例</td>
+</tr>
+<tr>
+<td><strong>工厂方法模式</strong>（Factory Method）</td>
+<td>定义创建对象的接口，由子类决定实例化哪一个类</td>
+</tr>
+<tr>
+<td><strong>抽象工厂模式</strong>（Abstract Factory）</td>
+<td>创建一系列相关对象，不指定具体类</td>
+</tr>
+<tr>
+<td><strong>建造者模式</strong>（Builder）</td>
+<td>分步骤构建复杂对象</td>
+</tr>
+<tr>
+<td><strong>原型模式</strong>（Prototype）</td>
+<td>通过克隆已有对象来创建新对象</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="✅-二、结构型模式（7种）"><a href="#✅-二、结构型模式（7种）" class="headerlink" title="✅ 二、结构型模式（7种）"></a>✅ 二、结构型模式（7种）</h2><p>关注类和对象的组合结构。</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>适配器模式</strong>（Adapter）</td>
+<td>将一个接口转换成客户端期望的另一个接口</td>
+</tr>
+<tr>
+<td><strong>装饰器模式</strong>（Decorator）</td>
+<td>动态添加额外功能，且不改变原类结构</td>
+</tr>
+<tr>
+<td><strong>代理模式</strong>（Proxy）</td>
+<td>控制对目标对象的访问</td>
+</tr>
+<tr>
+<td><strong>桥接模式</strong>（Bridge）</td>
+<td>将抽象与实现解耦，让它们可以独立变化</td>
+</tr>
+<tr>
+<td><strong>组合模式</strong>（Composite）</td>
+<td>将对象组合成树状结构，使客户端统一处理个体和组合</td>
+</tr>
+<tr>
+<td><strong>享元模式</strong>（Flyweight）</td>
+<td>共享细粒度对象，节省内存</td>
+</tr>
+<tr>
+<td><strong>外观模式</strong>（Facade）</td>
+<td>提供统一接口，隐藏系统复杂性</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="✅-三、行为型模式（11种）"><a href="#✅-三、行为型模式（11种）" class="headerlink" title="✅ 三、行为型模式（11种）"></a>✅ 三、行为型模式（11种）</h2><p>关注类和对象之间的通信与职责分配。</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>策略模式</strong>（Strategy）</td>
+<td>定义算法族，分别封装，可动态替换</td>
+</tr>
+<tr>
+<td><strong>模板方法模式</strong>（Template Method）</td>
+<td>定义算法骨架，将某些步骤延迟到子类</td>
+</tr>
+<tr>
+<td><strong>观察者模式</strong>（Observer）</td>
+<td>一对多依赖，状态变化自动通知所有观察者</td>
+</tr>
+<tr>
+<td><strong>状态模式</strong>（State）</td>
+<td>对象在不同状态下行为不同</td>
+</tr>
+<tr>
+<td><strong>职责链模式</strong>（Chain of Responsibility）</td>
+<td>多个对象按顺序处理请求</td>
+</tr>
+<tr>
+<td><strong>命令模式</strong>（Command）</td>
+<td>将请求封装为命令对象，支持撤销、队列等操作</td>
+</tr>
+<tr>
+<td><strong>中介者模式</strong>（Mediator）</td>
+<td>用一个中介对象封装一系列对象交互</td>
+</tr>
+<tr>
+<td><strong>访问者模式</strong>（Visitor）</td>
+<td>将操作封装到访问者中，分离算法与数据结构</td>
+</tr>
+<tr>
+<td><strong>备忘录模式</strong>（Memento）</td>
+<td>保存并恢复对象状态（如撤销）</td>
+</tr>
+<tr>
+<td><strong>解释器模式</strong>（Interpreter）</td>
+<td>解释语言的语法表示并执行</td>
+</tr>
+<tr>
+<td><strong>迭代器模式</strong>（Iterator）</td>
+<td>提供遍历集合的统一接口</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="✅-四、简单工厂（补充模式）"><a href="#✅-四、简单工厂（补充模式）" class="headerlink" title="✅ 四、简单工厂（补充模式）"></a>✅ 四、简单工厂（补充模式）</h2><ul>
+<li><p>虽不属于 GoF 的 23 种模式，但常用于实际开发：</p>
+<ul>
+<li><p>提供一个工厂类，根据参数创建不同产品对象</p>
+</li>
+<li><p>简化客户端使用，牺牲开放封闭原则</p>
+</li>
+</ul>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/09/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E6%80%BB%E8%A7%88/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;09&#x2F;%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E6%80%BB%E8%A7%88&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;09&#x2F;%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E6%80%BB%E8%A7%88&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/08/Messagequeue%E9%9D%A2%E8%AF%95%E9%A2%98/">Messagequeue面试题<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E4%B8%80%E3%80%81%E5%88%9B%E5%BB%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F%EF%BC%885%E7%A7%8D%EF%BC%89"><span class="toc-text">✅ 一、创建型模式（5种）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E4%BA%8C%E3%80%81%E7%BB%93%E6%9E%84%E5%9E%8B%E6%A8%A1%E5%BC%8F%EF%BC%887%E7%A7%8D%EF%BC%89"><span class="toc-text">✅ 二、结构型模式（7种）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E4%B8%89%E3%80%81%E8%A1%8C%E4%B8%BA%E5%9E%8B%E6%A8%A1%E5%BC%8F%EF%BC%8811%E7%A7%8D%EF%BC%89"><span class="toc-text">✅ 三、行为型模式（11种）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E5%9B%9B%E3%80%81%E7%AE%80%E5%8D%95%E5%B7%A5%E5%8E%82%EF%BC%88%E8%A1%A5%E5%85%85%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">✅ 四、简单工厂（补充模式）</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
