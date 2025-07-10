@@ -1,0 +1,458 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>链表反转之递归和迭代 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🌟 示例：反转单链表给定一个单链表 1 -&gt;...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">链表反转之递归和迭代</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">链表反转之递归和迭代</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 10, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1486</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🌟-示例：反转单链表"><a href="#🌟-示例：反转单链表" class="headerlink" title="🌟 示例：反转单链表"></a>🌟 示例：反转单链表</h2><p>给定一个单链表 <code>1 -&gt; 2 -&gt; 3 -&gt; 4 -&gt; 5 -&gt; null</code>，反转后变为 <code>5 -&gt; 4 -&gt; 3 -&gt; 2 -&gt; 1 -&gt; null</code></p>
+<p>定义节点结构如下（Java 举例）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">ListNode</span> &#123;<br>    <span class="hljs-type">int</span> val;<br>    ListNode next;<br>    ListNode(<span class="hljs-type">int</span> val) &#123;<br>        <span class="hljs-built_in">this</span>.val = val;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔁-迭代法（Iterative）"><a href="#🔁-迭代法（Iterative）" class="headerlink" title="🔁 迭代法（Iterative）"></a>🔁 迭代法（Iterative）</h2><h3 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h3><ul>
+<li><p>用三个指针：</p>
+<ul>
+<li><p><code>prev</code>：前一个节点</p>
+</li>
+<li><p><code>curr</code>：当前节点</p>
+</li>
+<li><p><code>next</code>：临时保存下一个节点</p>
+</li>
+</ul>
+</li>
+<li><p>每次把当前节点 <code>curr.next</code> 指向 <code>prev</code></p>
+</li>
+<li><p>最后返回 <code>prev</code>（新的头节点）</p>
+</li>
+</ul>
+<h3 id="代码："><a href="#代码：" class="headerlink" title="代码："></a>代码：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> ListNode <span class="hljs-title function_">reverseList</span><span class="hljs-params">(ListNode head)</span> &#123;<br>    <span class="hljs-type">ListNode</span> <span class="hljs-variable">prev</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>    <span class="hljs-type">ListNode</span> <span class="hljs-variable">curr</span> <span class="hljs-operator">=</span> head;<br><br>    <span class="hljs-keyword">while</span> (curr != <span class="hljs-literal">null</span>) &#123;<br>        <span class="hljs-type">ListNode</span> <span class="hljs-variable">next</span> <span class="hljs-operator">=</span> curr.next; <span class="hljs-comment">// 暂存下一个节点</span><br>        curr.next = prev;          <span class="hljs-comment">// 反转指针</span><br>        prev = curr;               <span class="hljs-comment">// 前移prev</span><br>        curr = next;               <span class="hljs-comment">// 前移curr</span><br>    &#125;<br><br>    <span class="hljs-keyword">return</span> prev; <span class="hljs-comment">// 新的头节点</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="优点："><a href="#优点：" class="headerlink" title="优点："></a>优点：</h3><ul>
+<li><p>时间复杂度：O(n)</p>
+</li>
+<li><p>空间复杂度：O(1)，不需要额外空间</p>
+</li>
+</ul>
+<hr>
+<h2 id="🔄-递归法（Recursive）"><a href="#🔄-递归法（Recursive）" class="headerlink" title="🔄 递归法（Recursive）"></a>🔄 递归法（Recursive）</h2><h3 id="思路：-1"><a href="#思路：-1" class="headerlink" title="思路："></a>思路：</h3><ul>
+<li><p>递归地反转 <code>head.next</code> 后，让 <code>head.next.next = head</code>，然后 <code>head.next = null</code></p>
+</li>
+<li><p>每次递归返回的是反转后的新头结点</p>
+</li>
+</ul>
+<h3 id="图示（反转-1-→-2-→-3）："><a href="#图示（反转-1-→-2-→-3）：" class="headerlink" title="图示（反转 1 → 2 → 3）："></a>图示（反转 1 → 2 → 3）：</h3><ol>
+<li><p>递归到最后一个节点 3</p>
+</li>
+<li><p>回溯过程中将 <code>2.next.next = 2</code>（3 → 2），再断开 <code>2.next = null</code></p>
+</li>
+<li><p>将 <code>1.next.next = 1</code>（2 → 1），再断开 <code>1.next = null</code></p>
+</li>
+</ol>
+<h3 id="代码：-1"><a href="#代码：-1" class="headerlink" title="代码："></a>代码：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> ListNode <span class="hljs-title function_">reverseList</span><span class="hljs-params">(ListNode head)</span> &#123;<br>    <span class="hljs-keyword">if</span> (head == <span class="hljs-literal">null</span> || head.next == <span class="hljs-literal">null</span>) &#123;<br>        <span class="hljs-keyword">return</span> head; <span class="hljs-comment">// 递归终止条件</span><br>    &#125;<br><br>    <span class="hljs-type">ListNode</span> <span class="hljs-variable">newHead</span> <span class="hljs-operator">=</span> reverseList(head.next); <span class="hljs-comment">// 递归反转后续链表</span><br>    head.next.next = head; <span class="hljs-comment">// 将后一个节点指向当前节点</span><br>    head.next = <span class="hljs-literal">null</span>;      <span class="hljs-comment">// 当前节点指向 null（断链）</span><br><br>    <span class="hljs-keyword">return</span> newHead; <span class="hljs-comment">// 返回新头节点</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="优点：-1"><a href="#优点：-1" class="headerlink" title="优点："></a>优点：</h3><ul>
+<li><p>时间复杂度：O(n)</p>
+</li>
+<li><p>空间复杂度：O(n)，递归栈开销</p>
+</li>
+</ul>
+<hr>
+<h2 id="✅-总结对比"><a href="#✅-总结对比" class="headerlink" title="✅ 总结对比"></a>✅ 总结对比</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>时间复杂度</th>
+<th>空间复杂度</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>迭代法</td>
+<td>O(n)</td>
+<td>O(1)</td>
+<td>效率高，实用性强</td>
+<td>稍显“机械”</td>
+</tr>
+<tr>
+<td>递归法</td>
+<td>O(n)</td>
+<td>O(n)</td>
+<td>简洁、易于理解</td>
+<td>有栈溢出风险（深链）</td>
+</tr>
+</tbody></table>
+<hr>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/10/%E9%93%BE%E8%A1%A8%E5%8F%8D%E8%BD%AC%E4%B9%8B%E9%80%92%E5%BD%92%E5%92%8C%E8%BF%AD%E4%BB%A3/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;10&#x2F;%E9%93%BE%E8%A1%A8%E5%8F%8D%E8%BD%AC%E4%B9%8B%E9%80%92%E5%BD%92%E5%92%8C%E8%BF%AD%E4%BB%A3&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;10&#x2F;%E9%93%BE%E8%A1%A8%E5%8F%8D%E8%BD%AC%E4%B9%8B%E9%80%92%E5%BD%92%E5%92%8C%E8%BF%AD%E4%BB%A3&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/09/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E6%80%BB%E8%A7%88/">设计模式总览<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%9F-%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%8F%8D%E8%BD%AC%E5%8D%95%E9%93%BE%E8%A1%A8"><span class="toc-text">🌟 示例：反转单链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%88Iterative%EF%BC%89"><span class="toc-text">🔁 迭代法（Iterative）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="toc-text">思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="toc-text">代码：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="toc-text">优点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E9%80%92%E5%BD%92%E6%B3%95%EF%BC%88Recursive%EF%BC%89"><span class="toc-text">🔄 递归法（Recursive）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-1"><span class="toc-text">思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E7%A4%BA%EF%BC%88%E5%8F%8D%E8%BD%AC-1-%E2%86%92-2-%E2%86%92-3%EF%BC%89%EF%BC%9A"><span class="toc-text">图示（反转 1 → 2 → 3）：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%9A-1"><span class="toc-text">代码：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A-1"><span class="toc-text">优点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94"><span class="toc-text">✅ 总结对比</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
