@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>数组中三个数的最大乘积 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🧠 题目：数组中三个数的最大乘积（Maximum ...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">数组中三个数的最大乘积</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">数组中三个数的最大乘积</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 11, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1619</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🧠-题目：数组中三个数的最大乘积（Maximum-Product-of-Three-Numbers）"><a href="#🧠-题目：数组中三个数的最大乘积（Maximum-Product-of-Three-Numbers）" class="headerlink" title="🧠 题目：数组中三个数的最大乘积（Maximum Product of Three Numbers）"></a>🧠 题目：数组中三个数的最大乘积（Maximum Product of Three Numbers）</h2><p>给你一个整型数组 <code>nums</code>，请你找出其中乘积最大的三个数，并输出这个乘积。</p>
+<hr>
+<h3 id="✅-关键点思路："><a href="#✅-关键点思路：" class="headerlink" title="✅ 关键点思路："></a>✅ 关键点思路：</h3><p>数组中可能包含 <strong>负数</strong>，所以乘积最大并不一定是最大的三个正数！</p>
+<p>存在两种情况：</p>
+<ol>
+<li><p>最大乘积是 <strong>三个最大的正数</strong></p>
+</li>
+<li><p>最大乘积是 <strong>两个最小的负数 × 最大正数</strong></p>
+</li>
+</ol>
+<hr>
+<h2 id="✅-解法-1：排序法（推荐）"><a href="#✅-解法-1：排序法（推荐）" class="headerlink" title="✅ 解法 1：排序法（推荐）"></a>✅ 解法 1：排序法（推荐）</h2><h3 id="🌟-思路："><a href="#🌟-思路：" class="headerlink" title="🌟 思路："></a>🌟 思路：</h3><ul>
+<li><p>排序后，最大乘积只可能来自于：</p>
+<ul>
+<li><p><code>nums[n - 1] * nums[n - 2] * nums[n - 3]</code></p>
+</li>
+<li><p><code>nums[0] * nums[1] * nums[n - 1]</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="✅-Java-实现："><a href="#✅-Java-实现：" class="headerlink" title="✅ Java 实现："></a>✅ Java 实现：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">maximumProduct</span><span class="hljs-params">(<span class="hljs-type">int</span>[] nums)</span> &#123;<br>    Arrays.sort(nums);<br>    <span class="hljs-type">int</span> <span class="hljs-variable">n</span> <span class="hljs-operator">=</span> nums.length;<br><br>    <span class="hljs-type">int</span> <span class="hljs-variable">prod1</span> <span class="hljs-operator">=</span> nums[n - <span class="hljs-number">1</span>] * nums[n - <span class="hljs-number">2</span>] * nums[n - <span class="hljs-number">3</span>]; <span class="hljs-comment">// 最大3个正数</span><br>    <span class="hljs-type">int</span> <span class="hljs-variable">prod2</span> <span class="hljs-operator">=</span> nums[<span class="hljs-number">0</span>] * nums[<span class="hljs-number">1</span>] * nums[n - <span class="hljs-number">1</span>];         <span class="hljs-comment">// 最小2负数 + 最大正数</span><br><br>    <span class="hljs-keyword">return</span> Math.max(prod1, prod2);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="⏱️-时间复杂度："><a href="#⏱️-时间复杂度：" class="headerlink" title="⏱️ 时间复杂度："></a>⏱️ 时间复杂度：</h3><ul>
+<li><p>时间：O(n log n)</p>
+</li>
+<li><p>空间：O(1)</p>
+</li>
+</ul>
+<hr>
+<h2 id="✅-解法-2：一次遍历找最大-最小值（更高效）"><a href="#✅-解法-2：一次遍历找最大-最小值（更高效）" class="headerlink" title="✅ 解法 2：一次遍历找最大&#x2F;最小值（更高效）"></a>✅ 解法 2：一次遍历找最大&#x2F;最小值（更高效）</h2><h3 id="🌟-思路：-1"><a href="#🌟-思路：-1" class="headerlink" title="🌟 思路："></a>🌟 思路：</h3><p>遍历一遍数组，维护：</p>
+<ul>
+<li><p>最大的三个数：<code>max1 &gt;= max2 &gt;= max3</code></p>
+</li>
+<li><p>最小的两个数（负数最小）：<code>min1 &lt;= min2</code></p>
+</li>
+</ul>
+<h3 id="✅-Java-实现：-1"><a href="#✅-Java-实现：-1" class="headerlink" title="✅ Java 实现："></a>✅ Java 实现：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">maximumProduct</span><span class="hljs-params">(<span class="hljs-type">int</span>[] nums)</span> &#123;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">max1</span> <span class="hljs-operator">=</span> Integer.MIN_VALUE, max2 = Integer.MIN_VALUE, max3 = Integer.MIN_VALUE;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">min1</span> <span class="hljs-operator">=</span> Integer.MAX_VALUE, min2 = Integer.MAX_VALUE;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> n : nums) &#123;<br>        <span class="hljs-keyword">if</span> (n &gt; max1) &#123;<br>            max3 = max2; max2 = max1; max1 = n;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n &gt; max2) &#123;<br>            max3 = max2; max2 = n;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n &gt; max3) &#123;<br>            max3 = n;<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (n &lt; min1) &#123;<br>            min2 = min1; min1 = n;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (n &lt; min2) &#123;<br>            min2 = n;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> Math.max(max1 * max2 * max3, min1 * min2 * max1);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="⏱️-时间复杂度：-1"><a href="#⏱️-时间复杂度：-1" class="headerlink" title="⏱️ 时间复杂度："></a>⏱️ 时间复杂度：</h3><ul>
+<li><p>时间：O(n)</p>
+</li>
+<li><p>空间：O(1)</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧪-示例"><a href="#🧪-示例" class="headerlink" title="🧪 示例"></a>🧪 示例</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">输入: [-10, -10, 5, 2]<br>输出: 500<br>解释: -10 × -10 × 5 = 500<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="✅-总结"><a href="#✅-总结" class="headerlink" title="✅ 总结"></a>✅ 总结</h2><table>
+<thead>
+<tr>
+<th>解法</th>
+<th>时间复杂度</th>
+<th>空间复杂度</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>排序</td>
+<td>O(n log n)</td>
+<td>O(1)</td>
+<td>简洁易写</td>
+</tr>
+<tr>
+<td>一次遍历</td>
+<td>O(n)</td>
+<td>O(1)</td>
+<td>性能最优推荐 ✅</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/11/%E6%95%B0%E7%BB%84%E4%B8%AD%E4%B8%89%E4%B8%AA%E6%95%B0%E7%9A%84%E6%9C%80%E5%A4%A7%E4%B9%98%E7%A7%AF/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;11&#x2F;%E6%95%B0%E7%BB%84%E4%B8%AD%E4%B8%89%E4%B8%AA%E6%95%B0%E7%9A%84%E6%9C%80%E5%A4%A7%E4%B9%98%E7%A7%AF&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;11&#x2F;%E6%95%B0%E7%BB%84%E4%B8%AD%E4%B8%89%E4%B8%AA%E6%95%B0%E7%9A%84%E6%9C%80%E5%A4%A7%E4%B9%98%E7%A7%AF&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2025/07/11/%E5%AF%BB%E6%89%BE%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E5%BF%83%E4%B8%8B%E6%A0%87/"><i class="iconfont iconleft"></i>寻找数组的中心下标</a>
+    <a href="/2025/07/11/%E7%BB%9F%E8%AE%A1%E7%B4%A0%E6%95%B0%E4%B8%AA%E6%95%B0%E4%B9%8B%E6%9A%B4%E5%8A%9B%E7%AE%97%E6%B3%95%E5%92%8C%E5%9F%83%E5%BC%8F%E7%AD%9B%E9%80%89/">统计素数个数之暴力算法和埃式筛选<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E9%A2%98%E7%9B%AE%EF%BC%9A%E6%95%B0%E7%BB%84%E4%B8%AD%E4%B8%89%E4%B8%AA%E6%95%B0%E7%9A%84%E6%9C%80%E5%A4%A7%E4%B9%98%E7%A7%AF%EF%BC%88Maximum-Product-of-Three-Numbers%EF%BC%89"><span class="toc-text">🧠 题目：数组中三个数的最大乘积（Maximum Product of Three Numbers）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%85%B3%E9%94%AE%E7%82%B9%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="toc-text">✅ 关键点思路：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E8%A7%A3%E6%B3%95-1%EF%BC%9A%E6%8E%92%E5%BA%8F%E6%B3%95%EF%BC%88%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-text">✅ 解法 1：排序法（推荐）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%9F-%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="toc-text">🌟 思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-Java-%E5%AE%9E%E7%8E%B0%EF%BC%9A"><span class="toc-text">✅ Java 实现：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%8F%B1%EF%B8%8F-%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A"><span class="toc-text">⏱️ 时间复杂度：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E8%A7%A3%E6%B3%95-2%EF%BC%9A%E4%B8%80%E6%AC%A1%E9%81%8D%E5%8E%86%E6%89%BE%E6%9C%80%E5%A4%A7-%E6%9C%80%E5%B0%8F%E5%80%BC%EF%BC%88%E6%9B%B4%E9%AB%98%E6%95%88%EF%BC%89"><span class="toc-text">✅ 解法 2：一次遍历找最大&#x2F;最小值（更高效）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%9F-%E6%80%9D%E8%B7%AF%EF%BC%9A-1"><span class="toc-text">🌟 思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-Java-%E5%AE%9E%E7%8E%B0%EF%BC%9A-1"><span class="toc-text">✅ Java 实现：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%8F%B1%EF%B8%8F-%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A-1"><span class="toc-text">⏱️ 时间复杂度：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E7%A4%BA%E4%BE%8B"><span class="toc-text">🧪 示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93"><span class="toc-text">✅ 总结</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

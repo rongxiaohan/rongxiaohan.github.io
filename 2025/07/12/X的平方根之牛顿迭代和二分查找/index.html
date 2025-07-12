@@ -6,13 +6,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>删除排序数组中的重复项 - 笑容+</title>
+  <title>X的平方根之牛顿迭代和二分查找 - 笑容+</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="google" content="notranslate" />
   <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
   <meta name="description" content="
-删除排序数组中的重复项（LeetCode 26）题目...">
+✅ 方法一：牛顿迭代法（Newton’s Metho...">
   <meta name="author" content="单线程垃圾清理工">
   <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
@@ -153,7 +153,7 @@
       
       
     </div>
-    <div class="center">删除排序数组中的重复项</div>
+    <div class="center">X的平方根之牛顿迭代和二分查找</div>
     <div class="right">
       <i class="iconfont iconmenu j-navbar-menu"></i>
     </div>
@@ -197,11 +197,11 @@
     <section class="head">
   <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
   <div class="head-mask">
-    <h1 class="head-title">删除排序数组中的重复项</h1>
+    <h1 class="head-title">X的平方根之牛顿迭代和二分查找</h1>
     <div class="head-info">
-      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 11, 2025</span>
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 12, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>440</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1026</span>
     </div>
   </div>
 </section>
@@ -209,23 +209,51 @@
       <section class="content">
         
         <hr>
-<h2 id="删除排序数组中的重复项（LeetCode-26）"><a href="#删除排序数组中的重复项（LeetCode-26）" class="headerlink" title="删除排序数组中的重复项（LeetCode 26）"></a>删除排序数组中的重复项（LeetCode 26）</h2><p><strong>题目：</strong><br>给定一个 <strong>升序</strong> 数组 <code>nums</code>，<strong>原地</strong>删除重复项，使得每个元素只出现一次，返回新数组长度。</p>
-<h3 id="✅-思路（双指针）："><a href="#✅-思路（双指针）：" class="headerlink" title="✅ 思路（双指针）："></a>✅ 思路（双指针）：</h3><ul>
-<li><p><code>i</code> 指向不重复序列的最后一个位置</p>
-</li>
-<li><p><code>j</code> 向前扫描新元素</p>
-</li>
-<li><p>如果 <code>nums[j] != nums[i]</code>，就将 <code>j</code> 赋值给 <code>i + 1</code> 的位置</p>
-</li>
-</ul>
-<h3 id="✅-Java-实现："><a href="#✅-Java-实现：" class="headerlink" title="✅ Java 实现："></a>✅ Java 实现：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">removeDuplicates</span><span class="hljs-params">(<span class="hljs-type">int</span>[] nums)</span> &#123;<br>    <span class="hljs-keyword">if</span> (nums.length == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">j</span> <span class="hljs-operator">=</span> <span class="hljs-number">1</span>; j &lt; nums.length; j++) &#123;<br>        <span class="hljs-keyword">if</span> (nums[j] != nums[i]) &#123;<br>            nums[++i] = nums[j];<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> i + <span class="hljs-number">1</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="✅-方法一：牛顿迭代法（Newton’s-Method）"><a href="#✅-方法一：牛顿迭代法（Newton’s-Method）" class="headerlink" title="✅ 方法一：牛顿迭代法（Newton’s Method）"></a>✅ 方法一：牛顿迭代法（Newton’s Method）</h2><h3 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h3><p>牛顿迭代法是通过构造函数 $f(y) &#x3D; y^2 - x$，然后迭代逼近其根。</p>
+<p>公式为：</p>
+<p>$$y_{n+1} &#x3D; \frac{1}{2} \left(y_n + \frac{x}{y_n}\right)$$</p>
+<p>即：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">double</span> <span class="hljs-title function_">sqrt</span><span class="hljs-params">(<span class="hljs-type">double</span> x)</span> &#123;<br>    <span class="hljs-keyword">if</span> (x &lt; <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>; <span class="hljs-comment">// 负数无实数平方根</span><br>    <span class="hljs-keyword">if</span> (x == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    <span class="hljs-type">double</span> <span class="hljs-variable">y</span> <span class="hljs-operator">=</span> x;<br>    <span class="hljs-keyword">while</span> (Math.abs(y * y - x) &gt; <span class="hljs-number">1e-6</span>) &#123;<br>        y = <span class="hljs-number">0.5</span> * (y + x / y);<br>    &#125;<br>    <span class="hljs-keyword">return</span> y;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="✅-方法二：二分查找法（Binary-Search）"><a href="#✅-方法二：二分查找法（Binary-Search）" class="headerlink" title="✅ 方法二：二分查找法（Binary Search）"></a>✅ 方法二：二分查找法（Binary Search）</h2><h3 id="原理：-1"><a href="#原理：-1" class="headerlink" title="原理："></a>原理：</h3><p>对于 $x \geq 0$，平方根一定在 $[0, x]$ 或 $[0, 1]$ 之间（如果 x &lt; 1）。</p>
+<p>用二分法找一个值 <code>mid</code>，使得 <code>mid * mid ≈ x</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">double</span> <span class="hljs-title function_">sqrt</span><span class="hljs-params">(<span class="hljs-type">double</span> x)</span> &#123;<br>    <span class="hljs-keyword">if</span> (x &lt; <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">if</span> (x == <span class="hljs-number">0</span> || x == <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> x;<br>    <span class="hljs-type">double</span> <span class="hljs-variable">left</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>, right = x;<br>    <span class="hljs-keyword">if</span> (x &lt; <span class="hljs-number">1</span>) right = <span class="hljs-number">1</span>;<br><br>    <span class="hljs-keyword">while</span> (right - left &gt; <span class="hljs-number">1e-6</span>) &#123;<br>        <span class="hljs-type">double</span> <span class="hljs-variable">mid</span> <span class="hljs-operator">=</span> (left + right) / <span class="hljs-number">2</span>;<br>        <span class="hljs-keyword">if</span> (mid * mid &lt; x) &#123;<br>            left = mid;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            right = mid;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> (left + right) / <span class="hljs-number">2</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="✅-对比分析："><a href="#✅-对比分析：" class="headerlink" title="✅ 对比分析："></a>✅ 对比分析：</h2><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>收敛速度</th>
+<th>实现难度</th>
+<th>稳定性</th>
+<th>适用情况</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>牛顿法</td>
+<td>非常快（平方级）</td>
+<td>略高</td>
+<td>需要避免除零、负数</td>
+<td>对精度要求高，计算密集型</td>
+</tr>
+<tr>
+<td>二分法</td>
+<td>稳定但稍慢</td>
+<td>简单</td>
+<td>稳定</td>
+<td>精度适中、范围稳定</td>
+</tr>
+</tbody></table>
+
       </section>
       <section class="extra">
         
           <ul class="copyright">
   
     <li><strong>本文作者：</strong>单线程垃圾清理工</li>
-    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/11/%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;11&#x2F;%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;11&#x2F;%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9&#x2F;index.html</a></li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/12/X%E7%9A%84%E5%B9%B3%E6%96%B9%E6%A0%B9%E4%B9%8B%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E5%92%8C%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;12&#x2F;X%E7%9A%84%E5%B9%B3%E6%96%B9%E6%A0%B9%E4%B9%8B%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E5%92%8C%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;12&#x2F;X%E7%9A%84%E5%B9%B3%E6%96%B9%E6%A0%B9%E4%B9%8B%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E5%92%8C%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE&#x2F;index.html</a></li>
     <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
   
 </ul>
@@ -236,8 +264,8 @@
 
         
   <nav class="nav">
-    <a href="/2025/07/12/X%E7%9A%84%E5%B9%B3%E6%96%B9%E6%A0%B9%E4%B9%8B%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E5%92%8C%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/"><i class="iconfont iconleft"></i>X的平方根之牛顿迭代和二分查找</a>
-    <a href="/2025/07/11/%E5%88%A4%E6%96%AD%E7%8E%AF%E5%BD%A2%E9%93%BE%E8%A1%A8/">判断环形链表<i class="iconfont iconright"></i></a>
+    <a href="/2025/07/12/Fibonacci%E7%9A%84%E4%B8%89%E7%A7%8D%E8%A7%A3%E6%B3%95/"><i class="iconfont iconleft"></i>Fibonacci的三种解法</a>
+    <a href="/2025/07/11/%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9/">删除排序数组中的重复项<i class="iconfont iconright"></i></a>
   </nav>
 
       </section>
@@ -250,7 +278,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9%EF%BC%88LeetCode-26%EF%BC%89"><span class="toc-text">删除排序数组中的重复项（LeetCode 26）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%80%9D%E8%B7%AF%EF%BC%88%E5%8F%8C%E6%8C%87%E9%92%88%EF%BC%89%EF%BC%9A"><span class="toc-text">✅ 思路（双指针）：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-Java-%E5%AE%9E%E7%8E%B0%EF%BC%9A"><span class="toc-text">✅ Java 实现：</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9A%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%88Newton%E2%80%99s-Method%EF%BC%89"><span class="toc-text">✅ 方法一：牛顿迭代法（Newton’s Method）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="toc-text">原理：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9A%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE%E6%B3%95%EF%BC%88Binary-Search%EF%BC%89"><span class="toc-text">✅ 方法二：二分查找法（Binary Search）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A-1"><span class="toc-text">原理：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-text">✅ 对比分析：</span></a></li></ol>
   </aside>
 
         
