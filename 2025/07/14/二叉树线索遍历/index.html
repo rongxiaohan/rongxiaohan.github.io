@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>二叉树线索遍历 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、什么是线索二叉树？普通的二叉树中，很多指针是空的...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">二叉树线索遍历</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">二叉树线索遍历</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 14, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1826</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、什么是线索二叉树？"><a href="#一、什么是线索二叉树？" class="headerlink" title="一、什么是线索二叉树？"></a>一、什么是线索二叉树？</h2><p>普通的二叉树中，很多指针是空的（特别是叶子节点），这些空指针并没有发挥作用。<strong>线索二叉树（Threaded Binary Tree）</strong>利用这些空指针，<strong>将其指向节点的前驱或后继节点</strong>，从而实现遍历时的高效跳转。</p>
+<h3 id="线索分类："><a href="#线索分类：" class="headerlink" title="线索分类："></a>线索分类：</h3><p>根据被线索化的遍历顺序不同：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>前序线索二叉树</td>
+<td>空指针指向前序遍历的前驱或后继</td>
+</tr>
+<tr>
+<td>中序线索二叉树</td>
+<td>空指针指向中序遍历的前驱或后继</td>
+</tr>
+<tr>
+<td>后序线索二叉树</td>
+<td>空指针指向后序遍历的前驱或后继</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、中序线索二叉树示例"><a href="#二、中序线索二叉树示例" class="headerlink" title="二、中序线索二叉树示例"></a>二、中序线索二叉树示例</h2><p>我们重点讲解最常见的 <strong>中序线索二叉树</strong>。</p>
+<h3 id="1-节点结构定义："><a href="#1-节点结构定义：" class="headerlink" title="1. 节点结构定义："></a>1. 节点结构定义：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">ThreadedNode</span> &#123;<br>    <span class="hljs-type">int</span> val;<br>    ThreadedNode left;<br>    ThreadedNode right;<br><br>    <span class="hljs-comment">// 用于标识左右指针是否为“线索”</span><br>    <span class="hljs-type">int</span> leftType;  <span class="hljs-comment">// 0 表示左指针指向左子树，1 表示指向前驱</span><br>    <span class="hljs-type">int</span> rightType; <span class="hljs-comment">// 0 表示右指针指向右子树，1 表示指向后继</span><br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">ThreadedNode</span><span class="hljs-params">(<span class="hljs-type">int</span> val)</span> &#123;<br>        <span class="hljs-built_in">this</span>.val = val;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-中序线索化过程"><a href="#2-中序线索化过程" class="headerlink" title="2. 中序线索化过程"></a>2. 中序线索化过程</h3><p>中序线索化是一个递归过程，需要一个前驱指针记录前一个访问的节点：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ThreadedNode</span> <span class="hljs-variable">pre</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">inorderThreading</span><span class="hljs-params">(ThreadedNode node)</span> &#123;<br>    <span class="hljs-keyword">if</span> (node == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>;<br><br>    <span class="hljs-comment">// 1. 递归线索化左子树</span><br>    inorderThreading(node.left);<br><br>    <span class="hljs-comment">// 2. 处理当前节点的前驱</span><br>    <span class="hljs-keyword">if</span> (node.left == <span class="hljs-literal">null</span>) &#123;<br>        node.left = pre;<br>        node.leftType = <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 3. 处理前一个节点的后继</span><br>    <span class="hljs-keyword">if</span> (pre != <span class="hljs-literal">null</span> &amp;&amp; pre.right == <span class="hljs-literal">null</span>) &#123;<br>        pre.right = node;<br>        pre.rightType = <span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// 更新前驱</span><br>    pre = node;<br><br>    <span class="hljs-comment">// 4. 递归线索化右子树</span><br>    inorderThreading(node.right);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-中序遍历线索二叉树（非递归、无栈）"><a href="#3-中序遍历线索二叉树（非递归、无栈）" class="headerlink" title="3. 中序遍历线索二叉树（非递归、无栈）"></a>3. 中序遍历线索二叉树（非递归、无栈）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">inorderThreadedTraversal</span><span class="hljs-params">(ThreadedNode root)</span> &#123;<br>    <span class="hljs-type">ThreadedNode</span> <span class="hljs-variable">node</span> <span class="hljs-operator">=</span> root;<br><br>    <span class="hljs-keyword">while</span> (node != <span class="hljs-literal">null</span>) &#123;<br>        <span class="hljs-comment">// 1. 找到最左下角的节点</span><br>        <span class="hljs-keyword">while</span> (node.leftType == <span class="hljs-number">0</span>) &#123;<br>            node = node.left;<br>        &#125;<br><br>        <span class="hljs-comment">// 2. 访问当前节点</span><br>        System.out.print(node.val + <span class="hljs-string">&quot; &quot;</span>);<br><br>        <span class="hljs-comment">// 3. 一直通过“线索”访问后继节点</span><br>        <span class="hljs-keyword">while</span> (node.rightType == <span class="hljs-number">1</span>) &#123;<br>            node = node.right;<br>            System.out.print(node.val + <span class="hljs-string">&quot; &quot;</span>);<br>        &#125;<br><br>        <span class="hljs-comment">// 4. 移动到右子树</span><br>        node = node.right;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、优缺点"><a href="#三、优缺点" class="headerlink" title="三、优缺点"></a>三、优缺点</h2><h3 id="✅-优点："><a href="#✅-优点：" class="headerlink" title="✅ 优点："></a>✅ 优点：</h3><ul>
+<li><p>节省栈空间（非递归，不用辅助栈）</p>
+</li>
+<li><p>实现遍历更高效（通过线索直接跳转）</p>
+</li>
+</ul>
+<h3 id="❌-缺点："><a href="#❌-缺点：" class="headerlink" title="❌ 缺点："></a>❌ 缺点：</h3><ul>
+<li><p>构建过程稍复杂</p>
+</li>
+<li><p>修改原始结构（改变了空指针含义）</p>
+</li>
+<li><p>不适合频繁插入&#x2F;删除的动态结构</p>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/14/%E4%BA%8C%E5%8F%89%E6%A0%91%E7%BA%BF%E7%B4%A2%E9%81%8D%E5%8E%86/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;14&#x2F;%E4%BA%8C%E5%8F%89%E6%A0%91%E7%BA%BF%E7%B4%A2%E9%81%8D%E5%8E%86&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;14&#x2F;%E4%BA%8C%E5%8F%89%E6%A0%91%E7%BA%BF%E7%B4%A2%E9%81%8D%E5%8E%86&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2025/07/15/%E7%9C%81%E4%BB%BD%E6%95%B0%E9%87%8F/"><i class="iconfont iconleft"></i>省份数量</a>
+    <a href="/2025/07/14/%E4%BA%8C%E5%8F%89%E6%A0%91%E8%BF%AD%E4%BB%A3%E9%81%8D%E5%8E%86/">二叉树迭代遍历<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%BF%E7%B4%A2%E4%BA%8C%E5%8F%89%E6%A0%91%EF%BC%9F"><span class="toc-text">一、什么是线索二叉树？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%B4%A2%E5%88%86%E7%B1%BB%EF%BC%9A"><span class="toc-text">线索分类：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%B8%AD%E5%BA%8F%E7%BA%BF%E7%B4%A2%E4%BA%8C%E5%8F%89%E6%A0%91%E7%A4%BA%E4%BE%8B"><span class="toc-text">二、中序线索二叉树示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%8A%82%E7%82%B9%E7%BB%93%E6%9E%84%E5%AE%9A%E4%B9%89%EF%BC%9A"><span class="toc-text">1. 节点结构定义：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%AD%E5%BA%8F%E7%BA%BF%E7%B4%A2%E5%8C%96%E8%BF%87%E7%A8%8B"><span class="toc-text">2. 中序线索化过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86%E7%BA%BF%E7%B4%A2%E4%BA%8C%E5%8F%89%E6%A0%91%EF%BC%88%E9%9D%9E%E9%80%92%E5%BD%92%E3%80%81%E6%97%A0%E6%A0%88%EF%BC%89"><span class="toc-text">3. 中序遍历线索二叉树（非递归、无栈）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-text">三、优缺点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="toc-text">✅ 优点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9D%8C-%E7%BC%BA%E7%82%B9%EF%BC%9A"><span class="toc-text">❌ 缺点：</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
