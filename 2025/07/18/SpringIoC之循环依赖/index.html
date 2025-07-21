@@ -1,0 +1,455 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SpringIoC之循环依赖 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🌱 一、什么是循环依赖循环依赖（Circular ...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">SpringIoC之循环依赖</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">SpringIoC之循环依赖</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 18, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1826</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🌱-一、什么是循环依赖"><a href="#🌱-一、什么是循环依赖" class="headerlink" title="🌱 一、什么是循环依赖"></a>🌱 一、什么是循环依赖</h2><p>循环依赖（Circular Dependency）指的是多个 Bean 相互依赖，形成了一个闭环。</p>
+<p>比如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> B b;<br>&#125;<br><br><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">B</span> &#123;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> A a;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><code>A -&gt; B -&gt; A</code>，这就形成了一个典型的循环依赖。</p>
+<hr>
+<h2 id="🔄-二、循环依赖的分类"><a href="#🔄-二、循环依赖的分类" class="headerlink" title="🔄 二、循环依赖的分类"></a>🔄 二、循环依赖的分类</h2><p>Spring 的处理能力不同，取决于依赖的<strong>注入方式</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>依赖方式</th>
+<th>是否支持循环依赖</th>
+<th>原因说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>构造器注入</strong></td>
+<td>❌ 不支持</td>
+<td>Bean 尚未创建完成时就被依赖，容器无法提前暴露</td>
+</tr>
+<tr>
+<td><strong>属性注入</strong></td>
+<td>✅ 支持</td>
+<td>Spring 可以提前暴露早期对象引用（early reference）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="⚙️-三、Spring-如何解决属性注入循环依赖？"><a href="#⚙️-三、Spring-如何解决属性注入循环依赖？" class="headerlink" title="⚙️ 三、Spring 如何解决属性注入循环依赖？"></a>⚙️ 三、Spring 如何解决属性注入循环依赖？</h2><p>Spring 使用三级缓存机制解决循环依赖（仅限于单例 &amp; 非懒加载 Bean）：</p>
+<h3 id="🧠-核心三层缓存（DefaultSingletonBeanRegistry）："><a href="#🧠-核心三层缓存（DefaultSingletonBeanRegistry）：" class="headerlink" title="🧠 核心三层缓存（DefaultSingletonBeanRegistry）："></a>🧠 核心三层缓存（DefaultSingletonBeanRegistry）：</h3><ol>
+<li><p><strong>singletonObjects</strong>：一级缓存，存放已完全初始化完成的单例 Bean。</p>
+</li>
+<li><p><strong>earlySingletonObjects</strong>：二级缓存，存放早期曝光但未完成依赖注入的 Bean。</p>
+</li>
+<li><p><strong>singletonFactories</strong>：三级缓存，存放 ObjectFactory，用于创建早期对象代理。</p>
+</li>
+</ol>
+<hr>
+<h2 id="🧵-四、解决过程详解（以属性注入为例）"><a href="#🧵-四、解决过程详解（以属性注入为例）" class="headerlink" title="🧵 四、解决过程详解（以属性注入为例）"></a>🧵 四、解决过程详解（以属性注入为例）</h2><p>以 A 依赖 B，B 也依赖 A 为例，流程如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs text">createBean(A)<br> ├─实例化 A<br> ├─提前将 A 的 ObjectFactory 放入三级缓存<br> ├─populate A 发现需要注入 B，createBean(B)<br>    ├─实例化 B<br>    ├─提前将 B 的 ObjectFactory 放入三级缓存<br>    ├─populate B 发现需要注入 A<br>        └── 从三级缓存 -&gt; 提前暴露 A 的早期引用（early reference）<br>    ├─B 注入 A 成功，B 完成初始化，放入一级缓存<br> └─A 注入 B 成功，A 完成初始化，放入一级缓存<br></code></pre></td></tr></table></figure>
+
+<h3 id="🧩-涉及的关键源码："><a href="#🧩-涉及的关键源码：" class="headerlink" title="🧩 涉及的关键源码："></a>🧩 涉及的关键源码：</h3><p>主要在 <code>AbstractAutowireCapableBeanFactory#createBean()</code> 中处理：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 提前暴露早期对象引用（避免循环依赖）</span><br><span class="hljs-keyword">if</span> (earlySingletonExposure) &#123;<br>    addSingletonFactory(beanName, () -&gt; getEarlyBeanReference(beanName, mbd, bean));<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🚫-五、不能解决的情况"><a href="#🚫-五、不能解决的情况" class="headerlink" title="🚫 五、不能解决的情况"></a>🚫 五、不能解决的情况</h2><h3 id="1-构造器注入（Constructor-Injection）"><a href="#1-构造器注入（Constructor-Injection）" class="headerlink" title="1. 构造器注入（Constructor Injection）"></a>1. 构造器注入（Constructor Injection）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> B b;<br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">A</span><span class="hljs-params">(B b)</span> &#123; <span class="hljs-built_in">this</span>.b = b; &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>A 构造函数中必须先初始化 B，而 B 构造函数又必须先初始化 A，<strong>互相都需要对方先完成初始化</strong>，Spring 无法提前暴露 Bean，因此抛出异常：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">BeanCurrentlyInCreationException: Requested bean is currently in creation<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-多例-Bean（prototype）"><a href="#2-多例-Bean（prototype）" class="headerlink" title="2. 多例 Bean（prototype）"></a>2. 多例 Bean（prototype）</h3><p>Spring 无法缓存 prototype Bean，无法解决循环依赖。也会抛出异常。</p>
+<hr>
+<h2 id="✅-六、解决循环依赖的建议"><a href="#✅-六、解决循环依赖的建议" class="headerlink" title="✅ 六、解决循环依赖的建议"></a>✅ 六、解决循环依赖的建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>构造器注入循环依赖</td>
+<td>改为属性注入（如 @Autowired）</td>
+</tr>
+<tr>
+<td>多例 Bean 循环依赖</td>
+<td>尽量避免设计成循环依赖</td>
+</tr>
+<tr>
+<td>实在需要时</td>
+<td>用 <code>@Lazy</code> 延迟加载 或 引入代理模式</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧪-七、-Lazy-是什么作用？"><a href="#🧪-七、-Lazy-是什么作用？" class="headerlink" title="🧪 七、@Lazy 是什么作用？"></a>🧪 七、@Lazy 是什么作用？</h2><p>加在依赖注入字段上，表示注入的是一个懒加载代理对象，解决循环依赖的一种方式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Autowired</span><br><span class="hljs-meta">@Lazy</span><br><span class="hljs-keyword">private</span> A a;<br></code></pre></td></tr></table></figure>
+
+<p>Spring 会创建一个 A 的代理，并延迟实际调用，这样就打破了循环。</p>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/18/SpringIoC%E4%B9%8B%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;18&#x2F;SpringIoC%E4%B9%8B%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;18&#x2F;SpringIoC%E4%B9%8B%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ShardingSphere/" rel="tag">ShardingSphere</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2025/07/18/Spring%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E6%95%B4%E4%BD%93%E8%84%89%E7%BB%9C/"><i class="iconfont iconleft"></i>Spring底层原理整体脉络</a>
+    <a href="/2025/07/17/ShardingSphere%E5%88%86%E7%89%87%E6%96%B9%E6%B3%95/">二叉树线索遍历<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%B1-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96"><span class="toc-text">🌱 一、什么是循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E4%BA%8C%E3%80%81%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text">🔄 二、循环依赖的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%B8%89%E3%80%81Spring-%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%EF%BC%9F"><span class="toc-text">⚙️ 三、Spring 如何解决属性注入循环依赖？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A0-%E6%A0%B8%E5%BF%83%E4%B8%89%E5%B1%82%E7%BC%93%E5%AD%98%EF%BC%88DefaultSingletonBeanRegistry%EF%BC%89%EF%BC%9A"><span class="toc-text">🧠 核心三层缓存（DefaultSingletonBeanRegistry）：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B5-%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E8%BF%87%E7%A8%8B%E8%AF%A6%E8%A7%A3%EF%BC%88%E4%BB%A5%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">🧵 四、解决过程详解（以属性注入为例）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A9-%E6%B6%89%E5%8F%8A%E7%9A%84%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9A"><span class="toc-text">🧩 涉及的关键源码：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%AB-%E4%BA%94%E3%80%81%E4%B8%8D%E8%83%BD%E8%A7%A3%E5%86%B3%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-text">🚫 五、不能解决的情况</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9E%84%E9%80%A0%E5%99%A8%E6%B3%A8%E5%85%A5%EF%BC%88Constructor-Injection%EF%BC%89"><span class="toc-text">1. 构造器注入（Constructor Injection）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%A4%9A%E4%BE%8B-Bean%EF%BC%88prototype%EF%BC%89"><span class="toc-text">2. 多例 Bean（prototype）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E5%85%AD%E3%80%81%E8%A7%A3%E5%86%B3%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%BB%BA%E8%AE%AE"><span class="toc-text">✅ 六、解决循环依赖的建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E4%B8%83%E3%80%81-Lazy-%E6%98%AF%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="toc-text">🧪 七、@Lazy 是什么作用？</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

@@ -1,0 +1,469 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Spring底层原理整体脉络 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🧠 一图看懂 Spring 底层原理脉络12345...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Spring底层原理整体脉络</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Spring底层原理整体脉络</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 18, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>3075</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🧠-一图看懂-Spring-底层原理脉络"><a href="#🧠-一图看懂-Spring-底层原理脉络" class="headerlink" title="🧠 一图看懂 Spring 底层原理脉络"></a>🧠 一图看懂 Spring 底层原理脉络</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">Spring Framework<br>│<br>├── 核心容器（Core Container）🧱<br>│   ├── BeanFactory / ApplicationContext（IoC/DI 容器）<br>│   │   ├── BeanDefinition 加载与解析<br>│   │   ├── Bean 生命周期管理（创建 -&gt; 依赖注入 -&gt; 初始化 -&gt; 销毁）<br>│   │   └── 后置处理器（BeanPostProcessor / BeanFactoryPostProcessor / InstantiationAwareBeanPostProcessor）<br>│   ├── Resource、Environment 抽象<br>│   └── 事件机制（ApplicationEvent / ApplicationListener）<br>│<br>├── AOP（面向切面编程）🪞<br>│   ├── 基于代理：JDK 动态代理、CGLIB 字节码增强<br>│   ├── 核心类：Advice、Pointcut、Advisor、ProxyFactory<br>│   └── Spring AOP 与 AspectJ 注解驱动实现（@Aspect、@Around）<br>│<br>├── 容器扩展机制（Extension Points）🧩<br>│   ├── BeanFactoryPostProcessor（如：PropertySourcesPlaceholderConfigurer）<br>│   ├── BeanDefinitionRegistryPostProcessor（如：@ComponentScan）<br>│   ├── ApplicationListener / SmartInitializingSingleton<br>│   └── SPI + META-INF/spring.factories 加载机制<br>│<br>├── 事务机制（Transaction）💰<br>│   ├── 编程式事务 vs 声明式事务（@Transactional）<br>│   ├── PlatformTransactionManager 接口抽象<br>│   └── AOP 拦截 + TransactionInterceptor 调用链控制<br>│<br>├── Spring MVC 🍱<br>│   ├── DispatcherServlet（前端控制器）<br>│   ├── HandlerMapping → HandlerAdapter → Controller<br>│   ├── 参数解析器 HandlerMethodArgumentResolver<br>│   └── 视图解析 ViewResolver / JSON 消息转换 HttpMessageConverter<br>│<br>├── Spring Boot 自动装配机制 🚀<br>│   ├── @SpringBootApplication（复合注解）<br>│   ├── 自动装配原理：@EnableAutoConfiguration → AutoConfigurationImportSelector<br>│   ├── 条件注解：@ConditionalOnXxx<br>│   └── META-INF/spring.factories / spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports<br>│<br>└── 高级特性补充 🧰<br>    ├── 注解驱动原理：@ComponentScan、@Configuration、@Bean、@Import 等<br>    ├── 环境感知：EnvironmentAware、ApplicationContextAware<br>    ├── 异步事件：@Async、@EventListener<br>    └── 定时任务：@Scheduled + SchedulingConfigurer<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🌱-逐个模块精要解释"><a href="#🌱-逐个模块精要解释" class="headerlink" title="🌱 逐个模块精要解释"></a>🌱 逐个模块精要解释</h2><h3 id="1️⃣-核心容器（IoC-DI）"><a href="#1️⃣-核心容器（IoC-DI）" class="headerlink" title="1️⃣ 核心容器（IoC &amp; DI）"></a>1️⃣ 核心容器（IoC &amp; DI）</h3><ul>
+<li><p><code>ApplicationContext</code> 是功能增强版的 <code>BeanFactory</code>，提供了事件发布、国际化、AOP 支持等。</p>
+</li>
+<li><p>Bean 生命周期包括：</p>
+<ol>
+<li><p>实例化（Constructor）</p>
+</li>
+<li><p>属性注入（populate）</p>
+</li>
+<li><p>初始化前处理（BeanPostProcessor#before）</p>
+</li>
+<li><p>初始化（InitializingBean&#x2F;自定义 init 方法）</p>
+</li>
+<li><p>初始化后处理（BeanPostProcessor#after）</p>
+</li>
+</ol>
+</li>
+</ul>
+<h3 id="2️⃣-AOP-实现原理"><a href="#2️⃣-AOP-实现原理" class="headerlink" title="2️⃣ AOP 实现原理"></a>2️⃣ AOP 实现原理</h3><ul>
+<li><p>Spring AOP 本质是代理模式：</p>
+<ul>
+<li><p>JDK Proxy 代理接口类</p>
+</li>
+<li><p>CGLIB 生成子类字节码</p>
+</li>
+</ul>
+</li>
+<li><p>切面织入由 <code>ProxyFactory</code> 构造代理对象，依靠 <code>Advisor</code> 链调用。</p>
+</li>
+</ul>
+<h3 id="3️⃣-扩展机制：Spring-的灵魂"><a href="#3️⃣-扩展机制：Spring-的灵魂" class="headerlink" title="3️⃣ 扩展机制：Spring 的灵魂"></a>3️⃣ 扩展机制：Spring 的灵魂</h3><ul>
+<li><p>SPI + 工厂加载机制解耦配置（比如 <code>spring.factories</code>）</p>
+</li>
+<li><p>Spring Boot 与 Spring Framework 都大量使用 <code>BeanFactoryPostProcessor</code> &#x2F; <code>ImportBeanDefinitionRegistrar</code> 来注册额外的 Bean 定义</p>
+</li>
+</ul>
+<h3 id="4️⃣-事务传播机制"><a href="#4️⃣-事务传播机制" class="headerlink" title="4️⃣ 事务传播机制"></a>4️⃣ 事务传播机制</h3><ul>
+<li><p>利用 AOP 拦截方法调用，切入 <code>TransactionInterceptor</code></p>
+</li>
+<li><p><code>PlatformTransactionManager</code> 管理事务行为（如 DataSourceTransactionManager）</p>
+</li>
+<li><p>支持 7 种传播行为（PROPAGATION_REQUIRED、REQUIRES_NEW、NESTED 等）</p>
+</li>
+</ul>
+<h3 id="5️⃣-Spring-MVC-请求流程"><a href="#5️⃣-Spring-MVC-请求流程" class="headerlink" title="5️⃣ Spring MVC 请求流程"></a>5️⃣ Spring MVC 请求流程</h3><ol>
+<li><p>请求进入 <code>DispatcherServlet</code></p>
+</li>
+<li><p>找到对应的 <code>HandlerMapping</code>（例如基于注解的 <code>RequestMappingHandlerMapping</code>）</p>
+</li>
+<li><p>执行 <code>HandlerAdapter</code>（如 <code>RequestMappingHandlerAdapter</code>）</p>
+</li>
+<li><p>调用 Controller 方法</p>
+</li>
+<li><p>返回值通过 <code>ViewResolver</code> 或 <code>HttpMessageConverter</code> 处理输出</p>
+</li>
+</ol>
+<h3 id="6️⃣-Spring-Boot-自动装配"><a href="#6️⃣-Spring-Boot-自动装配" class="headerlink" title="6️⃣ Spring Boot 自动装配"></a>6️⃣ Spring Boot 自动装配</h3><ul>
+<li><p>核心流程：</p>
+<ul>
+<li><p><code>@EnableAutoConfiguration</code> → <code>AutoConfigurationImportSelector</code> 读取配置</p>
+</li>
+<li><p>加载 <code>spring.factories</code> &#x2F; <code>spring-autoconfigure-metadata.properties</code></p>
+</li>
+<li><p>条件注解决定是否生效，如：</p>
+  <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@ConditionalOnMissingBean</span><br><span class="hljs-meta">@ConditionalOnClass</span><br></code></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="📌-总结记忆建议"><a href="#📌-总结记忆建议" class="headerlink" title="📌 总结记忆建议"></a>📌 总结记忆建议</h2><ul>
+<li><p><strong>一句话总结</strong>：Spring 是一个<strong>以 IoC 为核心，AOP 为利刃，容器扩展机制为灵魂</strong>的企业级开发框架。</p>
+</li>
+<li><p><strong>推荐记忆路径</strong>：</p>
+<ol>
+<li><p>先熟悉 IoC 容器初始化流程（<code>refresh()</code> 启动逻辑）</p>
+</li>
+<li><p>再掌握 Bean 生命周期 + 后置处理器链条</p>
+</li>
+<li><p>补上 AOP + 事务</p>
+</li>
+<li><p>理解 Spring Boot 自动装配与条件注解触发机制</p>
+</li>
+<li><p>深入 MVC 调用链与数据绑定过程</p>
+</li>
+</ol>
+</li>
+</ul>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/18/Spring%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E6%95%B4%E4%BD%93%E8%84%89%E7%BB%9C/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;18&#x2F;Spring%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E6%95%B4%E4%BD%93%E8%84%89%E7%BB%9C&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;18&#x2F;Spring%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E6%95%B4%E4%BD%93%E8%84%89%E7%BB%9C&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ShardingSphere/" rel="tag">ShardingSphere</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2025/07/18/SpringIoC%E4%B9%8B%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/"><i class="iconfont iconleft"></i>SpringIoC之依赖注入</a>
+    <a href="/2025/07/18/SpringIoC%E4%B9%8B%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/">SpringIoC之循环依赖<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%B8%80%E5%9B%BE%E7%9C%8B%E6%87%82-Spring-%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E8%84%89%E7%BB%9C"><span class="toc-text">🧠 一图看懂 Spring 底层原理脉络</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%B1-%E9%80%90%E4%B8%AA%E6%A8%A1%E5%9D%97%E7%B2%BE%E8%A6%81%E8%A7%A3%E9%87%8A"><span class="toc-text">🌱 逐个模块精要解释</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E6%A0%B8%E5%BF%83%E5%AE%B9%E5%99%A8%EF%BC%88IoC-DI%EF%BC%89"><span class="toc-text">1️⃣ 核心容器（IoC &amp; DI）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-AOP-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-text">2️⃣ AOP 实现原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E6%89%A9%E5%B1%95%E6%9C%BA%E5%88%B6%EF%BC%9ASpring-%E7%9A%84%E7%81%B5%E9%AD%82"><span class="toc-text">3️⃣ 扩展机制：Spring 的灵魂</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3-%E4%BA%8B%E5%8A%A1%E4%BC%A0%E6%92%AD%E6%9C%BA%E5%88%B6"><span class="toc-text">4️⃣ 事务传播机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%B8%8F%E2%83%A3-Spring-MVC-%E8%AF%B7%E6%B1%82%E6%B5%81%E7%A8%8B"><span class="toc-text">5️⃣ Spring MVC 请求流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%EF%B8%8F%E2%83%A3-Spring-Boot-%E8%87%AA%E5%8A%A8%E8%A3%85%E9%85%8D"><span class="toc-text">6️⃣ Spring Boot 自动装配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8C-%E6%80%BB%E7%BB%93%E8%AE%B0%E5%BF%86%E5%BB%BA%E8%AE%AE"><span class="toc-text">📌 总结记忆建议</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>

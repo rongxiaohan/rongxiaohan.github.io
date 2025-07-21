@@ -1,0 +1,557 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>SpringIoC之依赖注入 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🌱 一、什么是依赖注入？依赖注入（DI）是一种设计...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">SpringIoC之依赖注入</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">SpringIoC之依赖注入</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 18, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2156</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🌱-一、什么是依赖注入？"><a href="#🌱-一、什么是依赖注入？" class="headerlink" title="🌱 一、什么是依赖注入？"></a>🌱 一、什么是依赖注入？</h2><p><strong>依赖注入（DI）</strong>是一种设计模式，指由容器负责创建对象，并将它所依赖的其它对象注入进去，而不是对象自己创建或查找依赖。</p>
+<p>例如：A类依赖B类，传统方式如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-type">B</span> <span class="hljs-variable">b</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">B</span>(); <span class="hljs-comment">// 强耦合</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>使用Spring后：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">A</span> &#123;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> B b; <span class="hljs-comment">// 由容器注入，解耦</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="✨-二、依赖注入的方式"><a href="#✨-二、依赖注入的方式" class="headerlink" title="✨ 二、依赖注入的方式"></a>✨ 二、依赖注入的方式</h2><table>
+<thead>
+<tr>
+<th>注入方式</th>
+<th>示例</th>
+<th>是否支持循环依赖</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>构造器注入</td>
+<td><code>@Autowired Constructor</code></td>
+<td>❌ 不支持</td>
+<td>推荐方式（final+不可变性）</td>
+</tr>
+<tr>
+<td>Setter注入</td>
+<td><code>@Autowired setB(B b)</code></td>
+<td>✅ 支持</td>
+<td>可选依赖、可变性高</td>
+</tr>
+<tr>
+<td>字段注入</td>
+<td><code>@Autowired private B b</code></td>
+<td>✅ 支持</td>
+<td>最常用，但不利于测试</td>
+</tr>
+<tr>
+<td>接口注入（罕见）</td>
+<td>实现接口并由容器回调</td>
+<td>❌ 罕见</td>
+<td>Spring中几乎不用</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="⚙️-三、依赖注入的底层流程（以字段注入为例）"><a href="#⚙️-三、依赖注入的底层流程（以字段注入为例）" class="headerlink" title="⚙️ 三、依赖注入的底层流程（以字段注入为例）"></a>⚙️ 三、依赖注入的底层流程（以字段注入为例）</h2><p>Spring 在执行 <code>createBean()</code> 时：</p>
+<ol>
+<li><p><strong>实例化 Bean（无参构造）</strong></p>
+</li>
+<li><p><strong>依赖注入（populateBean）</strong></p>
+</li>
+<li><p><strong>初始化（init-method &#x2F; @PostConstruct）</strong></p>
+</li>
+<li><p><strong>放入一级缓存，完成注册</strong></p>
+</li>
+</ol>
+<p>其中，<code>populateBean()</code> -&gt; <code>AutowireByType</code> -&gt; <code>resolveDependency()</code>：</p>
+<ul>
+<li><p>根据字段类型去容器中找 Bean</p>
+</li>
+<li><p>找到就通过反射注入</p>
+</li>
+<li><p>找不到抛出 <code>NoSuchBeanDefinitionException</code></p>
+</li>
+</ul>
+<hr>
+<h2 id="📦-四、常见注解与使用技巧"><a href="#📦-四、常见注解与使用技巧" class="headerlink" title="📦 四、常见注解与使用技巧"></a>📦 四、常见注解与使用技巧</h2><h3 id="✅-核心注解"><a href="#✅-核心注解" class="headerlink" title="✅ 核心注解"></a>✅ 核心注解</h3><table>
+<thead>
+<tr>
+<th>注解</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>@Autowired</code></td>
+<td>自动按类型注入（默认 required &#x3D; true）</td>
+</tr>
+<tr>
+<td><code>@Qualifier(&quot;beanName&quot;)</code></td>
+<td>与 @Autowired 联合使用，按名称限定</td>
+</tr>
+<tr>
+<td><code>@Inject</code>（JSR-330）</td>
+<td>Java 标准注入（功能类似）</td>
+</tr>
+<tr>
+<td><code>@Resource(name=&quot;beanName&quot;)</code></td>
+<td>按名称注入（来自 JSR-250）</td>
+</tr>
+<tr>
+<td><code>@Value(&quot;$&#123;...&#125;&quot;)</code></td>
+<td>注入配置值或表达式</td>
+</tr>
+</tbody></table>
+<h3 id="🚨-注意事项"><a href="#🚨-注意事项" class="headerlink" title="🚨 注意事项"></a>🚨 注意事项</h3><ul>
+<li><p>有多个同类型 Bean 时，需配合 <code>@Qualifier</code> 或使用 <code>@Primary</code></p>
+</li>
+<li><p>如果希望字段为可选，可以加 <code>@Autowired(required=false)</code></p>
+</li>
+<li><p>若使用构造器注入，Spring 会自动识别唯一构造器，无需 <code>@Autowired</code></p>
+</li>
+</ul>
+<hr>
+<h2 id="🧠-五、依赖注入-vs-控制反转"><a href="#🧠-五、依赖注入-vs-控制反转" class="headerlink" title="🧠 五、依赖注入 vs 控制反转"></a>🧠 五、依赖注入 vs 控制反转</h2><ul>
+<li><p><strong>控制反转（IoC）</strong> 是一种思想：控制权从程序员交给了框架。</p>
+</li>
+<li><p><strong>依赖注入（DI）</strong> 是实现 IoC 的一种方式。</p>
+</li>
+</ul>
+<p>除了 DI，IoC 还可以通过 Service Locator 模式实现，但 Spring 大部分用的是 DI。</p>
+<hr>
+<h2 id="🛠-六、源码核心类一览"><a href="#🛠-六、源码核心类一览" class="headerlink" title="🛠 六、源码核心类一览"></a>🛠 六、源码核心类一览</h2><table>
+<thead>
+<tr>
+<th>类名&#x2F;方法</th>
+<th>作用说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>DefaultListableBeanFactory</code></td>
+<td>BeanFactory 实现，负责依赖查找</td>
+</tr>
+<tr>
+<td><code>AutowiredAnnotationBeanPostProcessor</code></td>
+<td>解析 @Autowired 注解</td>
+</tr>
+<tr>
+<td><code>DependencyDescriptor</code></td>
+<td>表示注入点的元信息（字段&#x2F;参数等）</td>
+</tr>
+<tr>
+<td><code>resolveDependency()</code></td>
+<td>实际执行依赖查找和注入</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧩-七、示例"><a href="#🧩-七、示例" class="headerlink" title="🧩 七、示例"></a>🧩 七、示例</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">UserService</span> &#123;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> OrderService orderService;<br>&#125;<br><br><span class="hljs-meta">@Component</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderService</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<p>Spring 自动完成以下操作：</p>
+<ul>
+<li><p>实例化 <code>OrderService</code> 并注册到容器</p>
+</li>
+<li><p>实例化 <code>UserService</code></p>
+</li>
+<li><p>执行依赖注入：把 <code>OrderService</code> 注入进 <code>UserService</code></p>
+</li>
+</ul>
+<hr>
+<h2 id="📌-八、面试常问点总结"><a href="#📌-八、面试常问点总结" class="headerlink" title="📌 八、面试常问点总结"></a>📌 八、面试常问点总结</h2><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>回答要点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Spring中有哪些注入方式？</td>
+<td>构造器、字段、Setter、接口注入</td>
+</tr>
+<tr>
+<td>Autowired 默认是按什么注入的？如何按名称？</td>
+<td>默认按类型，可用 @Qualifier 限定名称</td>
+</tr>
+<tr>
+<td>多个同类型 Bean 怎么注入？</td>
+<td>@Qualifier &#x2F; @Primary &#x2F; @Autowired(required&#x3D;false)</td>
+</tr>
+<tr>
+<td>Spring 如何处理循环依赖？</td>
+<td>三级缓存，仅支持单例+字段注入</td>
+</tr>
+<tr>
+<td>Autowired 是怎么实现注入的？</td>
+<td>反射 + BeanPostProcessor 机制（AutowiredAnnotationBPP）</td>
+</tr>
+<tr>
+<td>Autowired 和 Resource 区别？</td>
+<td>Autowired 默认按类型，Resource 默认按名称</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/18/SpringIoC%E4%B9%8B%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;18&#x2F;SpringIoC%E4%B9%8B%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;18&#x2F;SpringIoC%E4%B9%8B%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/ShardingSphere/" rel="tag">ShardingSphere</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2025/07/18/SpringIoC%E4%B9%8BBean%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><i class="iconfont iconleft"></i>SpringIoC之Bean生命周期</a>
+    <a href="/2025/07/18/Spring%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86%E6%95%B4%E4%BD%93%E8%84%89%E7%BB%9C/">Spring底层原理整体脉络<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%B1-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%EF%BC%9F"><span class="toc-text">🌱 一、什么是依赖注入？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%A8-%E4%BA%8C%E3%80%81%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="toc-text">✨ 二、依赖注入的方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%B8%89%E3%80%81%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E7%9A%84%E5%BA%95%E5%B1%82%E6%B5%81%E7%A8%8B%EF%BC%88%E4%BB%A5%E5%AD%97%E6%AE%B5%E6%B3%A8%E5%85%A5%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">⚙️ 三、依赖注入的底层流程（以字段注入为例）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E5%9B%9B%E3%80%81%E5%B8%B8%E8%A7%81%E6%B3%A8%E8%A7%A3%E4%B8%8E%E4%BD%BF%E7%94%A8%E6%8A%80%E5%B7%A7"><span class="toc-text">📦 四、常见注解与使用技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%A0%B8%E5%BF%83%E6%B3%A8%E8%A7%A3"><span class="toc-text">✅ 核心注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%9A%A8-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">🚨 注意事项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%BA%94%E3%80%81%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5-vs-%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC"><span class="toc-text">🧠 五、依赖注入 vs 控制反转</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E5%85%AD%E3%80%81%E6%BA%90%E7%A0%81%E6%A0%B8%E5%BF%83%E7%B1%BB%E4%B8%80%E8%A7%88"><span class="toc-text">🛠 六、源码核心类一览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%B8%83%E3%80%81%E7%A4%BA%E4%BE%8B"><span class="toc-text">🧩 七、示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8C-%E5%85%AB%E3%80%81%E9%9D%A2%E8%AF%95%E5%B8%B8%E9%97%AE%E7%82%B9%E6%80%BB%E7%BB%93"><span class="toc-text">📌 八、面试常问点总结</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
