@@ -12,7 +12,7 @@
   <meta name="google" content="notranslate" />
   <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
   <meta name="description" content="
-✅ 解法一：递归法（暴力）原理：直接按数学公式递归实...">
+解法一：递归法（暴力）原理：直接按数学公式递归实现。...">
   <meta name="author" content="单线程垃圾清理工">
   <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 12, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1804</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1786</span>
     </div>
   </div>
 </section>
@@ -209,7 +209,7 @@
       <section class="content">
         
         <hr>
-<h2 id="✅-解法一：递归法（暴力）"><a href="#✅-解法一：递归法（暴力）" class="headerlink" title="✅ 解法一：递归法（暴力）"></a>✅ 解法一：递归法（暴力）</h2><h3 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h3><p>直接按数学公式递归实现。</p>
+<h2 id="解法一：递归法（暴力）"><a href="#解法一：递归法（暴力）" class="headerlink" title="解法一：递归法（暴力）"></a>解法一：递归法（暴力）</h2><h3 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h3><p>直接按数学公式递归实现。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">int</span> <span class="hljs-title function_">fib</span><span class="hljs-params">(<span class="hljs-type">int</span> n)</span> &#123;<br>    <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> n;<br>    <span class="hljs-keyword">return</span> fib(n - <span class="hljs-number">1</span>) + fib(n - <span class="hljs-number">2</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <h3 id="缺点："><a href="#缺点：" class="headerlink" title="缺点："></a>缺点：</h3><ul>
@@ -219,7 +219,7 @@
 </li>
 </ul>
 <hr>
-<h2 id="✅-解法二：动态规划（DP）"><a href="#✅-解法二：动态规划（DP）" class="headerlink" title="✅ 解法二：动态规划（DP）"></a>✅ 解法二：动态规划（DP）</h2><h3 id="原理：-1"><a href="#原理：-1" class="headerlink" title="原理："></a>原理：</h3><p>利用数组缓存中间结果，避免重复计算。</p>
+<h2 id="解法二：动态规划（DP）"><a href="#解法二：动态规划（DP）" class="headerlink" title="解法二：动态规划（DP）"></a>解法二：动态规划（DP）</h2><h3 id="原理：-1"><a href="#原理：-1" class="headerlink" title="原理："></a>原理：</h3><p>利用数组缓存中间结果，避免重复计算。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">long</span> <span class="hljs-title function_">cal</span><span class="hljs-params">(<span class="hljs-type">long</span>[] arr,<span class="hljs-type">int</span> num)</span> &#123;<br>    <span class="hljs-keyword">if</span>(num == <span class="hljs-number">0</span> || num == <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> num;<br>    <span class="hljs-keyword">if</span>(arr[num] != <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> arr[num];<br>    arr[num] = cal(arr,num -<span class="hljs-number">1</span>) + cal(arr,num -<span class="hljs-number">2</span>);<br>    <span class="hljs-keyword">return</span> arr[num];<br><br>&#125;<br></code></pre></td></tr></table></figure>
 
 <h3 id="复杂度："><a href="#复杂度：" class="headerlink" title="复杂度："></a>复杂度：</h3><ul>
@@ -229,7 +229,7 @@
 </li>
 </ul>
 <hr>
-<h2 id="✅-解法三：矩阵快速幂"><a href="#✅-解法三：矩阵快速幂" class="headerlink" title="✅ 解法三：矩阵快速幂"></a>✅ 解法三：矩阵快速幂</h2><h3 id="原理：-2"><a href="#原理：-2" class="headerlink" title="原理："></a>原理：</h3><p>Fibonacci 是一个线性递推，可以用矩阵快速幂求解。</p>
+<h2 id="解法三：矩阵快速幂"><a href="#解法三：矩阵快速幂" class="headerlink" title="解法三：矩阵快速幂"></a>解法三：矩阵快速幂</h2><h3 id="原理：-2"><a href="#原理：-2" class="headerlink" title="原理："></a>原理：</h3><p>Fibonacci 是一个线性递推，可以用矩阵快速幂求解。</p>
 <h1 id="begin-bmatrix-F-n-F-n-1-end-bmatrix"><a href="#begin-bmatrix-F-n-F-n-1-end-bmatrix" class="headerlink" title="$$\begin{bmatrix}F(n) \F(n-1)\end{bmatrix}  "></a>$$\begin{bmatrix}<br>F(n) \<br>F(n-1)<br>\end{bmatrix}  </h1><p>\begin{bmatrix}<br>1 &amp; 1 \<br>1 &amp; 0<br>\end{bmatrix}^{n-1}<br>\cdot<br>\begin{bmatrix}<br>F(1) \<br>F(0)<br>\end{bmatrix}$$</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">int</span> <span class="hljs-title function_">fib</span><span class="hljs-params">(<span class="hljs-type">int</span> n)</span> &#123;<br>    <span class="hljs-keyword">if</span> (n &lt;= <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> n;<br>    <span class="hljs-type">int</span>[][] base = &#123;&#123;<span class="hljs-number">1</span>, <span class="hljs-number">1</span>&#125;, &#123;<span class="hljs-number">1</span>, <span class="hljs-number">0</span>&#125;&#125;;<br>    <span class="hljs-type">int</span>[][] res = matrixPow(base, n - <span class="hljs-number">1</span>);<br>    <span class="hljs-keyword">return</span> res[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>];<br>&#125;<br><br><span class="hljs-type">int</span>[][] matrixPow(<span class="hljs-type">int</span>[][] a, <span class="hljs-type">int</span> n) &#123;<br>    <span class="hljs-type">int</span>[][] result = &#123;&#123;<span class="hljs-number">1</span>, <span class="hljs-number">0</span>&#125;, &#123;<span class="hljs-number">0</span>, <span class="hljs-number">1</span>&#125;&#125;; <span class="hljs-comment">// 单位矩阵</span><br>    <span class="hljs-keyword">while</span> (n &gt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">if</span> ((n &amp; <span class="hljs-number">1</span>) == <span class="hljs-number">1</span>) result = multiply(result, a);<br>        a = multiply(a, a);<br>        n &gt;&gt;= <span class="hljs-number">1</span>;<br>    &#125;<br>    <span class="hljs-keyword">return</span> result;<br>&#125;<br><br><span class="hljs-type">int</span>[][] multiply(<span class="hljs-type">int</span>[][] a, <span class="hljs-type">int</span>[][] b) &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[][] &#123;<br>        &#123;a[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>]*b[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>] + a[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>]*b[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>], a[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>]*b[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>] + a[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>]*b[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>]&#125;,<br>        &#123;a[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>]*b[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>] + a[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>]*b[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>], a[<span class="hljs-number">1</span>][<span class="hljs-number">0</span>]*b[<span class="hljs-number">0</span>][<span class="hljs-number">1</span>] + a[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>]*b[<span class="hljs-number">1</span>][<span class="hljs-number">1</span>]&#125;<br>    &#125;;<br>&#125;<br></code></pre></td></tr></table></figure>
 
@@ -240,7 +240,7 @@
 </li>
 </ul>
 <hr>
-<h2 id="🔁-Bonus：尾递归（Tail-Recursion）"><a href="#🔁-Bonus：尾递归（Tail-Recursion）" class="headerlink" title="🔁 Bonus：尾递归（Tail Recursion）"></a>🔁 Bonus：尾递归（Tail Recursion）</h2><p>尾递归可以被编译器优化为循环，Java 不支持自动尾递归优化，但写法仍有意义：</p>
+<h2 id="Bonus：尾递归（Tail-Recursion）"><a href="#Bonus：尾递归（Tail-Recursion）" class="headerlink" title="Bonus：尾递归（Tail Recursion）"></a>Bonus：尾递归（Tail Recursion）</h2><p>尾递归可以被编译器优化为循环，Java 不支持自动尾递归优化，但写法仍有意义：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">int</span> <span class="hljs-title function_">fib</span><span class="hljs-params">(<span class="hljs-type">int</span> n)</span> &#123;<br>    <span class="hljs-keyword">return</span> tailFib(n, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">tailFib</span><span class="hljs-params">(<span class="hljs-type">int</span> n, <span class="hljs-type">int</span> a, <span class="hljs-type">int</span> b)</span> &#123;<br>    <span class="hljs-keyword">if</span> (n == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> a;<br>    <span class="hljs-keyword">return</span> tailFib(n - <span class="hljs-number">1</span>, b, a + b);<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
@@ -259,20 +259,20 @@
 <td>O(2^n)</td>
 <td>O(n)</td>
 <td>❌</td>
-<td>✅✅✅</td>
+<td></td>
 </tr>
 <tr>
 <td>动态规划</td>
 <td>O(n)</td>
 <td>O(1)&#x2F;O(n)</td>
-<td>✅</td>
-<td>✅✅</td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>矩阵快速幂</td>
 <td>O(log n)</td>
 <td>O(1)</td>
-<td>✅✅✅</td>
+<td></td>
 <td>❌</td>
 </tr>
 </tbody></table>
@@ -308,7 +308,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E8%A7%A3%E6%B3%95%E4%B8%80%EF%BC%9A%E9%80%92%E5%BD%92%E6%B3%95%EF%BC%88%E6%9A%B4%E5%8A%9B%EF%BC%89"><span class="toc-text">✅ 解法一：递归法（暴力）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9%EF%BC%9A"><span class="toc-text">缺点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E8%A7%A3%E6%B3%95%E4%BA%8C%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%EF%BC%88DP%EF%BC%89"><span class="toc-text">✅ 解法二：动态规划（DP）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A-1"><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A"><span class="toc-text">复杂度：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E8%A7%A3%E6%B3%95%E4%B8%89%EF%BC%9A%E7%9F%A9%E9%98%B5%E5%BF%AB%E9%80%9F%E5%B9%82"><span class="toc-text">✅ 解法三：矩阵快速幂</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A-2"><span class="toc-text">原理：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#begin-bmatrix-F-n-F-n-1-end-bmatrix"><span class="toc-text">$$\begin{bmatrix}F(n) \F(n-1)\end{bmatrix}  </span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A-1"><span class="toc-text">复杂度：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-Bonus%EF%BC%9A%E5%B0%BE%E9%80%92%E5%BD%92%EF%BC%88Tail-Recursion%EF%BC%89"><span class="toc-text">🔁 Bonus：尾递归（Tail Recursion）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94%EF%BC%9A"><span class="toc-text">总结对比：</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E6%B3%95%E4%B8%80%EF%BC%9A%E9%80%92%E5%BD%92%E6%B3%95%EF%BC%88%E6%9A%B4%E5%8A%9B%EF%BC%89"><span class="toc-text">解法一：递归法（暴力）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%BA%E7%82%B9%EF%BC%9A"><span class="toc-text">缺点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E6%B3%95%E4%BA%8C%EF%BC%9A%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%EF%BC%88DP%EF%BC%89"><span class="toc-text">解法二：动态规划（DP）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A-1"><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A"><span class="toc-text">复杂度：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E6%B3%95%E4%B8%89%EF%BC%9A%E7%9F%A9%E9%98%B5%E5%BF%AB%E9%80%9F%E5%B9%82"><span class="toc-text">解法三：矩阵快速幂</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A-2"><span class="toc-text">原理：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#begin-bmatrix-F-n-F-n-1-end-bmatrix"><span class="toc-text">$$\begin{bmatrix}F(n) \F(n-1)\end{bmatrix}  </span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A-1"><span class="toc-text">复杂度：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bonus%EF%BC%9A%E5%B0%BE%E9%80%92%E5%BD%92%EF%BC%88Tail-Recursion%EF%BC%89"><span class="toc-text">Bonus：尾递归（Tail Recursion）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94%EF%BC%9A"><span class="toc-text">总结对比：</span></a></li></ol>
   </aside>
 
         

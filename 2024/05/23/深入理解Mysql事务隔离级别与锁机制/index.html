@@ -200,7 +200,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>May 23, 2024</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>4453</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>4432</span>
     </div>
   </div>
 </section>
@@ -234,21 +234,21 @@
 </thead>
 <tbody><tr>
 <td>READ UNCOMMITTED</td>
-<td>✅</td>
-<td>✅</td>
-<td>✅</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>READ COMMITTED</td>
 <td>❌</td>
-<td>✅</td>
-<td>✅</td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>REPEATABLE READ</td>
 <td>❌</td>
 <td>❌</td>
-<td>✅（可通过间隙锁解决）</td>
+<td>（可通过间隙锁解决）</td>
 </tr>
 <tr>
 <td>SERIALIZABLE</td>
@@ -321,31 +321,31 @@
 </thead>
 <tbody><tr>
 <td>READ UNCOMMITTED</td>
-<td>✅</td>
-<td>✅</td>
-<td>✅</td>
-<td>✅</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>READ COMMITTED</td>
 <td>❌</td>
-<td>✅</td>
-<td>✅</td>
-<td>✅</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>REPEATABLE READ</td>
 <td>❌</td>
 <td>❌</td>
-<td>✅（防幻读）</td>
-<td>✅（默认）</td>
+<td>（防幻读）</td>
+<td>（默认）</td>
 </tr>
 <tr>
 <td>SERIALIZABLE</td>
 <td>❌</td>
 <td>❌</td>
 <td>❌</td>
-<td>✅（最严格）</td>
+<td>（最严格）</td>
 </tr>
 </tbody></table>
 <hr>
@@ -371,7 +371,7 @@
 </ul>
 <p><strong>适合多数OLTP场景（如 PostgreSQL 默认）</strong>。</p>
 <hr>
-<h3 id="3-REPEATABLE-READ（可重复读）✅-InnoDB默认"><a href="#3-REPEATABLE-READ（可重复读）✅-InnoDB默认" class="headerlink" title="3. REPEATABLE READ（可重复读）✅ InnoDB默认"></a>3. <strong>REPEATABLE READ</strong>（可重复读）✅ InnoDB默认</h3><ul>
+<h3 id="3-REPEATABLE-READ（可重复读）-InnoDB默认"><a href="#3-REPEATABLE-READ（可重复读）-InnoDB默认" class="headerlink" title="3. REPEATABLE READ（可重复读） InnoDB默认"></a>3. <strong>REPEATABLE READ</strong>（可重复读） InnoDB默认</h3><ul>
 <li><p>同一个事务内，<strong>多次读取结果一致</strong>。</p>
 </li>
 <li><p>避免了不可重复读。</p>
@@ -501,10 +501,10 @@
 <li><p><strong>只有用索引条件才能真正加到行锁</strong>，否则锁的是全表！</p>
 </li>
 </ul>
-<p>✅ 使用主键或唯一索引加锁 → 行锁<br>❌ 使用非索引字段加锁 → 表锁</p>
+<p> 使用主键或唯一索引加锁 → 行锁<br>❌ 使用非索引字段加锁 → 表锁</p>
 <hr>
 <h3 id="2-间隙锁（Gap-Lock）和临键锁（Next-Key-Lock）"><a href="#2-间隙锁（Gap-Lock）和临键锁（Next-Key-Lock）" class="headerlink" title="2. 间隙锁（Gap Lock）和临键锁（Next-Key Lock）"></a>2. 间隙锁（Gap Lock）和临键锁（Next-Key Lock）</h3><p>这是 InnoDB 为了解决<strong>幻读</strong>问题而引入的机制。</p>
-<h4 id="📦-间隙锁（Gap-Lock）"><a href="#📦-间隙锁（Gap-Lock）" class="headerlink" title="📦 间隙锁（Gap Lock）"></a>📦 间隙锁（Gap Lock）</h4><p>锁住一个“范围”，不锁住已存在的行。</p>
+<h4 id="间隙锁（Gap-Lock）"><a href="#间隙锁（Gap-Lock）" class="headerlink" title="间隙锁（Gap Lock）"></a>间隙锁（Gap Lock）</h4><p>锁住一个“范围”，不锁住已存在的行。</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> <span class="hljs-keyword">user</span> <span class="hljs-keyword">WHERE</span> age <span class="hljs-operator">&gt;</span> <span class="hljs-number">30</span> <span class="hljs-keyword">FOR</span> <span class="hljs-keyword">UPDATE</span>;<br><span class="hljs-comment">-- 锁住 age &gt; 30 的间隙，不允许插入新的 age=31 的数据</span><br></code></pre></td></tr></table></figure>
 
 <h4 id="🔒-临键锁（Next-Key-Lock）"><a href="#🔒-临键锁（Next-Key-Lock）" class="headerlink" title="🔒 临键锁（Next-Key Lock）"></a>🔒 临键锁（Next-Key Lock）</h4><p>锁住当前行 + 相邻间隙，避免幻读。</p>
@@ -611,7 +611,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Mysql%E4%BA%8B%E5%8A%A1%E5%8F%8AACID%E7%89%B9%E6%80%A7%E8%AF%A6%E8%A7%A3"><span class="toc-text">Mysql事务及ACID特性详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E4%BA%8B%E5%8A%A1%EF%BC%88Transaction%EF%BC%89"><span class="toc-text">一、什么是事务（Transaction）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BE%E4%B8%AA%E4%BE%8B%E5%AD%90%EF%BC%9A"><span class="toc-text">举个例子：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C%E8%AF%AD%E5%8F%A5"><span class="toc-text">二、事务的基本操作语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BA%8B%E5%8A%A1%E7%9A%84-ACID-%E5%9B%9B%E5%A4%A7%E7%89%B9%E6%80%A7"><span class="toc-text">三、事务的 ACID 四大特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Atomicity%EF%BC%88%E5%8E%9F%E5%AD%90%E6%80%A7%EF%BC%89"><span class="toc-text">1. Atomicity（原子性）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Consistency%EF%BC%88%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%89"><span class="toc-text">2. Consistency（一致性）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Isolation%EF%BC%88%E9%9A%94%E7%A6%BB%E6%80%A7%EF%BC%89"><span class="toc-text">3. Isolation（隔离性）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Durability%EF%BC%88%E6%8C%81%E4%B9%85%E6%80%A7%EF%BC%89"><span class="toc-text">4. Durability（持久性）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81InnoDB-%E4%B8%8E%E4%BA%8B%E5%8A%A1"><span class="toc-text">四、InnoDB 与事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%B0%8F%E6%8A%80%E5%B7%A7%E4%B8%8E%E5%9D%91%E7%82%B9"><span class="toc-text">五、事务的小技巧与坑点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Mysql%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E8%AF%A6%E8%A7%A3"><span class="toc-text">Mysql事务隔离级别详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">一、什么是事务隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E8%AE%BF%E9%97%AE%E5%8F%AF%E8%83%BD%E5%AF%BC%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-text">并发访问可能导致的问题：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81MySQL-%E7%9A%84%E5%9B%9B%E7%A7%8D%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">二、MySQL 的四种隔离级别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E8%AF%A6%E8%A7%A3"><span class="toc-text">三、隔离级别详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-READ-UNCOMMITTED%EF%BC%88%E8%AF%BB%E6%9C%AA%E6%8F%90%E4%BA%A4%EF%BC%89"><span class="toc-text">1. READ UNCOMMITTED（读未提交）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-READ-COMMITTED%EF%BC%88%E8%AF%BB%E5%B7%B2%E6%8F%90%E4%BA%A4%EF%BC%89"><span class="toc-text">2. READ COMMITTED（读已提交）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-REPEATABLE-READ%EF%BC%88%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%EF%BC%89%E2%9C%85-InnoDB%E9%BB%98%E8%AE%A4"><span class="toc-text">3. REPEATABLE READ（可重复读）✅ InnoDB默认</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-SERIALIZABLE%EF%BC%88%E4%B8%B2%E8%A1%8C%E5%8C%96%EF%BC%89"><span class="toc-text">4. SERIALIZABLE（串行化）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%AE%BE%E7%BD%AE%E4%B8%8E%E6%9F%A5%E7%9C%8B%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">四、设置与查看隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E4%BC%9A%E8%AF%9D%E6%88%96%E5%85%A8%E5%B1%80%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%EF%BC%9A"><span class="toc-text">查看当前会话或全局隔离级别：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%EF%BC%9A"><span class="toc-text">设置隔离级别：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81MVCC-%E4%B8%8E-InnoDB-%E7%9A%84%E9%AD%94%E6%B3%95"><span class="toc-text">五、MVCC 与 InnoDB 的魔法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">六、建议使用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93%E6%AF%8F%E4%B8%AA%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">七、一句话总结每个隔离级别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Mysql%E9%94%81%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-text">Mysql锁机制详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81MySQL-%E9%94%81%E5%88%86%E7%B1%BB%E6%80%BB%E8%A7%88"><span class="toc-text">一、MySQL 锁分类总览</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%89%E4%BD%9C%E7%94%A8%E8%8C%83%E5%9B%B4%EF%BC%9A"><span class="toc-text">按作用范围：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%89%E6%93%8D%E4%BD%9C%E7%B1%BB%E5%9E%8B%EF%BC%9A"><span class="toc-text">按操作类型：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81InnoDB-%E9%94%81%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-text">二、InnoDB 锁机制详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%A1%8C%E7%BA%A7%E9%94%81"><span class="toc-text">1. 行级锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%97%B4%E9%9A%99%E9%94%81%EF%BC%88Gap-Lock%EF%BC%89%E5%92%8C%E4%B8%B4%E9%94%AE%E9%94%81%EF%BC%88Next-Key-Lock%EF%BC%89"><span class="toc-text">2. 间隙锁（Gap Lock）和临键锁（Next-Key Lock）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%84%8F%E5%90%91%E9%94%81%EF%BC%88Intention-Lock%EF%BC%89"><span class="toc-text">3. 意向锁（Intention Lock）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%AD%BB%E9%94%81%E4%B8%8E%E6%A3%80%E6%B5%8B"><span class="toc-text">三、死锁与检测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E6%AD%BB%E9%94%81"><span class="toc-text">1. 什么是死锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-InnoDB-%E8%87%AA%E5%8A%A8%E6%AD%BB%E9%94%81%E6%A3%80%E6%B5%8B%E6%9C%BA%E5%88%B6"><span class="toc-text">2. InnoDB 自动死锁检测机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9F%A5%E7%9C%8B%E9%94%81%E7%8A%B6%E6%80%81"><span class="toc-text">四、查看锁状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%94%81%E4%BD%BF%E7%94%A8%E5%BB%BA%E8%AE%AE%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-text">五、锁使用建议与最佳实践</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Mysql%E4%BA%8B%E5%8A%A1%E5%8F%8AACID%E7%89%B9%E6%80%A7%E8%AF%A6%E8%A7%A3"><span class="toc-text">Mysql事务及ACID特性详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E4%BA%8B%E5%8A%A1%EF%BC%88Transaction%EF%BC%89"><span class="toc-text">一、什么是事务（Transaction）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BE%E4%B8%AA%E4%BE%8B%E5%AD%90%EF%BC%9A"><span class="toc-text">举个例子：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C%E8%AF%AD%E5%8F%A5"><span class="toc-text">二、事务的基本操作语句</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BA%8B%E5%8A%A1%E7%9A%84-ACID-%E5%9B%9B%E5%A4%A7%E7%89%B9%E6%80%A7"><span class="toc-text">三、事务的 ACID 四大特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Atomicity%EF%BC%88%E5%8E%9F%E5%AD%90%E6%80%A7%EF%BC%89"><span class="toc-text">1. Atomicity（原子性）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Consistency%EF%BC%88%E4%B8%80%E8%87%B4%E6%80%A7%EF%BC%89"><span class="toc-text">2. Consistency（一致性）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Isolation%EF%BC%88%E9%9A%94%E7%A6%BB%E6%80%A7%EF%BC%89"><span class="toc-text">3. Isolation（隔离性）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Durability%EF%BC%88%E6%8C%81%E4%B9%85%E6%80%A7%EF%BC%89"><span class="toc-text">4. Durability（持久性）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81InnoDB-%E4%B8%8E%E4%BA%8B%E5%8A%A1"><span class="toc-text">四、InnoDB 与事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%BA%8B%E5%8A%A1%E7%9A%84%E5%B0%8F%E6%8A%80%E5%B7%A7%E4%B8%8E%E5%9D%91%E7%82%B9"><span class="toc-text">五、事务的小技巧与坑点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Mysql%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E8%AF%A6%E8%A7%A3"><span class="toc-text">Mysql事务隔离级别详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">一、什么是事务隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E8%AE%BF%E9%97%AE%E5%8F%AF%E8%83%BD%E5%AF%BC%E8%87%B4%E7%9A%84%E9%97%AE%E9%A2%98%EF%BC%9A"><span class="toc-text">并发访问可能导致的问题：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81MySQL-%E7%9A%84%E5%9B%9B%E7%A7%8D%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">二、MySQL 的四种隔离级别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E8%AF%A6%E8%A7%A3"><span class="toc-text">三、隔离级别详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-READ-UNCOMMITTED%EF%BC%88%E8%AF%BB%E6%9C%AA%E6%8F%90%E4%BA%A4%EF%BC%89"><span class="toc-text">1. READ UNCOMMITTED（读未提交）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-READ-COMMITTED%EF%BC%88%E8%AF%BB%E5%B7%B2%E6%8F%90%E4%BA%A4%EF%BC%89"><span class="toc-text">2. READ COMMITTED（读已提交）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-REPEATABLE-READ%EF%BC%88%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB%EF%BC%89-InnoDB%E9%BB%98%E8%AE%A4"><span class="toc-text">3. REPEATABLE READ（可重复读） InnoDB默认</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-SERIALIZABLE%EF%BC%88%E4%B8%B2%E8%A1%8C%E5%8C%96%EF%BC%89"><span class="toc-text">4. SERIALIZABLE（串行化）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%AE%BE%E7%BD%AE%E4%B8%8E%E6%9F%A5%E7%9C%8B%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">四、设置与查看隔离级别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E4%BC%9A%E8%AF%9D%E6%88%96%E5%85%A8%E5%B1%80%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%EF%BC%9A"><span class="toc-text">查看当前会话或全局隔离级别：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%EF%BC%9A"><span class="toc-text">设置隔离级别：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81MVCC-%E4%B8%8E-InnoDB-%E7%9A%84%E9%AD%94%E6%B3%95"><span class="toc-text">五、MVCC 与 InnoDB 的魔法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%BB%BA%E8%AE%AE%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">六、建议使用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%80%BB%E7%BB%93%E6%AF%8F%E4%B8%AA%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB"><span class="toc-text">七、一句话总结每个隔离级别</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Mysql%E9%94%81%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-text">Mysql锁机制详解</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81MySQL-%E9%94%81%E5%88%86%E7%B1%BB%E6%80%BB%E8%A7%88"><span class="toc-text">一、MySQL 锁分类总览</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%89%E4%BD%9C%E7%94%A8%E8%8C%83%E5%9B%B4%EF%BC%9A"><span class="toc-text">按作用范围：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%89%E6%93%8D%E4%BD%9C%E7%B1%BB%E5%9E%8B%EF%BC%9A"><span class="toc-text">按操作类型：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81InnoDB-%E9%94%81%E6%9C%BA%E5%88%B6%E8%AF%A6%E8%A7%A3"><span class="toc-text">二、InnoDB 锁机制详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%A1%8C%E7%BA%A7%E9%94%81"><span class="toc-text">1. 行级锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%97%B4%E9%9A%99%E9%94%81%EF%BC%88Gap-Lock%EF%BC%89%E5%92%8C%E4%B8%B4%E9%94%AE%E9%94%81%EF%BC%88Next-Key-Lock%EF%BC%89"><span class="toc-text">2. 间隙锁（Gap Lock）和临键锁（Next-Key Lock）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%84%8F%E5%90%91%E9%94%81%EF%BC%88Intention-Lock%EF%BC%89"><span class="toc-text">3. 意向锁（Intention Lock）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%AD%BB%E9%94%81%E4%B8%8E%E6%A3%80%E6%B5%8B"><span class="toc-text">三、死锁与检测</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E6%AD%BB%E9%94%81"><span class="toc-text">1. 什么是死锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-InnoDB-%E8%87%AA%E5%8A%A8%E6%AD%BB%E9%94%81%E6%A3%80%E6%B5%8B%E6%9C%BA%E5%88%B6"><span class="toc-text">2. InnoDB 自动死锁检测机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9F%A5%E7%9C%8B%E9%94%81%E7%8A%B6%E6%80%81"><span class="toc-text">四、查看锁状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%94%81%E4%BD%BF%E7%94%A8%E5%BB%BA%E8%AE%AE%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-text">五、锁使用建议与最佳实践</span></a></li></ol></li></ol>
   </aside>
 
         

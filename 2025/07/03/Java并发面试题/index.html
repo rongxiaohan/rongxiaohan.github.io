@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 03, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2076</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2067</span>
     </div>
   </div>
 </section>
@@ -226,7 +226,7 @@
 <p><strong>5. 守护线程</strong><br>后台线程，JVM无用户线程时自动退出。如GC线程。</p>
 <p><strong>6. 线程生命周期与状态</strong><br><code>NEW -&gt; RUNNABLE -&gt; BLOCKED/WAITING/TIMED_WAITING -&gt; TERMINATED</code>。</p>
 <hr>
-<h3 id="🧩-二、并发基础概念"><a href="#🧩-二、并发基础概念" class="headerlink" title="🧩 二、并发基础概念"></a>🧩 二、并发基础概念</h3><p><strong>7. 并发、并行、串行区别</strong></p>
+<h3 id="二、并发基础概念"><a href="#二、并发基础概念" class="headerlink" title="二、并发基础概念"></a>二、并发基础概念</h3><p><strong>7. 并发、并行、串行区别</strong></p>
 <ul>
 <li><p>并发：多个任务<strong>交替执行</strong>（单核也可）；</p>
 </li>
@@ -272,7 +272,7 @@
 </li>
 </ul>
 <hr>
-<h3 id="🔁-四、AQS-与原理"><a href="#🔁-四、AQS-与原理" class="headerlink" title="🔁 四、AQS 与原理"></a>🔁 四、AQS 与原理</h3><p><strong>17. AQS 是什么</strong><br>AbstractQueuedSynchronizer，用于构建锁和同步器的基础框架。通过<strong>CLH队列 + state状态变量</strong> 实现独占、共享锁。</p>
+<h3 id="四、AQS-与原理"><a href="#四、AQS-与原理" class="headerlink" title="四、AQS 与原理"></a>四、AQS 与原理</h3><p><strong>17. AQS 是什么</strong><br>AbstractQueuedSynchronizer，用于构建锁和同步器的基础框架。通过<strong>CLH队列 + state状态变量</strong> 实现独占、共享锁。</p>
 <p><strong>18. AQS 实现可重入锁原理</strong><br>ReentrantLock用AQS实现；state记录重入次数，当前线程重复加锁不会阻塞。</p>
 <hr>
 <h3 id="💡-五、ThreadLocal-专题"><a href="#💡-五、ThreadLocal-专题" class="headerlink" title="💡 五、ThreadLocal 专题"></a>💡 五、ThreadLocal 专题</h3><p><strong>19. ThreadLocal 底层原理</strong><br>每个线程维护一个ThreadLocalMap，key是ThreadLocal对象，value是变量副本。</p>
@@ -287,7 +287,7 @@
 </ul>
 <p><strong>22. DCL为何需要volatile（1&amp;2）</strong><br>防止指令重排导致对象未初始化完成就被引用。</p>
 <hr>
-<h3 id="⚙️-七、线程池原理"><a href="#⚙️-七、线程池原理" class="headerlink" title="⚙️ 七、线程池原理"></a>⚙️ 七、线程池原理</h3><p><strong>23. 为什么使用线程池</strong><br>减少线程创建销毁开销、统一管理资源、提高系统响应速度。</p>
+<h3 id="七、线程池原理"><a href="#七、线程池原理" class="headerlink" title="七、线程池原理"></a>七、线程池原理</h3><p><strong>23. 为什么使用线程池</strong><br>减少线程创建销毁开销、统一管理资源、提高系统响应速度。</p>
 <p><strong>24. 线程池参数解释</strong><br>核心线程数、最大线程数、队列、拒绝策略、线程工厂。</p>
 <p><strong>25. 线程池执行流程</strong><br>任务来时：核心线程未满→直接执行；满了→入队列；队列满→创建新线程；线程满→执行拒绝策略。</p>
 <p><strong>26. FixedThreadPool 用的阻塞队列？</strong><br>使用 <code>LinkedBlockingQueue</code>，无界队列。</p>
@@ -329,7 +329,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%B5-%E4%B8%80%E3%80%81%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E4%B8%8E%E9%80%9A%E4%BF%A1"><span class="toc-text">🧵 一、线程基础与通信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%BA%8C%E3%80%81%E5%B9%B6%E5%8F%91%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-text">🧩 二、并发基础概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%92-%E4%B8%89%E3%80%81%E9%94%81%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%90%8C%E6%AD%A5"><span class="toc-text">🔒 三、锁机制与同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%81-%E5%9B%9B%E3%80%81AQS-%E4%B8%8E%E5%8E%9F%E7%90%86"><span class="toc-text">🔁 四、AQS 与原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E4%BA%94%E3%80%81ThreadLocal-%E4%B8%93%E9%A2%98"><span class="toc-text">💡 五、ThreadLocal 专题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%98%95-%E5%85%AD%E3%80%81volatile-%E4%B8%8E%E5%8E%9F%E5%AD%90%E6%80%A7"><span class="toc-text">☕ 六、volatile 与原子性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%B8%83%E3%80%81%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8E%9F%E7%90%86"><span class="toc-text">⚙️ 七、线程池原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%A8-%E5%85%AB%E3%80%81%E7%AE%97%E6%B3%95%E9%A2%98%EF%BC%9A%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8E%92%E5%BA%8F"><span class="toc-text">✨ 八、算法题：字符串排序</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%B5-%E4%B8%80%E3%80%81%E7%BA%BF%E7%A8%8B%E5%9F%BA%E7%A1%80%E4%B8%8E%E9%80%9A%E4%BF%A1"><span class="toc-text">🧵 一、线程基础与通信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B9%B6%E5%8F%91%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-text">二、并发基础概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%92-%E4%B8%89%E3%80%81%E9%94%81%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%90%8C%E6%AD%A5"><span class="toc-text">🔒 三、锁机制与同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81AQS-%E4%B8%8E%E5%8E%9F%E7%90%86"><span class="toc-text">四、AQS 与原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%A1-%E4%BA%94%E3%80%81ThreadLocal-%E4%B8%93%E9%A2%98"><span class="toc-text">💡 五、ThreadLocal 专题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%98%95-%E5%85%AD%E3%80%81volatile-%E4%B8%8E%E5%8E%9F%E5%AD%90%E6%80%A7"><span class="toc-text">☕ 六、volatile 与原子性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%8E%9F%E7%90%86"><span class="toc-text">七、线程池原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%A8-%E5%85%AB%E3%80%81%E7%AE%97%E6%B3%95%E9%A2%98%EF%BC%9A%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%8E%92%E5%BA%8F"><span class="toc-text">✨ 八、算法题：字符串排序</span></a></li></ol>
   </aside>
 
         

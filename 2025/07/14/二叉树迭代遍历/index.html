@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 14, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2619</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2617</span>
     </div>
   </div>
 </section>
@@ -221,7 +221,7 @@
 <h4 id="方法二：前序遍历的变形（根-右-左），最后反转结果"><a href="#方法二：前序遍历的变形（根-右-左），最后反转结果" class="headerlink" title="方法二：前序遍历的变形（根-右-左），最后反转结果"></a>方法二：前序遍历的变形（根-右-左），最后反转结果</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> List&lt;Integer&gt; <span class="hljs-title function_">postorderTraversal</span><span class="hljs-params">(TreeNode root)</span> &#123;<br>    LinkedList&lt;Integer&gt; result = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LinkedList</span>&lt;&gt;();<br>    <span class="hljs-keyword">if</span> (root == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span> result;<br><br>    Deque&lt;TreeNode&gt; stack = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayDeque</span>&lt;&gt;();<br>    stack.push(root);<br><br>    <span class="hljs-keyword">while</span> (!stack.isEmpty()) &#123;<br>        <span class="hljs-type">TreeNode</span> <span class="hljs-variable">node</span> <span class="hljs-operator">=</span> stack.pop();<br>        result.addFirst(node.val);        <span class="hljs-comment">// 头插法，等于倒序输出</span><br>        <span class="hljs-keyword">if</span> (node.left != <span class="hljs-literal">null</span>) stack.push(node.left);<br>        <span class="hljs-keyword">if</span> (node.right != <span class="hljs-literal">null</span>) stack.push(node.right);<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> result;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h3 id="✅-总结表格"><a href="#✅-总结表格" class="headerlink" title="✅ 总结表格"></a>✅ 总结表格</h3><table>
+<h3 id="总结表格"><a href="#总结表格" class="headerlink" title="总结表格"></a>总结表格</h3><table>
 <thead>
 <tr>
 <th>遍历顺序</th>
@@ -277,7 +277,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%B2-1-%E5%89%8D%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%89"><span class="toc-text">🌲 1. 前序遍历（迭代法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%BF-2-%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%89"><span class="toc-text">🌿 2. 中序遍历（迭代法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8D%82-3-%E5%90%8E%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%89"><span class="toc-text">🍂 3. 后序遍历（迭代法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93%E8%A1%A8%E6%A0%BC"><span class="toc-text">✅ 总结表格</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%B2-1-%E5%89%8D%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%89"><span class="toc-text">🌲 1. 前序遍历（迭代法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%BF-2-%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%89"><span class="toc-text">🌿 2. 中序遍历（迭代法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8D%82-3-%E5%90%8E%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%89"><span class="toc-text">🍂 3. 后序遍历（迭代法）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E8%A1%A8%E6%A0%BC"><span class="toc-text">总结表格</span></a></li></ol>
   </aside>
 
         

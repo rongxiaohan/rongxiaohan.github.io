@@ -12,7 +12,7 @@
   <meta name="google" content="notranslate" />
   <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
   <meta name="description" content="
-✅ 二叉树定义123456class TreeNod...">
+二叉树定义123456class TreeNode ...">
   <meta name="author" content="单线程垃圾清理工">
   <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 14, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1270</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1265</span>
     </div>
   </div>
 </section>
@@ -209,7 +209,7 @@
       <section class="content">
         
         <hr>
-<h3 id="✅-二叉树定义"><a href="#✅-二叉树定义" class="headerlink" title="✅ 二叉树定义"></a>✅ 二叉树定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">TreeNode</span> &#123;<br>    <span class="hljs-type">int</span> val;<br>    TreeNode left;<br>    TreeNode right;<br>    TreeNode(<span class="hljs-type">int</span> x) &#123; val = x; &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="二叉树定义"><a href="#二叉树定义" class="headerlink" title="二叉树定义"></a>二叉树定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">TreeNode</span> &#123;<br>    <span class="hljs-type">int</span> val;<br>    TreeNode left;<br>    TreeNode right;<br>    TreeNode(<span class="hljs-type">int</span> x) &#123; val = x; &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
 <h3 id="1️⃣-前序遍历（Preorder）"><a href="#1️⃣-前序遍历（Preorder）" class="headerlink" title="1️⃣ 前序遍历（Preorder）"></a>1️⃣ 前序遍历（Preorder）</h3><p>访问顺序：<strong>根 → 左 → 右</strong></p>
@@ -224,7 +224,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">void</span> <span class="hljs-title function_">postorder</span><span class="hljs-params">(TreeNode root)</span> &#123;<br>    <span class="hljs-keyword">if</span> (root == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>;<br>    postorder(root.left);            <span class="hljs-comment">// 递归遍历左子树</span><br>    postorder(root.right);           <span class="hljs-comment">// 递归遍历右子树</span><br>    System.out.print(root.val + <span class="hljs-string">&quot; &quot;</span>); <span class="hljs-comment">// 访问根节点</span><br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h3 id="🔁-如果需要返回结果-List（LeetCode-常见）"><a href="#🔁-如果需要返回结果-List（LeetCode-常见）" class="headerlink" title="🔁 如果需要返回结果 List（LeetCode 常见）"></a>🔁 如果需要返回结果 List（LeetCode 常见）</h3><p>以中序为例：</p>
+<h3 id="如果需要返回结果-List（LeetCode-常见）"><a href="#如果需要返回结果-List（LeetCode-常见）" class="headerlink" title="如果需要返回结果 List（LeetCode 常见）"></a>如果需要返回结果 List（LeetCode 常见）</h3><p>以中序为例：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java">List&lt;Integer&gt; res = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();<br><span class="hljs-keyword">public</span> List&lt;Integer&gt; <span class="hljs-title function_">inorderTraversal</span><span class="hljs-params">(TreeNode root)</span> &#123;<br>    traverse(root);<br>    <span class="hljs-keyword">return</span> res;<br>&#125;<br><br><span class="hljs-keyword">void</span> <span class="hljs-title function_">traverse</span><span class="hljs-params">(TreeNode node)</span> &#123;<br>    <span class="hljs-keyword">if</span> (node == <span class="hljs-literal">null</span>) <span class="hljs-keyword">return</span>;<br>    traverse(node.left);<br>    res.add(node.val);<br>    traverse(node.right);<br>&#125;<br></code></pre></td></tr></table></figure>
       </section>
       <section class="extra">
@@ -244,7 +244,7 @@
         
   <nav class="nav">
     <a href="/2025/07/14/%E4%BA%8C%E5%8F%89%E6%A0%91%E8%BF%AD%E4%BB%A3%E9%81%8D%E5%8E%86/"><i class="iconfont iconleft"></i>二叉树迭代遍历</a>
-    <a href="/2025/07/13/%E4%BA%8C%E5%8F%89%E6%A0%91%E6%9C%80%E5%B0%8F%E6%B7%B1%E5%BA%A6/">二叉树最小深度<i class="iconfont iconright"></i></a>
+    <a href="/2025/07/13/%E4%B8%89%E8%A7%92%E5%BD%A2%E6%9C%80%E5%A4%A7%E5%91%A8%E9%95%BF/">柠檬水找零<i class="iconfont iconright"></i></a>
   </nav>
 
       </section>
@@ -257,7 +257,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E4%BA%8C%E5%8F%89%E6%A0%91%E5%AE%9A%E4%B9%89"><span class="toc-text">✅ 二叉树定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%89%8D%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88Preorder%EF%BC%89"><span class="toc-text">1️⃣ 前序遍历（Preorder）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88Inorder%EF%BC%89"><span class="toc-text">2️⃣ 中序遍历（Inorder）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E5%90%8E%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88Postorder%EF%BC%89"><span class="toc-text">3️⃣ 后序遍历（Postorder）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%94%81-%E5%A6%82%E6%9E%9C%E9%9C%80%E8%A6%81%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C-List%EF%BC%88LeetCode-%E5%B8%B8%E8%A7%81%EF%BC%89"><span class="toc-text">🔁 如果需要返回结果 List（LeetCode 常见）</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E5%8F%89%E6%A0%91%E5%AE%9A%E4%B9%89"><span class="toc-text">二叉树定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3-%E5%89%8D%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88Preorder%EF%BC%89"><span class="toc-text">1️⃣ 前序遍历（Preorder）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3-%E4%B8%AD%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88Inorder%EF%BC%89"><span class="toc-text">2️⃣ 中序遍历（Inorder）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3-%E5%90%8E%E5%BA%8F%E9%81%8D%E5%8E%86%EF%BC%88Postorder%EF%BC%89"><span class="toc-text">3️⃣ 后序遍历（Postorder）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E6%9E%9C%E9%9C%80%E8%A6%81%E8%BF%94%E5%9B%9E%E7%BB%93%E6%9E%9C-List%EF%BC%88LeetCode-%E5%B8%B8%E8%A7%81%EF%BC%89"><span class="toc-text">如果需要返回结果 List（LeetCode 常见）</span></a></li></ol>
   </aside>
 
         

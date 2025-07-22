@@ -12,7 +12,7 @@
   <meta name="google" content="notranslate" />
   <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
   <meta name="description" content="
-🧠 一句话理解秒杀秒杀 &#x3D; 高并发 + ...">
+一句话理解秒杀秒杀 &#x3D; 高并发 + 限量库...">
   <meta name="author" content="单线程垃圾清理工">
   <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 24, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>2007</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1991</span>
     </div>
   </div>
 </section>
@@ -209,12 +209,12 @@
       <section class="content">
         
         <hr>
-<h2 id="🧠-一句话理解秒杀"><a href="#🧠-一句话理解秒杀" class="headerlink" title="🧠 一句话理解秒杀"></a>🧠 一句话理解秒杀</h2><p>秒杀 &#x3D; <strong>高并发 + 限量库存 + 超低延迟</strong><br>👉 核心是 <strong>“限流 + 降级 + 原子扣库存”</strong></p>
+<h2 id="一句话理解秒杀"><a href="#一句话理解秒杀" class="headerlink" title="一句话理解秒杀"></a>一句话理解秒杀</h2><p>秒杀 &#x3D; <strong>高并发 + 限量库存 + 超低延迟</strong><br> 核心是 <strong>“限流 + 降级 + 原子扣库存”</strong></p>
 <hr>
 <h2 id="📌-系统架构图（简化）"><a href="#📌-系统架构图（简化）" class="headerlink" title="📌 系统架构图（简化）"></a>📌 系统架构图（简化）</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">  [用户请求]<br>      ↓<br>+---------------+<br>|   OpenResty   | ← Lua + Redis插件<br>+---------------+<br>      ↓<br>[异步消息队列] (可选)<br>      ↓<br>[后端服务]（写数据库）<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="✅-技术选型简要"><a href="#✅-技术选型简要" class="headerlink" title="✅ 技术选型简要"></a>✅ 技术选型简要</h2><table>
+<h2 id="技术选型简要"><a href="#技术选型简要" class="headerlink" title="技术选型简要"></a>技术选型简要</h2><table>
 <thead>
 <tr>
 <th>模块</th>
@@ -244,14 +244,14 @@
 </tr>
 </tbody></table>
 <hr>
-<h2 id="🧱-Redis秒杀关键-Lua-脚本（原子扣库存）"><a href="#🧱-Redis秒杀关键-Lua-脚本（原子扣库存）" class="headerlink" title="🧱 Redis秒杀关键 Lua 脚本（原子扣库存）"></a>🧱 Redis秒杀关键 Lua 脚本（原子扣库存）</h2><p>OpenResty 可以直接使用 <code>lua-resty-redis</code> 来执行以下脚本：</p>
+<h2 id="Redis秒杀关键-Lua-脚本（原子扣库存）"><a href="#Redis秒杀关键-Lua-脚本（原子扣库存）" class="headerlink" title="Redis秒杀关键 Lua 脚本（原子扣库存）"></a>Redis秒杀关键 Lua 脚本（原子扣库存）</h2><p>OpenResty 可以直接使用 <code>lua-resty-redis</code> 来执行以下脚本：</p>
 <figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs lua"><span class="hljs-comment">-- KEYS[1] = 商品库存Key</span><br><span class="hljs-comment">-- ARGV[1] = 用户ID</span><br><span class="hljs-comment">-- ARGV[2] = 用户抢购记录Key</span><br><br><span class="hljs-keyword">local</span> stock = <span class="hljs-built_in">tonumber</span>(redis.call(<span class="hljs-string">&#x27;get&#x27;</span>, KEYS[<span class="hljs-number">1</span>]))<br><span class="hljs-keyword">if</span> stock &lt;= <span class="hljs-number">0</span> <span class="hljs-keyword">then</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span><br><span class="hljs-keyword">end</span><br><br><span class="hljs-comment">-- 防止重复抢购</span><br><span class="hljs-keyword">if</span> redis.call(<span class="hljs-string">&#x27;sismember&#x27;</span>, KEYS[<span class="hljs-number">2</span>], ARGV[<span class="hljs-number">1</span>]) == <span class="hljs-number">1</span> <span class="hljs-keyword">then</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">-2</span><br><span class="hljs-keyword">end</span><br><br><span class="hljs-comment">-- 扣减库存 + 记录用户</span><br>redis.call(<span class="hljs-string">&#x27;decr&#x27;</span>, KEYS[<span class="hljs-number">1</span>])<br>redis.call(<span class="hljs-string">&#x27;sadd&#x27;</span>, KEYS[<span class="hljs-number">2</span>], ARGV[<span class="hljs-number">1</span>])<br><span class="hljs-keyword">return</span> <span class="hljs-number">1</span><br></code></pre></td></tr></table></figure>
 
 <hr>
 <h2 id="🚀-OpenResty-Lua-实现秒杀请求处理"><a href="#🚀-OpenResty-Lua-实现秒杀请求处理" class="headerlink" title="🚀 OpenResty Lua 实现秒杀请求处理"></a>🚀 OpenResty Lua 实现秒杀请求处理</h2><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs lua"><span class="hljs-keyword">local</span> redis = <span class="hljs-built_in">require</span> <span class="hljs-string">&quot;resty.redis&quot;</span><br><span class="hljs-keyword">local</span> red = redis:new()<br><br>red:set_timeout(<span class="hljs-number">1000</span>)<br><span class="hljs-keyword">local</span> ok, err = red:connect(<span class="hljs-string">&quot;127.0.0.1&quot;</span>, <span class="hljs-number">6379</span>)<br><br><span class="hljs-comment">-- 秒杀参数</span><br><span class="hljs-keyword">local</span> product_id = ngx.var.arg_product_id<br><span class="hljs-keyword">local</span> user_id = ngx.var.cookie_userid<br><br><span class="hljs-comment">-- Redis key</span><br><span class="hljs-keyword">local</span> stock_key = <span class="hljs-string">&quot;seckill:stock:&quot;</span> .. product_id<br><span class="hljs-keyword">local</span> user_key = <span class="hljs-string">&quot;seckill:users:&quot;</span> .. product_id<br><br><span class="hljs-comment">-- 调用 Lua 脚本</span><br><span class="hljs-keyword">local</span> script = <span class="hljs-string">[[</span><br><span class="hljs-string">  -- Lua 脚本省略，参考上面</span><br><span class="hljs-string">]]</span><br><span class="hljs-keyword">local</span> res, err = red:eval(script, <span class="hljs-number">2</span>, stock_key, user_key, user_id)<br><br><span class="hljs-keyword">if</span> res == <span class="hljs-number">1</span> <span class="hljs-keyword">then</span><br>    ngx.say(<span class="hljs-string">&quot;秒杀成功&quot;</span>)<br><span class="hljs-keyword">elseif</span> res == <span class="hljs-number">-1</span> <span class="hljs-keyword">then</span><br>    ngx.say(<span class="hljs-string">&quot;已售罄&quot;</span>)<br><span class="hljs-keyword">elseif</span> res == <span class="hljs-number">-2</span> <span class="hljs-keyword">then</span><br>    ngx.say(<span class="hljs-string">&quot;请勿重复抢购&quot;</span>)<br><span class="hljs-keyword">else</span><br>    ngx.say(<span class="hljs-string">&quot;系统繁忙，请稍后再试&quot;</span>)<br><span class="hljs-keyword">end</span><br></code></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="🧩-优化建议"><a href="#🧩-优化建议" class="headerlink" title="🧩 优化建议"></a>🧩 优化建议</h2><table>
+<h2 id="优化建议"><a href="#优化建议" class="headerlink" title="优化建议"></a>优化建议</h2><table>
 <thead>
 <tr>
 <th>优化点</th>
@@ -305,7 +305,7 @@
 </tr>
 </tbody></table>
 <hr>
-<h2 id="📦-最佳实践小结"><a href="#📦-最佳实践小结" class="headerlink" title="📦 最佳实践小结"></a>📦 最佳实践小结</h2><table>
+<h2 id="最佳实践小结"><a href="#最佳实践小结" class="headerlink" title="最佳实践小结"></a>最佳实践小结</h2><table>
 <thead>
 <tr>
 <th>技术</th>
@@ -362,7 +362,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3%E7%A7%92%E6%9D%80"><span class="toc-text">🧠 一句话理解秒杀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8C-%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E5%9B%BE%EF%BC%88%E7%AE%80%E5%8C%96%EF%BC%89"><span class="toc-text">📌 系统架构图（简化）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%E7%AE%80%E8%A6%81"><span class="toc-text">✅ 技术选型简要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-Redis%E7%A7%92%E6%9D%80%E5%85%B3%E9%94%AE-Lua-%E8%84%9A%E6%9C%AC%EF%BC%88%E5%8E%9F%E5%AD%90%E6%89%A3%E5%BA%93%E5%AD%98%EF%BC%89"><span class="toc-text">🧱 Redis秒杀关键 Lua 脚本（原子扣库存）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-OpenResty-Lua-%E5%AE%9E%E7%8E%B0%E7%A7%92%E6%9D%80%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86"><span class="toc-text">🚀 OpenResty Lua 实现秒杀请求处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A9-%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">🧩 优化建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%98%A0%EF%B8%8F-%E9%A3%8E%E9%99%A9%E4%B8%8E%E9%98%B2%E7%BA%BF"><span class="toc-text">☠️ 风险与防线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%A6-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%B0%8F%E7%BB%93"><span class="toc-text">📦 最佳实践小结</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E5%8F%A5%E8%AF%9D%E7%90%86%E8%A7%A3%E7%A7%92%E6%9D%80"><span class="toc-text">一句话理解秒杀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%93%8C-%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E5%9B%BE%EF%BC%88%E7%AE%80%E5%8C%96%EF%BC%89"><span class="toc-text">📌 系统架构图（简化）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%E7%AE%80%E8%A6%81"><span class="toc-text">技术选型简要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis%E7%A7%92%E6%9D%80%E5%85%B3%E9%94%AE-Lua-%E8%84%9A%E6%9C%AC%EF%BC%88%E5%8E%9F%E5%AD%90%E6%89%A3%E5%BA%93%E5%AD%98%EF%BC%89"><span class="toc-text">Redis秒杀关键 Lua 脚本（原子扣库存）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%80-OpenResty-Lua-%E5%AE%9E%E7%8E%B0%E7%A7%92%E6%9D%80%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86"><span class="toc-text">🚀 OpenResty Lua 实现秒杀请求处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%BB%BA%E8%AE%AE"><span class="toc-text">优化建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%98%A0%EF%B8%8F-%E9%A3%8E%E9%99%A9%E4%B8%8E%E9%98%B2%E7%BA%BF"><span class="toc-text">☠️ 风险与防线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%B0%8F%E7%BB%93"><span class="toc-text">最佳实践小结</span></a></li></ol>
   </aside>
 
         

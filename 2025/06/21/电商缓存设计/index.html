@@ -204,7 +204,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 21, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1880</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1870</span>
     </div>
   </div>
 </section>
@@ -278,7 +278,7 @@
 </tr>
 </tbody></table>
 <hr>
-<h2 id="三、缓存架构选型"><a href="#三、缓存架构选型" class="headerlink" title="三、缓存架构选型"></a>三、缓存架构选型</h2><h3 id="✅-常见的缓存技术"><a href="#✅-常见的缓存技术" class="headerlink" title="✅ 常见的缓存技术"></a>✅ 常见的缓存技术</h3><ul>
+<h2 id="三、缓存架构选型"><a href="#三、缓存架构选型" class="headerlink" title="三、缓存架构选型"></a>三、缓存架构选型</h2><h3 id="常见的缓存技术"><a href="#常见的缓存技术" class="headerlink" title="常见的缓存技术"></a>常见的缓存技术</h3><ul>
 <li><p><strong>本地缓存</strong>（如 Caffeine、Guava）：适合热点数据，低延迟</p>
 </li>
 <li><p><strong>分布式缓存</strong>（如 Redis、Memcached）：适合共享数据，高并发</p>
@@ -357,7 +357,7 @@
 </tr>
 </tbody></table>
 <hr>
-<h2 id="五、典型场景缓存设计方案"><a href="#五、典型场景缓存设计方案" class="headerlink" title="五、典型场景缓存设计方案"></a>五、典型场景缓存设计方案</h2><h3 id="✅-商品详情页缓存设计"><a href="#✅-商品详情页缓存设计" class="headerlink" title="✅ 商品详情页缓存设计"></a>✅ 商品详情页缓存设计</h3><ul>
+<h2 id="五、典型场景缓存设计方案"><a href="#五、典型场景缓存设计方案" class="headerlink" title="五、典型场景缓存设计方案"></a>五、典型场景缓存设计方案</h2><h3 id="商品详情页缓存设计"><a href="#商品详情页缓存设计" class="headerlink" title="商品详情页缓存设计"></a>商品详情页缓存设计</h3><ul>
 <li><p>Redis Key：<code>product:detail:&#123;skuId&#125;</code></p>
 </li>
 <li><p>缓存内容：SKU信息、价格、库存、图片</p>
@@ -374,7 +374,7 @@
 </li>
 </ul>
 <hr>
-<h3 id="✅-秒杀场景缓存设计"><a href="#✅-秒杀场景缓存设计" class="headerlink" title="✅ 秒杀场景缓存设计"></a>✅ 秒杀场景缓存设计</h3><ul>
+<h3 id="秒杀场景缓存设计"><a href="#秒杀场景缓存设计" class="headerlink" title="秒杀场景缓存设计"></a>秒杀场景缓存设计</h3><ul>
 <li><p>缓存数据：秒杀活动信息、商品状态、限购条件</p>
 </li>
 <li><p>使用本地缓存 + Redis 组合</p>
@@ -385,7 +385,7 @@
 </li>
 </ul>
 <hr>
-<h3 id="✅-购物车缓存设计"><a href="#✅-购物车缓存设计" class="headerlink" title="✅ 购物车缓存设计"></a>✅ 购物车缓存设计</h3><ul>
+<h3 id="购物车缓存设计"><a href="#购物车缓存设计" class="headerlink" title="购物车缓存设计"></a>购物车缓存设计</h3><ul>
 <li><p>Redis Key：<code>cart:user:&#123;userId&#125;</code></p>
 </li>
 <li><p>使用 Hash 存储商品项</p>
@@ -396,7 +396,7 @@
 </li>
 </ul>
 <hr>
-<h3 id="✅-类目导航缓存"><a href="#✅-类目导航缓存" class="headerlink" title="✅ 类目导航缓存"></a>✅ 类目导航缓存</h3><ul>
+<h3 id="类目导航缓存"><a href="#类目导航缓存" class="headerlink" title="类目导航缓存"></a>类目导航缓存</h3><ul>
 <li><p>Redis Key：<code>category:tree</code></p>
 </li>
 <li><p>全量结构缓存，适合页面缓存（CDN）</p>
@@ -474,7 +474,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="toc-text">一、缓存设计的目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%93%E5%AD%98%E5%86%85%E5%AE%B9%E5%8F%8A%E7%B2%92%E5%BA%A6"><span class="toc-text">二、常见的缓存内容及粒度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E9%80%89%E5%9E%8B"><span class="toc-text">三、缓存架构选型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%93%E5%AD%98%E6%8A%80%E6%9C%AF"><span class="toc-text">✅ 常见的缓存技术</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5%E8%AE%BE%E8%AE%A1%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-text">四、缓存策略设计核心问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BC%93%E5%AD%98%E6%9B%B4%E6%96%B0%E7%AD%96%E7%95%A5"><span class="toc-text">1. 缓存更新策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88%E7%AD%96%E7%95%A5"><span class="toc-text">2. 缓存失效策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E8%AE%BE%E8%AE%A1"><span class="toc-text">3. 缓存一致性设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%83%AD%E7%82%B9%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86"><span class="toc-text">4. 热点数据处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F-%E5%87%BB%E7%A9%BF-%E9%9B%AA%E5%B4%A9%E9%98%B2%E6%8A%A4"><span class="toc-text">5. 缓存穿透 &#x2F; 击穿 &#x2F; 雪崩防护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="toc-text">五、典型场景缓存设计方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%95%86%E5%93%81%E8%AF%A6%E6%83%85%E9%A1%B5%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">✅ 商品详情页缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%A7%92%E6%9D%80%E5%9C%BA%E6%99%AF%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">✅ 秒杀场景缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E8%B4%AD%E7%89%A9%E8%BD%A6%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">✅ 购物车缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%B1%BB%E7%9B%AE%E5%AF%BC%E8%88%AA%E7%BC%93%E5%AD%98"><span class="toc-text">✅ 类目导航缓存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%85%B3%E7%B3%BB%E7%AE%A1%E7%90%86"><span class="toc-text">六、缓存与数据库关系管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93%E5%BB%BA%E8%AE%AE"><span class="toc-text">七、总结建议</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="toc-text">一、缓存设计的目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%93%E5%AD%98%E5%86%85%E5%AE%B9%E5%8F%8A%E7%B2%92%E5%BA%A6"><span class="toc-text">二、常见的缓存内容及粒度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BC%93%E5%AD%98%E6%9E%B6%E6%9E%84%E9%80%89%E5%9E%8B"><span class="toc-text">三、缓存架构选型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%93%E5%AD%98%E6%8A%80%E6%9C%AF"><span class="toc-text">常见的缓存技术</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5%E8%AE%BE%E8%AE%A1%E6%A0%B8%E5%BF%83%E9%97%AE%E9%A2%98"><span class="toc-text">四、缓存策略设计核心问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BC%93%E5%AD%98%E6%9B%B4%E6%96%B0%E7%AD%96%E7%95%A5"><span class="toc-text">1. 缓存更新策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BC%93%E5%AD%98%E5%A4%B1%E6%95%88%E7%AD%96%E7%95%A5"><span class="toc-text">2. 缓存失效策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E8%AE%BE%E8%AE%A1"><span class="toc-text">3. 缓存一致性设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%83%AD%E7%82%B9%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86"><span class="toc-text">4. 热点数据处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F-%E5%87%BB%E7%A9%BF-%E9%9B%AA%E5%B4%A9%E9%98%B2%E6%8A%A4"><span class="toc-text">5. 缓存穿透 &#x2F; 击穿 &#x2F; 雪崩防护</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="toc-text">五、典型场景缓存设计方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%95%86%E5%93%81%E8%AF%A6%E6%83%85%E9%A1%B5%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">商品详情页缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A7%92%E6%9D%80%E5%9C%BA%E6%99%AF%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">秒杀场景缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%AD%E7%89%A9%E8%BD%A6%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">购物车缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E7%9B%AE%E5%AF%BC%E8%88%AA%E7%BC%93%E5%AD%98"><span class="toc-text">类目导航缓存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%BC%93%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E5%85%B3%E7%B3%BB%E7%AE%A1%E7%90%86"><span class="toc-text">六、缓存与数据库关系管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93%E5%BB%BA%E8%AE%AE"><span class="toc-text">七、总结建议</span></a></li></ol>
   </aside>
 
         

@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 10, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1486</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1478</span>
     </div>
   </div>
 </section>
@@ -214,7 +214,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">class</span> <span class="hljs-title class_">ListNode</span> &#123;<br>    <span class="hljs-type">int</span> val;<br>    ListNode next;<br>    ListNode(<span class="hljs-type">int</span> val) &#123;<br>        <span class="hljs-built_in">this</span>.val = val;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="🔁-迭代法（Iterative）"><a href="#🔁-迭代法（Iterative）" class="headerlink" title="🔁 迭代法（Iterative）"></a>🔁 迭代法（Iterative）</h2><h3 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h3><ul>
+<h2 id="迭代法（Iterative）"><a href="#迭代法（Iterative）" class="headerlink" title="迭代法（Iterative）"></a>迭代法（Iterative）</h2><h3 id="思路："><a href="#思路：" class="headerlink" title="思路："></a>思路：</h3><ul>
 <li><p>用三个指针：</p>
 <ul>
 <li><p><code>prev</code>：前一个节点</p>
@@ -239,7 +239,7 @@
 </li>
 </ul>
 <hr>
-<h2 id="🔄-递归法（Recursive）"><a href="#🔄-递归法（Recursive）" class="headerlink" title="🔄 递归法（Recursive）"></a>🔄 递归法（Recursive）</h2><h3 id="思路：-1"><a href="#思路：-1" class="headerlink" title="思路："></a>思路：</h3><ul>
+<h2 id="递归法（Recursive）"><a href="#递归法（Recursive）" class="headerlink" title="递归法（Recursive）"></a>递归法（Recursive）</h2><h3 id="思路：-1"><a href="#思路：-1" class="headerlink" title="思路："></a>思路：</h3><ul>
 <li><p>递归地反转 <code>head.next</code> 后，让 <code>head.next.next = head</code>，然后 <code>head.next = null</code></p>
 </li>
 <li><p>每次递归返回的是反转后的新头结点</p>
@@ -262,7 +262,7 @@
 </li>
 </ul>
 <hr>
-<h2 id="✅-总结对比"><a href="#✅-总结对比" class="headerlink" title="✅ 总结对比"></a>✅ 总结对比</h2><table>
+<h2 id="总结对比"><a href="#总结对比" class="headerlink" title="总结对比"></a>总结对比</h2><table>
 <thead>
 <tr>
 <th>方法</th>
@@ -320,7 +320,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%9F-%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%8F%8D%E8%BD%AC%E5%8D%95%E9%93%BE%E8%A1%A8"><span class="toc-text">🌟 示例：反转单链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%81-%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%88Iterative%EF%BC%89"><span class="toc-text">🔁 迭代法（Iterative）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="toc-text">思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="toc-text">代码：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="toc-text">优点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E9%80%92%E5%BD%92%E6%B3%95%EF%BC%88Recursive%EF%BC%89"><span class="toc-text">🔄 递归法（Recursive）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-1"><span class="toc-text">思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E7%A4%BA%EF%BC%88%E5%8F%8D%E8%BD%AC-1-%E2%86%92-2-%E2%86%92-3%EF%BC%89%EF%BC%9A"><span class="toc-text">图示（反转 1 → 2 → 3）：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%9A-1"><span class="toc-text">代码：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A-1"><span class="toc-text">优点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94"><span class="toc-text">✅ 总结对比</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%9F-%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%8F%8D%E8%BD%AC%E5%8D%95%E9%93%BE%E8%A1%A8"><span class="toc-text">🌟 示例：反转单链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3%E6%B3%95%EF%BC%88Iterative%EF%BC%89"><span class="toc-text">迭代法（Iterative）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="toc-text">思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="toc-text">代码：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A"><span class="toc-text">优点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%92%E5%BD%92%E6%B3%95%EF%BC%88Recursive%EF%BC%89"><span class="toc-text">递归法（Recursive）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%9A-1"><span class="toc-text">思路：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E7%A4%BA%EF%BC%88%E5%8F%8D%E8%BD%AC-1-%E2%86%92-2-%E2%86%92-3%EF%BC%89%EF%BC%9A"><span class="toc-text">图示（反转 1 → 2 → 3）：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%EF%BC%9A-1"><span class="toc-text">代码：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%82%B9%EF%BC%9A-1"><span class="toc-text">优点：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94"><span class="toc-text">总结对比</span></a></li></ol>
   </aside>
 
         

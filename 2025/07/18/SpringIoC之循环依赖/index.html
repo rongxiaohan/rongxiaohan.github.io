@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 18, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1826</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1810</span>
     </div>
   </div>
 </section>
@@ -215,7 +215,7 @@
 
 <p><code>A -&gt; B -&gt; A</code>，这就形成了一个典型的循环依赖。</p>
 <hr>
-<h2 id="🔄-二、循环依赖的分类"><a href="#🔄-二、循环依赖的分类" class="headerlink" title="🔄 二、循环依赖的分类"></a>🔄 二、循环依赖的分类</h2><p>Spring 的处理能力不同，取决于依赖的<strong>注入方式</strong>：</p>
+<h2 id="二、循环依赖的分类"><a href="#二、循环依赖的分类" class="headerlink" title="二、循环依赖的分类"></a>二、循环依赖的分类</h2><p>Spring 的处理能力不同，取决于依赖的<strong>注入方式</strong>：</p>
 <table>
 <thead>
 <tr>
@@ -231,13 +231,13 @@
 </tr>
 <tr>
 <td><strong>属性注入</strong></td>
-<td>✅ 支持</td>
+<td>支持</td>
 <td>Spring 可以提前暴露早期对象引用（early reference）</td>
 </tr>
 </tbody></table>
 <hr>
-<h2 id="⚙️-三、Spring-如何解决属性注入循环依赖？"><a href="#⚙️-三、Spring-如何解决属性注入循环依赖？" class="headerlink" title="⚙️ 三、Spring 如何解决属性注入循环依赖？"></a>⚙️ 三、Spring 如何解决属性注入循环依赖？</h2><p>Spring 使用三级缓存机制解决循环依赖（仅限于单例 &amp; 非懒加载 Bean）：</p>
-<h3 id="🧠-核心三层缓存（DefaultSingletonBeanRegistry）："><a href="#🧠-核心三层缓存（DefaultSingletonBeanRegistry）：" class="headerlink" title="🧠 核心三层缓存（DefaultSingletonBeanRegistry）："></a>🧠 核心三层缓存（DefaultSingletonBeanRegistry）：</h3><ol>
+<h2 id="三、Spring-如何解决属性注入循环依赖？"><a href="#三、Spring-如何解决属性注入循环依赖？" class="headerlink" title="三、Spring 如何解决属性注入循环依赖？"></a>三、Spring 如何解决属性注入循环依赖？</h2><p>Spring 使用三级缓存机制解决循环依赖（仅限于单例 &amp; 非懒加载 Bean）：</p>
+<h3 id="核心三层缓存（DefaultSingletonBeanRegistry）："><a href="#核心三层缓存（DefaultSingletonBeanRegistry）：" class="headerlink" title="核心三层缓存（DefaultSingletonBeanRegistry）："></a>核心三层缓存（DefaultSingletonBeanRegistry）：</h3><ol>
 <li><p><strong>singletonObjects</strong>：一级缓存，存放已完全初始化完成的单例 Bean。</p>
 </li>
 <li><p><strong>earlySingletonObjects</strong>：二级缓存，存放早期曝光但未完成依赖注入的 Bean。</p>
@@ -249,7 +249,7 @@
 <h2 id="🧵-四、解决过程详解（以属性注入为例）"><a href="#🧵-四、解决过程详解（以属性注入为例）" class="headerlink" title="🧵 四、解决过程详解（以属性注入为例）"></a>🧵 四、解决过程详解（以属性注入为例）</h2><p>以 A 依赖 B，B 也依赖 A 为例，流程如下：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs text">createBean(A)<br> ├─实例化 A<br> ├─提前将 A 的 ObjectFactory 放入三级缓存<br> ├─populate A 发现需要注入 B，createBean(B)<br>    ├─实例化 B<br>    ├─提前将 B 的 ObjectFactory 放入三级缓存<br>    ├─populate B 发现需要注入 A<br>        └── 从三级缓存 -&gt; 提前暴露 A 的早期引用（early reference）<br>    ├─B 注入 A 成功，B 完成初始化，放入一级缓存<br> └─A 注入 B 成功，A 完成初始化，放入一级缓存<br></code></pre></td></tr></table></figure>
 
-<h3 id="🧩-涉及的关键源码："><a href="#🧩-涉及的关键源码：" class="headerlink" title="🧩 涉及的关键源码："></a>🧩 涉及的关键源码：</h3><p>主要在 <code>AbstractAutowireCapableBeanFactory#createBean()</code> 中处理：</p>
+<h3 id="涉及的关键源码："><a href="#涉及的关键源码：" class="headerlink" title="涉及的关键源码："></a>涉及的关键源码：</h3><p>主要在 <code>AbstractAutowireCapableBeanFactory#createBean()</code> 中处理：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// 提前暴露早期对象引用（避免循环依赖）</span><br><span class="hljs-keyword">if</span> (earlySingletonExposure) &#123;<br>    addSingletonFactory(beanName, () -&gt; getEarlyBeanReference(beanName, mbd, bean));<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
@@ -260,7 +260,7 @@
 
 <h3 id="2-多例-Bean（prototype）"><a href="#2-多例-Bean（prototype）" class="headerlink" title="2. 多例 Bean（prototype）"></a>2. 多例 Bean（prototype）</h3><p>Spring 无法缓存 prototype Bean，无法解决循环依赖。也会抛出异常。</p>
 <hr>
-<h2 id="✅-六、解决循环依赖的建议"><a href="#✅-六、解决循环依赖的建议" class="headerlink" title="✅ 六、解决循环依赖的建议"></a>✅ 六、解决循环依赖的建议</h2><table>
+<h2 id="六、解决循环依赖的建议"><a href="#六、解决循环依赖的建议" class="headerlink" title="六、解决循环依赖的建议"></a>六、解决循环依赖的建议</h2><table>
 <thead>
 <tr>
 <th>场景</th>
@@ -317,7 +317,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%B1-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96"><span class="toc-text">🌱 一、什么是循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%84-%E4%BA%8C%E3%80%81%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text">🔄 二、循环依赖的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9A%99%EF%B8%8F-%E4%B8%89%E3%80%81Spring-%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%EF%BC%9F"><span class="toc-text">⚙️ 三、Spring 如何解决属性注入循环依赖？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A0-%E6%A0%B8%E5%BF%83%E4%B8%89%E5%B1%82%E7%BC%93%E5%AD%98%EF%BC%88DefaultSingletonBeanRegistry%EF%BC%89%EF%BC%9A"><span class="toc-text">🧠 核心三层缓存（DefaultSingletonBeanRegistry）：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B5-%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E8%BF%87%E7%A8%8B%E8%AF%A6%E8%A7%A3%EF%BC%88%E4%BB%A5%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">🧵 四、解决过程详解（以属性注入为例）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%A7%A9-%E6%B6%89%E5%8F%8A%E7%9A%84%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9A"><span class="toc-text">🧩 涉及的关键源码：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%AB-%E4%BA%94%E3%80%81%E4%B8%8D%E8%83%BD%E8%A7%A3%E5%86%B3%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-text">🚫 五、不能解决的情况</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9E%84%E9%80%A0%E5%99%A8%E6%B3%A8%E5%85%A5%EF%BC%88Constructor-Injection%EF%BC%89"><span class="toc-text">1. 构造器注入（Constructor Injection）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%A4%9A%E4%BE%8B-Bean%EF%BC%88prototype%EF%BC%89"><span class="toc-text">2. 多例 Bean（prototype）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E5%85%AD%E3%80%81%E8%A7%A3%E5%86%B3%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%BB%BA%E8%AE%AE"><span class="toc-text">✅ 六、解决循环依赖的建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E4%B8%83%E3%80%81-Lazy-%E6%98%AF%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="toc-text">🧪 七、@Lazy 是什么作用？</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8C%B1-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96"><span class="toc-text">🌱 一、什么是循环依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text">二、循环依赖的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Spring-%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%EF%BC%9F"><span class="toc-text">三、Spring 如何解决属性注入循环依赖？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E4%B8%89%E5%B1%82%E7%BC%93%E5%AD%98%EF%BC%88DefaultSingletonBeanRegistry%EF%BC%89%EF%BC%9A"><span class="toc-text">核心三层缓存（DefaultSingletonBeanRegistry）：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B5-%E5%9B%9B%E3%80%81%E8%A7%A3%E5%86%B3%E8%BF%87%E7%A8%8B%E8%AF%A6%E8%A7%A3%EF%BC%88%E4%BB%A5%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5%E4%B8%BA%E4%BE%8B%EF%BC%89"><span class="toc-text">🧵 四、解决过程详解（以属性注入为例）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%89%E5%8F%8A%E7%9A%84%E5%85%B3%E9%94%AE%E6%BA%90%E7%A0%81%EF%BC%9A"><span class="toc-text">涉及的关键源码：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9A%AB-%E4%BA%94%E3%80%81%E4%B8%8D%E8%83%BD%E8%A7%A3%E5%86%B3%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-text">🚫 五、不能解决的情况</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9E%84%E9%80%A0%E5%99%A8%E6%B3%A8%E5%85%A5%EF%BC%88Constructor-Injection%EF%BC%89"><span class="toc-text">1. 构造器注入（Constructor Injection）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%A4%9A%E4%BE%8B-Bean%EF%BC%88prototype%EF%BC%89"><span class="toc-text">2. 多例 Bean（prototype）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%A7%A3%E5%86%B3%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E5%BB%BA%E8%AE%AE"><span class="toc-text">六、解决循环依赖的建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AA-%E4%B8%83%E3%80%81-Lazy-%E6%98%AF%E4%BB%80%E4%B9%88%E4%BD%9C%E7%94%A8%EF%BC%9F"><span class="toc-text">🧪 七、@Lazy 是什么作用？</span></a></li></ol>
   </aside>
 
         

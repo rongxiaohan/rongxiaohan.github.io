@@ -12,8 +12,8 @@
   <meta name="google" content="notranslate" />
   <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
   <meta name="description" content="
-✅ 题目描述：你正在售卖柠檬水，每杯 5 元。
-每位...">
+题目描述：你正在售卖柠檬水，每杯 5 元。
+每位顾客...">
   <meta name="author" content="单线程垃圾清理工">
   <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
@@ -202,7 +202,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 13, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1171</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1159</span>
     </div>
   </div>
 </section>
@@ -210,24 +210,24 @@
       <section class="content">
         
         <hr>
-<h2 id="✅-题目描述："><a href="#✅-题目描述：" class="headerlink" title="✅ 题目描述："></a>✅ 题目描述：</h2><p>你正在售卖柠檬水，每杯 5 元。</p>
+<h2 id="题目描述："><a href="#题目描述：" class="headerlink" title="题目描述："></a>题目描述：</h2><p>你正在售卖柠檬水，每杯 5 元。</p>
 <p>每位顾客只会支付 <strong>5、10 或 20 元</strong>。</p>
 <p>你初始没有零钱，判断能否对每一位顾客都正确找零。</p>
 <hr>
-<h2 id="✅-示例："><a href="#✅-示例：" class="headerlink" title="✅ 示例："></a>✅ 示例：</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">输入: bills = [5,5,5,10,20]<br>输出: true  <br>解释：<br>- 收到 5，收下；<br>- 收到 5，收下；<br>- 收到 5，收下；<br>- 收到 10，需要找 5，找得起；<br>- 收到 20，需要找 15，优先用 10 + 5；<br></code></pre></td></tr></table></figure>
+<h2 id="示例："><a href="#示例：" class="headerlink" title="示例："></a>示例：</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs text">输入: bills = [5,5,5,10,20]<br>输出: true  <br>解释：<br>- 收到 5，收下；<br>- 收到 5，收下；<br>- 收到 5，收下；<br>- 收到 10，需要找 5，找得起；<br>- 收到 20，需要找 15，优先用 10 + 5；<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="✅-贪心解法思路："><a href="#✅-贪心解法思路：" class="headerlink" title="✅ 贪心解法思路："></a>✅ 贪心解法思路：</h2><ul>
+<h2 id="贪心解法思路："><a href="#贪心解法思路：" class="headerlink" title="贪心解法思路："></a>贪心解法思路：</h2><ul>
 <li><p>贪心策略是：<strong>优先使用面额更大的零钱找零（尽量保留更多的 5 元）</strong>。</p>
 </li>
 <li><p>我们维护两个变量 <code>five</code> 和 <code>ten</code>，分别记录当前拥有的 5 元和 10 元数量。</p>
 </li>
 </ul>
 <hr>
-<h2 id="✅-Java-实现："><a href="#✅-Java-实现：" class="headerlink" title="✅ Java 实现："></a>✅ Java 实现：</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">lemonadeChange</span><span class="hljs-params">(<span class="hljs-type">int</span>[] bills)</span> &#123;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">five</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>, ten = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> bill : bills) &#123;<br>        <span class="hljs-keyword">if</span> (bill == <span class="hljs-number">5</span>) &#123;<br>            five++;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (bill == <span class="hljs-number">10</span>) &#123;<br>            <span class="hljs-keyword">if</span> (five == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>            five--;<br>            ten++;<br>        &#125; <span class="hljs-keyword">else</span> &#123; <span class="hljs-comment">// bill == 20</span><br>            <span class="hljs-keyword">if</span> (ten &gt; <span class="hljs-number">0</span> &amp;&amp; five &gt; <span class="hljs-number">0</span>) &#123;<br>                ten--;<br>                five--;<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (five &gt;= <span class="hljs-number">3</span>) &#123;<br>                five -= <span class="hljs-number">3</span>;<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h2 id="Java-实现："><a href="#Java-实现：" class="headerlink" title="Java 实现："></a>Java 实现：</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">lemonadeChange</span><span class="hljs-params">(<span class="hljs-type">int</span>[] bills)</span> &#123;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">five</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>, ten = <span class="hljs-number">0</span>;<br><br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> bill : bills) &#123;<br>        <span class="hljs-keyword">if</span> (bill == <span class="hljs-number">5</span>) &#123;<br>            five++;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (bill == <span class="hljs-number">10</span>) &#123;<br>            <span class="hljs-keyword">if</span> (five == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>            five--;<br>            ten++;<br>        &#125; <span class="hljs-keyword">else</span> &#123; <span class="hljs-comment">// bill == 20</span><br>            <span class="hljs-keyword">if</span> (ten &gt; <span class="hljs-number">0</span> &amp;&amp; five &gt; <span class="hljs-number">0</span>) &#123;<br>                ten--;<br>                five--;<br>            &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (five &gt;= <span class="hljs-number">3</span>) &#123;<br>                five -= <span class="hljs-number">3</span>;<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>            &#125;<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="✅-时间与空间复杂度："><a href="#✅-时间与空间复杂度：" class="headerlink" title="✅ 时间与空间复杂度："></a>✅ 时间与空间复杂度：</h2><ul>
+<h2 id="时间与空间复杂度："><a href="#时间与空间复杂度：" class="headerlink" title="时间与空间复杂度："></a>时间与空间复杂度：</h2><ul>
 <li><p>时间复杂度：O(n)</p>
 </li>
 <li><p>空间复杂度：O(1)</p>
@@ -243,7 +243,7 @@
 </li>
 </ul>
 <hr>
-<h2 id="✅-总结策略表："><a href="#✅-总结策略表：" class="headerlink" title="✅ 总结策略表："></a>✅ 总结策略表：</h2><table>
+<h2 id="总结策略表："><a href="#总结策略表：" class="headerlink" title="总结策略表："></a>总结策略表：</h2><table>
 <thead>
 <tr>
 <th>顾客支付</th>
@@ -299,7 +299,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E9%A2%98%E7%9B%AE%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="toc-text">✅ 题目描述：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E7%A4%BA%E4%BE%8B%EF%BC%9A"><span class="toc-text">✅ 示例：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E8%B4%AA%E5%BF%83%E8%A7%A3%E6%B3%95%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="toc-text">✅ 贪心解法思路：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-Java-%E5%AE%9E%E7%8E%B0%EF%BC%9A"><span class="toc-text">✅ Java 实现：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%97%B6%E9%97%B4%E4%B8%8E%E7%A9%BA%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A"><span class="toc-text">✅ 时间与空间复杂度：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9D%97-%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF%E7%82%B9%EF%BC%9A"><span class="toc-text">❗ 常见错误点：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93%E7%AD%96%E7%95%A5%E8%A1%A8%EF%BC%9A"><span class="toc-text">✅ 总结策略表：</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="toc-text">题目描述：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%EF%BC%9A"><span class="toc-text">示例：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B4%AA%E5%BF%83%E8%A7%A3%E6%B3%95%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="toc-text">贪心解法思路：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Java-%E5%AE%9E%E7%8E%B0%EF%BC%9A"><span class="toc-text">Java 实现：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E4%B8%8E%E7%A9%BA%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6%EF%BC%9A"><span class="toc-text">时间与空间复杂度：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9D%97-%E5%B8%B8%E8%A7%81%E9%94%99%E8%AF%AF%E7%82%B9%EF%BC%9A"><span class="toc-text">❗ 常见错误点：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E7%AD%96%E7%95%A5%E8%A1%A8%EF%BC%9A"><span class="toc-text">总结策略表：</span></a></li></ol>
   </aside>
 
         

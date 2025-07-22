@@ -201,7 +201,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>June 17, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>7340</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>7319</span>
     </div>
   </div>
 </section>
@@ -330,7 +330,7 @@
 <p>也可用 Docker 快速部署（推荐）：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker network create skywalking<br><br><span class="hljs-comment"># 启动 OAP（服务端核心）</span><br>docker run --name oap --network skywalking \<br>  -e SW_STORAGE=elasticsearch \<br>  -e SW_STORAGE_ES_CLUSTER_NODES=your-es-host:9200 \<br>  -p 11800:11800 -p 12800:12800 \<br>  apache/skywalking-oap-server:9.0.0<br><br><span class="hljs-comment"># 启动 UI</span><br>docker run --name ui --network skywalking \<br>  -e SW_OAP_ADDRESS=oap:12800 \<br>  -p 8080:8080 \<br>  apache/skywalking-ui:9.0.0<br></code></pre></td></tr></table></figure>
 
-<p>访问 UI 控制台：<br>👉 <a target="_blank" rel="noopener" href="http://localhost:8080/">http://localhost:8080</a></p>
+<p>访问 UI 控制台：<br> <a target="_blank" rel="noopener" href="http://localhost:8080/">http://localhost:8080</a></p>
 <hr>
 <h2 id="四、Java-Agent-接入-Spring-Boot-微服务"><a href="#四、Java-Agent-接入-Spring-Boot-微服务" class="headerlink" title="四、Java Agent 接入 Spring Boot 微服务"></a>四、Java Agent 接入 Spring Boot 微服务</h2><h3 id="1-下载-Agent"><a href="#1-下载-Agent" class="headerlink" title="1. 下载 Agent"></a>1. 下载 Agent</h3><p>从官网或构建包中提取 <code>skywalking-agent</code> 文件夹。</p>
 <h3 id="2-修改服务启动脚本"><a href="#2-修改服务启动脚本" class="headerlink" title="2. 修改服务启动脚本"></a>2. 修改服务启动脚本</h3><p>将 Agent 放在目标应用机器上，并在启动时添加：</p>
@@ -371,27 +371,27 @@
 </thead>
 <tbody><tr>
 <td>Spring Boot</td>
-<td>✅ 是</td>
+<td>是</td>
 </tr>
 <tr>
 <td>Spring Cloud</td>
-<td>✅ 是</td>
+<td>是</td>
 </tr>
 <tr>
 <td>Dubbo &#x2F; gRPC</td>
-<td>✅ 是</td>
+<td>是</td>
 </tr>
 <tr>
 <td>Kafka &#x2F; RocketMQ</td>
-<td>✅ 是</td>
+<td>是</td>
 </tr>
 <tr>
 <td>JDBC &#x2F; Redis</td>
-<td>✅ 是</td>
+<td>是</td>
 </tr>
 <tr>
 <td>Netty &#x2F; Tomcat</td>
-<td>✅ 是</td>
+<td>是</td>
 </tr>
 </tbody></table>
 <p>如果你使用的是 Spring Cloud Gateway、Feign、RestTemplate、@Async 等，SkyWalking 都会自动追踪并生成完整的调用链。</p>
@@ -404,7 +404,7 @@
 </li>
 <li><p>📊 拓扑图（Topology）</p>
 </li>
-<li><p>🧩 服务实例健康状态</p>
+<li><p>服务实例健康状态</p>
 </li>
 <li><p>🔔 告警规则配置</p>
 </li>
@@ -461,7 +461,7 @@
 <h2 id="二、方案架构图"><a href="#二、方案架构图" class="headerlink" title="二、方案架构图"></a>二、方案架构图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">┌──────────────┐      ┌─────────────┐<br>│  Spring Boot │────▶│   Logstash  │────▶ Elasticsearch ──▶ Kibana<br>└──────▲───────┘      └─────────────┘<br>       │<br>     TraceId注入<br>       │<br>┌──────┴──────┐<br>│ Sleuth / 自定义拦截器 │<br>└──────────────┘<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="三、实现步骤详解"><a href="#三、实现步骤详解" class="headerlink" title="三、实现步骤详解"></a>三、实现步骤详解</h2><h3 id="步骤-1：生成并透传-TraceId"><a href="#步骤-1：生成并透传-TraceId" class="headerlink" title="步骤 1：生成并透传 TraceId"></a>步骤 1：生成并透传 TraceId</h3><h4 id="✅-推荐方式：Spring-Cloud-Sleuth（如果用的是-Spring-Cloud）"><a href="#✅-推荐方式：Spring-Cloud-Sleuth（如果用的是-Spring-Cloud）" class="headerlink" title="✅ 推荐方式：Spring Cloud Sleuth（如果用的是 Spring Cloud）"></a>✅ 推荐方式：Spring Cloud Sleuth（如果用的是 Spring Cloud）</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!-- 引入 Sleuth --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-sleuth<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+<h2 id="三、实现步骤详解"><a href="#三、实现步骤详解" class="headerlink" title="三、实现步骤详解"></a>三、实现步骤详解</h2><h3 id="步骤-1：生成并透传-TraceId"><a href="#步骤-1：生成并透传-TraceId" class="headerlink" title="步骤 1：生成并透传 TraceId"></a>步骤 1：生成并透传 TraceId</h3><h4 id="推荐方式：Spring-Cloud-Sleuth（如果用的是-Spring-Cloud）"><a href="#推荐方式：Spring-Cloud-Sleuth（如果用的是-Spring-Cloud）" class="headerlink" title="推荐方式：Spring Cloud Sleuth（如果用的是 Spring Cloud）"></a>推荐方式：Spring Cloud Sleuth（如果用的是 Spring Cloud）</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!-- 引入 Sleuth --&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-sleuth<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
 
 <p>Sleuth 会自动：</p>
 <ul>
@@ -497,7 +497,7 @@
 <li><p>还原调用链流程</p>
 </li>
 </ul>
-<h4 id="✅-可视化增强建议："><a href="#✅-可视化增强建议：" class="headerlink" title="✅ 可视化增强建议："></a>✅ 可视化增强建议：</h4><ul>
+<h4 id="可视化增强建议："><a href="#可视化增强建议：" class="headerlink" title="可视化增强建议："></a>可视化增强建议：</h4><ul>
 <li><p>使用 Kibana Dashboard 展示每个服务的耗时、错误日志数量</p>
 </li>
 <li><p>制作「调用链查询面板」支持 traceId 快速查询</p>
