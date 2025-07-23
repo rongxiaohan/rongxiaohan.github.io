@@ -1,0 +1,522 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>玩转Skywalking - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、SkyWalking 是什么？Apache Sk...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">玩转Skywalking</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">玩转Skywalking</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 23, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>3018</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、SkyWalking-是什么？"><a href="#一、SkyWalking-是什么？" class="headerlink" title="一、SkyWalking 是什么？"></a>一、SkyWalking 是什么？</h2><p>Apache SkyWalking 是一个 <strong>面向云原生的 APM（应用性能监控）与可观测性平台</strong>，支持分布式链路追踪、服务拓扑分析、慢请求定位等功能，专为微服务、容器、Service Mesh 等现代架构设计。</p>
+<blockquote>
+<p> 支持 Java、Go、PHP、Python、Node.js<br> 支持 Spring Cloud、Dubbo、gRPC、K8s、Istio<br> 可观测性三大支柱之一：Trace + Metrics + Topology</p>
+</blockquote>
+<hr>
+<h2 id="二、SkyWalking-架构图"><a href="#二、SkyWalking-架构图" class="headerlink" title="二、SkyWalking 架构图"></a>二、SkyWalking 架构图</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">      ┌────────────┐<br>      │ 应用探针（Agent）│ ← Java应用/微服务<br>      └────┬───────┘<br>           │ 上报数据<br>           ▼<br>    ┌───────────────┐<br>    │ OAP Server（核心）│ ← 分析、聚合、存储 Trace/Metrics/Logs<br>    └────┬────┬─────┘<br>         │    │<br>存储：ElasticSearch、H2、MySQL<br>         ▼    ▼<br>   ┌────────────────┐<br>   │ SkyWalking UI（前端）│ ← 服务拓扑、调用链、告警、性能曲线<br>   └────────────────┘<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、Spring-Cloud-接入步骤（Java）"><a href="#三、Spring-Cloud-接入步骤（Java）" class="headerlink" title="三、Spring Cloud 接入步骤（Java）"></a>三、Spring Cloud 接入步骤（Java）</h2><h3 id="1️-下载-Agent"><a href="#1️-下载-Agent" class="headerlink" title="1️ 下载 Agent"></a>1️ 下载 Agent</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">wget https://archive.apache.org/dist/skywalking/9.0.0/apache-skywalking-java-agent-9.0.0.tgz<br></code></pre></td></tr></table></figure>
+
+<p>解压后放在 <code>/opt/skywalking-agent</code>。</p>
+<h3 id="2️-启动应用时添加-JVM-参数"><a href="#2️-启动应用时添加-JVM-参数" class="headerlink" title="2️ 启动应用时添加 JVM 参数"></a>2️ 启动应用时添加 JVM 参数</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">-javaagent:/opt/skywalking-agent/skywalking-agent.jar \<br>-Dskywalking.agent.service_name=order-service \<br>-Dskywalking.collector.backend_service=127.0.0.1:11800<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>🔧 如果是 Spring Boot 项目，在 <code>IDEA</code> 或 <code>Dockerfile</code> 启动时加 JVM 参数即可。</p>
+</blockquote>
+<h3 id="3️-启动-SkyWalking-OAP-UI（使用-Docker）"><a href="#3️-启动-SkyWalking-OAP-UI（使用-Docker）" class="headerlink" title="3️ 启动 SkyWalking OAP + UI（使用 Docker）"></a>3️ 启动 SkyWalking OAP + UI（使用 Docker）</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">version:</span> <span class="hljs-string">&#x27;3&#x27;</span><br><span class="hljs-attr">services:</span><br>  <span class="hljs-attr">oap:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">apache/skywalking-oap-server:9.0.0</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;11800:11800&quot;</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;12800:12800&quot;</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-attr">SW_STORAGE:</span> <span class="hljs-string">elasticsearch</span><br>      <span class="hljs-attr">SW_STORAGE_ES_CLUSTER_NODES:</span> <span class="hljs-string">elasticsearch:9200</span><br>    <span class="hljs-attr">depends_on:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">elasticsearch</span><br><br>  <span class="hljs-attr">ui:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">apache/skywalking-ui:9.0.0</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;8080:8080&quot;</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-attr">SW_OAP_ADDRESS:</span> <span class="hljs-string">http://oap:12800</span><br><br>  <span class="hljs-attr">elasticsearch:</span><br>    <span class="hljs-attr">image:</span> <span class="hljs-string">elasticsearch:7.17.10</span><br>    <span class="hljs-attr">environment:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">discovery.type=single-node</span><br>    <span class="hljs-attr">ports:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;9200:9200&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>访问 SkyWalking UI：<code>http://localhost:8080</code></p>
+<hr>
+<h2 id="四、核心功能详解"><a href="#四、核心功能详解" class="headerlink" title="四、核心功能详解"></a>四、核心功能详解</h2><h3 id="1-服务拓扑图"><a href="#1-服务拓扑图" class="headerlink" title="1. 服务拓扑图"></a>1. 服务拓扑图</h3><ul>
+<li><p>显示服务之间调用关系图，谁调用了谁，谁耗时高</p>
+</li>
+<li><p>可以快速找到瓶颈服务或超时依赖</p>
+</li>
+</ul>
+<h3 id="2-Trace-链路追踪"><a href="#2-Trace-链路追踪" class="headerlink" title="2. Trace 链路追踪"></a>2. Trace 链路追踪</h3><ul>
+<li><p>类似 Zipkin、Jaeger，按调用顺序记录链路详情</p>
+</li>
+<li><p>可以查看一次请求从网关 → 用户服务 → 订单服务 → 库存服务 全流程的耗时、异常</p>
+</li>
+</ul>
+<h3 id="3-Metrics-指标图"><a href="#3-Metrics-指标图" class="headerlink" title="3. Metrics 指标图"></a>3. Metrics 指标图</h3><ul>
+<li><p>每个服务的 QPS、响应时间、异常率等指标都有默认图表</p>
+</li>
+<li><p>支持自定义仪表板</p>
+</li>
+</ul>
+<h3 id="4-错误聚合-分析"><a href="#4-错误聚合-分析" class="headerlink" title="4. 错误聚合 &amp; 分析"></a>4. 错误聚合 &amp; 分析</h3><ul>
+<li>可以聚合同类异常（如 NullPointer、Hystrix 超时）并高亮报错调用栈</li>
+</ul>
+<h3 id="5-慢请求分析"><a href="#5-慢请求分析" class="headerlink" title="5. 慢请求分析"></a>5. 慢请求分析</h3><ul>
+<li>自动统计耗时最长的接口和调用链，精准定位瓶颈</li>
+</ul>
+<hr>
+<h2 id="五、常见应用场景"><a href="#五、常见应用场景" class="headerlink" title="五、常见应用场景"></a>五、常见应用场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>SkyWalking 价值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>微服务调用链路过长或失败</td>
+<td>Trace 一键查看全链</td>
+</tr>
+<tr>
+<td>某个接口很慢或频繁超时</td>
+<td>慢调用分析 + 服务拓扑图</td>
+</tr>
+<tr>
+<td>多服务交叉部署频繁发布</td>
+<td>自动标记版本调用图</td>
+</tr>
+<tr>
+<td>需要排查分布式事务异常</td>
+<td>多服务 Trace 跟踪每个事务调用情况</td>
+</tr>
+<tr>
+<td>开发人员 Debug 请求流程</td>
+<td>Sky UI 中搜索 traceId 或日志关键词</td>
+</tr>
+<tr>
+<td>自动监控系统健康度</td>
+<td>设置 SLA 告警、RT 超标告警</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🔧-六、常用配置说明（agent-config）"><a href="#🔧-六、常用配置说明（agent-config）" class="headerlink" title="🔧 六、常用配置说明（agent config）"></a>🔧 六、常用配置说明（agent config）</h2><p><code>agent.config</code> 关键配置项：</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-attr">agent.service_name</span>=<span class="hljs-string">order-service</span><br><span class="hljs-attr">collector.backend_service</span>=<span class="hljs-string">127.0.0.1:11800</span><br><span class="hljs-attr">logging.level</span>=<span class="hljs-string">INFO</span><br><span class="hljs-attr">plugin.springmvc.trace_handler</span>=<span class="hljs-string">true</span><br><span class="hljs-attr">plugin.mongodb.trace_param</span>=<span class="hljs-string">true</span><br><span class="hljs-attr">plugin.mysql.trace_sql_parameters</span>=<span class="hljs-string">true</span><br></code></pre></td></tr></table></figure>
+
+<p>你也可以注入自定义 tag：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">ActiveSpan.tag(<span class="hljs-string">&quot;user.id&quot;</span>, userId);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、实战技巧"><a href="#七、实战技巧" class="headerlink" title="七、实战技巧"></a>七、实战技巧</h2><table>
+<thead>
+<tr>
+<th>实用技巧</th>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通过 <code>traceId</code> 定位问题</td>
+<td>在日志中打印 <code>traceId</code>（从 MDC 里取）</td>
+</tr>
+<tr>
+<td>对接 Nginx 或 Gateway</td>
+<td>SkyWalking 也能接入网关请求和跨服务 header</td>
+</tr>
+<tr>
+<td>多环境隔离</td>
+<td>不同环境用不同 <code>service_name</code> 或 OAP 端口</td>
+</tr>
+<tr>
+<td>性能问题排查</td>
+<td>排查调用链耗时最长的 Segment</td>
+</tr>
+<tr>
+<td>自定义插件</td>
+<td>可写 Agent 插件插桩业务方法（例如自定义 RPC 框架）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、替代-vs-组合"><a href="#八、替代-vs-组合" class="headerlink" title="八、替代 vs 组合"></a>八、替代 vs 组合</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐工具</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>只需要链路追踪</td>
+<td>SkyWalking（优于 Zipkin）</td>
+</tr>
+<tr>
+<td>同时监控 JVM、内存、线程等指标</td>
+<td>Prometheus + SkyWalking</td>
+</tr>
+<tr>
+<td>精细日志分析</td>
+<td>ELK + SkyWalking</td>
+</tr>
+<tr>
+<td>K8s 监控、Istio</td>
+<td>SkyWalking 支持 Mesh Trace，也可配合 Grafana</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><blockquote>
+<p><strong>SkyWalking &#x3D; 链路追踪 + 服务拓扑 + 应用性能分析 + Trace UI + 指标聚合平台</strong></p>
+</blockquote>
+<p>它在 Spring Cloud、Dubbo、K8s 等体系中是链路观测首选。</p>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/23/%E7%8E%A9%E8%BD%ACSkywalking/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;23&#x2F;%E7%8E%A9%E8%BD%ACSkywalking&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;23&#x2F;%E7%8E%A9%E8%BD%ACSkywalking&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Skywalking/" rel="tag">Skywalking</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a href="/2025/07/23/SpringCloud%E4%B8%80%E9%94%AE%E9%83%A8%E7%BD%B2/"><i class="iconfont iconleft"></i>SpringCloud一键部署</a>
+    <a href="/2025/07/22/SpringCloud%E8%84%91%E5%9B%BE/">SpringCloud脑图<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81SkyWalking-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">一、SkyWalking 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81SkyWalking-%E6%9E%B6%E6%9E%84%E5%9B%BE"><span class="toc-text">二、SkyWalking 架构图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Spring-Cloud-%E6%8E%A5%E5%85%A5%E6%AD%A5%E9%AA%A4%EF%BC%88Java%EF%BC%89"><span class="toc-text">三、Spring Cloud 接入步骤（Java）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F-%E4%B8%8B%E8%BD%BD-Agent"><span class="toc-text">1️ 下载 Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F-%E5%90%AF%E5%8A%A8%E5%BA%94%E7%94%A8%E6%97%B6%E6%B7%BB%E5%8A%A0-JVM-%E5%8F%82%E6%95%B0"><span class="toc-text">2️ 启动应用时添加 JVM 参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F-%E5%90%AF%E5%8A%A8-SkyWalking-OAP-UI%EF%BC%88%E4%BD%BF%E7%94%A8-Docker%EF%BC%89"><span class="toc-text">3️ 启动 SkyWalking OAP + UI（使用 Docker）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD%E8%AF%A6%E8%A7%A3"><span class="toc-text">四、核心功能详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%9C%8D%E5%8A%A1%E6%8B%93%E6%89%91%E5%9B%BE"><span class="toc-text">1. 服务拓扑图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Trace-%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA"><span class="toc-text">2. Trace 链路追踪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Metrics-%E6%8C%87%E6%A0%87%E5%9B%BE"><span class="toc-text">3. Metrics 指标图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E9%94%99%E8%AF%AF%E8%81%9A%E5%90%88-%E5%88%86%E6%9E%90"><span class="toc-text">4. 错误聚合 &amp; 分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%85%A2%E8%AF%B7%E6%B1%82%E5%88%86%E6%9E%90"><span class="toc-text">5. 慢请求分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%B8%B8%E8%A7%81%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">五、常见应用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%A7-%E5%85%AD%E3%80%81%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E%EF%BC%88agent-config%EF%BC%89"><span class="toc-text">🔧 六、常用配置说明（agent config）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%AE%9E%E6%88%98%E6%8A%80%E5%B7%A7"><span class="toc-text">七、实战技巧</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%9B%BF%E4%BB%A3-vs-%E7%BB%84%E5%90%88"><span class="toc-text">八、替代 vs 组合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
