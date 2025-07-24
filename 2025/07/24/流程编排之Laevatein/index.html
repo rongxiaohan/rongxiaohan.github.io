@@ -1,0 +1,509 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>流程编排之Laevatein - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、Laevatein 是什么？Laevatein ...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">流程编排之Laevatein</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">流程编排之Laevatein</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 24, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1878</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、Laevatein-是什么？"><a href="#一、Laevatein-是什么？" class="headerlink" title="一、Laevatein 是什么？"></a>一、Laevatein 是什么？</h2><p>Laevatein 是一个由阿里开源的<strong>轻量级异步流程编排框架</strong>，主要用于解决如下问题：</p>
+<ul>
+<li><p>多步骤业务编排（如物流、CRM、订单处理等）</p>
+</li>
+<li><p>多服务依赖、异步回调、状态流转</p>
+</li>
+<li><p>适配微服务架构下的“流程复杂性”</p>
+</li>
+</ul>
+<p>它本质上是一个<strong>有状态的异步编排状态机引擎</strong>，具备如下特点：</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>异步流程编排</strong></td>
+<td>支持串行、并行、条件分支、重试、补偿等逻辑</td>
+</tr>
+<tr>
+<td><strong>状态持久化</strong></td>
+<td>支持将流程状态持久化到数据库、Redis 等</td>
+</tr>
+<tr>
+<td><strong>事件驱动</strong></td>
+<td>触发器基于事件机制，支持多种触发方式</td>
+</tr>
+<tr>
+<td><strong>轻量、无侵入</strong></td>
+<td>适配现有业务服务，不需要大改动</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、菜鸟或新手如何使用-Laevatein-进行流程编排？"><a href="#二、菜鸟或新手如何使用-Laevatein-进行流程编排？" class="headerlink" title="二、菜鸟或新手如何使用 Laevatein 进行流程编排？"></a>二、菜鸟或新手如何使用 Laevatein 进行流程编排？</h2><p>以一个典型的物流流程为例（如：下单 → 分拣 → 打包 → 发货 → 配送 → 签收），Laevatein 可以对该流程建模并实现自动流转。</p>
+<h3 id="1-定义流程结构（Flow-DSL）"><a href="#1-定义流程结构（Flow-DSL）" class="headerlink" title="1. 定义流程结构（Flow DSL）"></a>1. 定义流程结构（Flow DSL）</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">orderDeliveryFlow</span><br><span class="hljs-attr">steps:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">createOrder</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">task</span><br>    <span class="hljs-attr">action:</span> <span class="hljs-string">CreateOrderAction</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">sort</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">task</span><br>    <span class="hljs-attr">action:</span> <span class="hljs-string">SortPackageAction</span><br>    <span class="hljs-attr">after:</span> <span class="hljs-string">createOrder</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">pack</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">task</span><br>    <span class="hljs-attr">action:</span> <span class="hljs-string">PackOrderAction</span><br>    <span class="hljs-attr">after:</span> <span class="hljs-string">sort</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">ship</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">task</span><br>    <span class="hljs-attr">action:</span> <span class="hljs-string">ShipAction</span><br>    <span class="hljs-attr">after:</span> <span class="hljs-string">pack</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">deliver</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">task</span><br>    <span class="hljs-attr">action:</span> <span class="hljs-string">DeliverAction</span><br>    <span class="hljs-attr">after:</span> <span class="hljs-string">ship</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">confirm</span><br>    <span class="hljs-attr">type:</span> <span class="hljs-string">task</span><br>    <span class="hljs-attr">action:</span> <span class="hljs-string">ConfirmAction</span><br>    <span class="hljs-attr">after:</span> <span class="hljs-string">deliver</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-实现业务-Action"><a href="#2-实现业务-Action" class="headerlink" title="2. 实现业务 Action"></a>2. 实现业务 <code>Action</code></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CreateOrderAction</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Action</span> &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">execute</span><span class="hljs-params">(Context context)</span> &#123;<br>        <span class="hljs-comment">// 调用订单服务生成订单</span><br>        System.out.println(<span class="hljs-string">&quot;订单已创建：&quot;</span> + context.getData(<span class="hljs-string">&quot;orderId&quot;</span>));<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-启动流程"><a href="#3-启动流程" class="headerlink" title="3. 启动流程"></a>3. 启动流程</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">flowEngine.start(<span class="hljs-string">&quot;orderDeliveryFlow&quot;</span>, contextMap);<br></code></pre></td></tr></table></figure>
+
+<h3 id="4-异常重试-补偿机制"><a href="#4-异常重试-补偿机制" class="headerlink" title="4. 异常重试&#x2F;补偿机制"></a>4. 异常重试&#x2F;补偿机制</h3><p>Laevatein 支持配置失败自动重试、失败回滚补偿等机制。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">ship</span><br>  <span class="hljs-attr">type:</span> <span class="hljs-string">task</span><br>  <span class="hljs-attr">action:</span> <span class="hljs-string">ShipAction</span><br>  <span class="hljs-attr">retry:</span> <span class="hljs-number">3</span><br>  <span class="hljs-attr">compensate:</span> <span class="hljs-string">ShipCompensateAction</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、使用场景举例（物流系统）"><a href="#三、使用场景举例（物流系统）" class="headerlink" title="三、使用场景举例（物流系统）"></a>三、使用场景举例（物流系统）</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>编排价值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>快递发货流程</td>
+<td>自动化流转、多步骤异步调用，提高效率</td>
+</tr>
+<tr>
+<td>客户退货流程</td>
+<td>条件判断 + 异步处理，减少人为干预</td>
+</tr>
+<tr>
+<td>异常包裹处理流程</td>
+<td>分支流转 + 人工干预节点支持</td>
+</tr>
+<tr>
+<td>仓内作业流程（拣货、打包）</td>
+<td>可视化流程配置，灵活维护流程</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、适合“菜鸟”的入门建议"><a href="#四、适合“菜鸟”的入门建议" class="headerlink" title="四、适合“菜鸟”的入门建议"></a>四、适合“菜鸟”的入门建议</h2><h3 id="推荐起步方式："><a href="#推荐起步方式：" class="headerlink" title="推荐起步方式："></a>推荐起步方式：</h3><ul>
+<li><p>从 <strong>几个固定步骤</strong> 的流程开始建模（如订单流程）</p>
+</li>
+<li><p>使用 <strong>YAML DSL</strong> 进行流程定义，清晰直观</p>
+</li>
+<li><p>使用 <strong>内存 + 日志</strong> 模式跑通第一版，避免上来就集成 Redis&#x2F;MySQL</p>
+</li>
+</ul>
+<h3 id="必学模块："><a href="#必学模块：" class="headerlink" title="必学模块："></a>必学模块：</h3><ul>
+<li><p><code>FlowEngine</code></p>
+</li>
+<li><p><code>Action</code> 接口及 <code>execute()</code> 实现</p>
+</li>
+<li><p>状态持久化接口（可扩展）</p>
+</li>
+<li><p>异步执行框架对接（如线程池、事件总线）</p>
+</li>
+</ul>
+<hr>
+<h2 id="五、与传统流程编排框架的对比"><a href="#五、与传统流程编排框架的对比" class="headerlink" title="五、与传统流程编排框架的对比"></a>五、与传统流程编排框架的对比</h2><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Laevatein</th>
+<th>Spring StateMachine</th>
+<th>Activiti &#x2F; Flowable</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>编排方式</td>
+<td>轻量级 DSL</td>
+<td>状态图建模</td>
+<td>BPMN 2.0</td>
+</tr>
+<tr>
+<td>异步支持</td>
+<td>原生支持</td>
+<td>需要自定义</td>
+<td>限制较多</td>
+</tr>
+<tr>
+<td>状态持久化</td>
+<td>可扩展实现</td>
+<td>支持</td>
+<td>内建</td>
+</tr>
+<tr>
+<td>易用性</td>
+<td>⭐⭐⭐⭐</td>
+<td>⭐⭐⭐</td>
+<td>⭐⭐</td>
+</tr>
+<tr>
+<td>微服务兼容</td>
+<td>极佳</td>
+<td>一般</td>
+<td>一般</td>
+</tr>
+</tbody></table>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/24/%E6%B5%81%E7%A8%8B%E7%BC%96%E6%8E%92%E4%B9%8BLaevatein/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;24&#x2F;%E6%B5%81%E7%A8%8B%E7%BC%96%E6%8E%92%E4%B9%8BLaevatein&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;24&#x2F;%E6%B5%81%E7%A8%8B%E7%BC%96%E6%8E%92%E4%B9%8BLaevatein&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Laevatein/" rel="tag">Laevatein</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/23/Nacos%E9%9B%86%E7%BE%A4%E9%85%8D%E7%BD%AE/">Nacos集群配置<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Laevatein-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">一、Laevatein 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%8F%9C%E9%B8%9F%E6%88%96%E6%96%B0%E6%89%8B%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8-Laevatein-%E8%BF%9B%E8%A1%8C%E6%B5%81%E7%A8%8B%E7%BC%96%E6%8E%92%EF%BC%9F"><span class="toc-text">二、菜鸟或新手如何使用 Laevatein 进行流程编排？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%9A%E4%B9%89%E6%B5%81%E7%A8%8B%E7%BB%93%E6%9E%84%EF%BC%88Flow-DSL%EF%BC%89"><span class="toc-text">1. 定义流程结构（Flow DSL）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%AE%9E%E7%8E%B0%E4%B8%9A%E5%8A%A1-Action"><span class="toc-text">2. 实现业务 Action</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="toc-text">3. 启动流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%BC%82%E5%B8%B8%E9%87%8D%E8%AF%95-%E8%A1%A5%E5%81%BF%E6%9C%BA%E5%88%B6"><span class="toc-text">4. 异常重试&#x2F;补偿机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E4%B8%BE%E4%BE%8B%EF%BC%88%E7%89%A9%E6%B5%81%E7%B3%BB%E7%BB%9F%EF%BC%89"><span class="toc-text">三、使用场景举例（物流系统）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%80%82%E5%90%88%E2%80%9C%E8%8F%9C%E9%B8%9F%E2%80%9D%E7%9A%84%E5%85%A5%E9%97%A8%E5%BB%BA%E8%AE%AE"><span class="toc-text">四、适合“菜鸟”的入门建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E8%B5%B7%E6%AD%A5%E6%96%B9%E5%BC%8F%EF%BC%9A"><span class="toc-text">推荐起步方式：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%85%E5%AD%A6%E6%A8%A1%E5%9D%97%EF%BC%9A"><span class="toc-text">必学模块：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%B8%8E%E4%BC%A0%E7%BB%9F%E6%B5%81%E7%A8%8B%E7%BC%96%E6%8E%92%E6%A1%86%E6%9E%B6%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="toc-text">五、与传统流程编排框架的对比</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
