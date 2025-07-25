@@ -6,12 +6,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>算法 - 笑容+</title>
+  <title>Elasticsearch结构 - 笑容+</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="google" content="notranslate" />
   <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
-  <meta name="description" content="树洞记录点滴生活">
+  <meta name="description" content="
+Elasticsearch 脑图结构Elastics...">
   <meta name="author" content="单线程垃圾清理工">
   <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
@@ -152,7 +153,7 @@
       
       
     </div>
-    <div class="center">标签</div>
+    <div class="center">Elasticsearch结构</div>
     <div class="right">
       <i class="iconfont iconmenu j-navbar-menu"></i>
     </div>
@@ -188,71 +189,147 @@
   </div>
 </nav>
   <main id="main">
-  <section class="archive">
-    <div class="archive-container">
-      <div class="archive-post">
-        <h2 class="archive-total"># 算法</h2>
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Elasticsearch结构</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 25, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1661</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="Elasticsearch-脑图结构"><a href="#Elasticsearch-脑图结构" class="headerlink" title="Elasticsearch 脑图结构"></a>Elasticsearch 脑图结构</h2><pre><code>Elasticsearch
+├── 一、核心概念
+│   ├── Index（索引）
+│   ├── Document（文档）
+│   ├── Type（类型，7.x后废弃）
+│   ├── Field（字段）
+│   ├── Mapping（字段映射）
+│   ├── Analyzer（分词器）
+│   └── Query DSL（查询语法）
+
+├── 二、架构原理
+│   ├── 节点类型
+│   │   ├── Master Node
+│   │   ├── Data Node
+│   │   ├── Ingest Node
+│   │   └── Coordinating Node
+│   ├── 分片与副本
+│   │   ├── Primary Shard
+│   │   └── Replica Shard
+│   ├── 倒排索引
+│   └── 写入流程（Indexing Flow）
+│       ├── 写入 -&gt; LogBuffer -&gt; Lucene Segment
+│       └── Refresh / Flush / Merge
+
+├── 三、数据操作
+│   ├── 创建/删除索引
+│   ├── 增删改查文档（CRUD）
+│   ├── 批量操作（Bulk API）
+│   ├── 条件查询（Match, Term, Range）
+│   ├── 布尔组合（Bool Query）
+│   └── 分页、排序、高亮
+
+├── 四、分词器与搜索原理
+│   ├── IK、Standard、Pinyin、EdgeNGram
+│   ├── Tokenizer / Filter / CharFilter
+│   └── 自定义分词器
+
+├── 五、聚合分析（Aggregation）
+│   ├── Bucket 聚合（Terms, Range, DateHistogram）
+│   ├── Metric 聚合（Avg, Sum, Max, Min）
+│   ├── Pipeline 聚合
+│   └── 子聚合
+
+├── 六、性能优化
+│   ├── 查询性能
+│   │   ├── 精准字段类型（keyword vs text）
+│   │   ├── 使用 filter 缓存
+│   │   ├── 限制返回字段和分页大小
+│   ├── 写入优化
+│   │   ├── Bulk 批量写
+│   │   ├── 控制刷新策略（refresh_interval）
+│   └── 索引优化
+│       ├── Mapping 精简
+│       └── Segment 合并
+
+├── 七、集成与生态
+│   ├── Logstash（日志收集）
+│   ├── Beats（轻量收集器）
+│   ├── Kibana（可视化）
+│   ├── Elasticsearch Java REST Client
+│   ├── Spring Data Elasticsearch
+│   └── Fluent DSL（如：ElasticsearchTemplate）
+
+├── 八、版本变化（重要）
+│   ├── 6.x: 单类型限制
+│   ├── 7.x: 删除 type
+│   ├── 8.x: 默认开启安全认证、加密通信
+│   └── Lucene 升级同步
+
+├── 九、安全与权限
+│   ├── 用户认证（Basic Auth、LDAP）
+│   ├── 角色管理
+│   ├── Field / Index Level 安全控制
+│   └── TLS 通信加密
+
+├── 十、典型应用场景
+│   ├── 日志检索（ELK Stack）
+│   ├── 全文搜索（商品/文档搜索）
+│   ├── 实时监控告警
+│   ├── 数据聚合分析
+│   └── 推荐与相关性打分
+</code></pre>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/25/Elasticsearch%E7%BB%93%E6%9E%84/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;25&#x2F;Elasticsearch%E7%BB%93%E6%9E%84&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;25&#x2F;Elasticsearch%E7%BB%93%E6%9E%84&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
         
         
-          
-            <h3 class="archive-year">2025 年</h3>
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/12/Fibonacci%E7%9A%84%E4%B8%89%E7%A7%8D%E8%A7%A3%E6%B3%95/">07/12</a>
-            <a class="archive-title" href="/2025/07/12/Fibonacci%E7%9A%84%E4%B8%89%E7%A7%8D%E8%A7%A3%E6%B3%95/">Fibonacci的三种解法</a>
-          </div>
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Elasticsearch/" rel="tag">Elasticsearch</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/24/%E6%B5%81%E7%A8%8B%E7%BC%96%E6%8E%92%E4%B9%8BLaevatein/">流程编排之Laevatein<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
         
           
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/12/X%E7%9A%84%E5%B9%B3%E6%96%B9%E6%A0%B9%E4%B9%8B%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E5%92%8C%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/">07/12</a>
-            <a class="archive-title" href="/2025/07/12/X%E7%9A%84%E5%B9%B3%E6%96%B9%E6%A0%B9%E4%B9%8B%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E5%92%8C%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/">X的平方根之牛顿迭代和二分查找</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/11/%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9/">07/11</a>
-            <a class="archive-title" href="/2025/07/11/%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9/">删除排序数组中的重复项</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/11/%E5%88%A4%E6%96%AD%E7%8E%AF%E5%BD%A2%E9%93%BE%E8%A1%A8/">07/11</a>
-            <a class="archive-title" href="/2025/07/11/%E5%88%A4%E6%96%AD%E7%8E%AF%E5%BD%A2%E9%93%BE%E8%A1%A8/">判断环形链表</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/11/%E5%90%88%E5%B9%B6%E4%B8%A4%E4%B8%AA%E6%9C%89%E5%BA%8F%E6%95%B0%E7%BB%84/">07/11</a>
-            <a class="archive-title" href="/2025/07/11/%E5%90%88%E5%B9%B6%E4%B8%A4%E4%B8%AA%E6%9C%89%E5%BA%8F%E6%95%B0%E7%BB%84/">合并两个有序数组</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/11/%E5%AF%BB%E6%89%BE%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E5%BF%83%E4%B8%8B%E6%A0%87/">07/11</a>
-            <a class="archive-title" href="/2025/07/11/%E5%AF%BB%E6%89%BE%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E5%BF%83%E4%B8%8B%E6%A0%87/">寻找数组的中心下标</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/11/%E6%95%B0%E7%BB%84%E4%B8%AD%E4%B8%89%E4%B8%AA%E6%95%B0%E7%9A%84%E6%9C%80%E5%A4%A7%E4%B9%98%E7%A7%AF/">07/11</a>
-            <a class="archive-title" href="/2025/07/11/%E6%95%B0%E7%BB%84%E4%B8%AD%E4%B8%89%E4%B8%AA%E6%95%B0%E7%9A%84%E6%9C%80%E5%A4%A7%E4%B9%98%E7%A7%AF/">数组中三个数的最大乘积</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/11/%E7%BB%9F%E8%AE%A1%E7%B4%A0%E6%95%B0%E4%B8%AA%E6%95%B0%E4%B9%8B%E6%9A%B4%E5%8A%9B%E7%AE%97%E6%B3%95%E5%92%8C%E5%9F%83%E5%BC%8F%E7%AD%9B%E9%80%89/">07/11</a>
-            <a class="archive-title" href="/2025/07/11/%E7%BB%9F%E8%AE%A1%E7%B4%A0%E6%95%B0%E4%B8%AA%E6%95%B0%E4%B9%8B%E6%9A%B4%E5%8A%9B%E7%AE%97%E6%B3%95%E5%92%8C%E5%9F%83%E5%BC%8F%E7%AD%9B%E9%80%89/">统计素数个数之暴力算法和埃式筛选</a>
-          </div>
-        
-          
-          <div class="archive-item">
-            <a class="archive-date" href="/2025/07/10/%E9%93%BE%E8%A1%A8%E5%8F%8D%E8%BD%AC%E4%B9%8B%E9%80%92%E5%BD%92%E5%92%8C%E8%BF%AD%E4%BB%A3/">07/10</a>
-            <a class="archive-title" href="/2025/07/10/%E9%93%BE%E8%A1%A8%E5%8F%8D%E8%BD%AC%E4%B9%8B%E9%80%92%E5%BD%92%E5%92%8C%E8%BF%AD%E4%BB%A3/">链表反转之递归和迭代</a>
-          </div>
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Elasticsearch-%E8%84%91%E5%9B%BE%E7%BB%93%E6%9E%84"><span class="toc-text">Elasticsearch 脑图结构</span></a></li></ol>
+  </aside>
+
         
       </div>
     </div>
-  </section>
+  </div>
 </main>
   
 
