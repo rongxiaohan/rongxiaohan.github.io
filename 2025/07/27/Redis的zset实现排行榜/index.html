@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Redis的zset实现排行榜 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+🎯 一、典型场景
+游戏积分排行榜
+
+热门文章&#x...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: true
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">Redis的zset实现排行榜</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/galleries/ " class="underline "> 生活</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">Redis的zset实现排行榜</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 27, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1404</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="🎯-一、典型场景"><a href="#🎯-一、典型场景" class="headerlink" title="🎯 一、典型场景"></a>🎯 一、典型场景</h2><ul>
+<li><p>游戏积分排行榜</p>
+</li>
+<li><p>热门文章&#x2F;视频点赞榜</p>
+</li>
+<li><p>用户活跃榜</p>
+</li>
+<li><p>签到天数榜等</p>
+</li>
+</ul>
+<hr>
+<h2 id="🧱-二、ZSet-基本命令"><a href="#🧱-二、ZSet-基本命令" class="headerlink" title="🧱 二、ZSet 基本命令"></a>🧱 二、ZSet 基本命令</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 添加或更新成员的 score</span><br>ZADD leaderboard 100 user1<br>ZADD leaderboard 80 user2<br><br><span class="hljs-comment"># 获取排行榜（从高到低）</span><br>ZREVRANGE leaderboard 0 9 WITHSCORES  <span class="hljs-comment"># Top 10</span><br><br><span class="hljs-comment"># 获取某个成员的排名（从高到低）</span><br>ZREVRANK leaderboard user1           <span class="hljs-comment"># 返回排名（从0开始）</span><br><br><span class="hljs-comment"># 获取某个成员的分数</span><br>ZSCORE leaderboard user1<br><br><span class="hljs-comment"># 增加分数</span><br>ZINCRBY leaderboard 20 user1<br><br><span class="hljs-comment"># 获取指定分数区间的成员</span><br>ZREVRANGEBYSCORE leaderboard +inf 50 WITHSCORES<br><br><span class="hljs-comment"># 删除成员</span><br>ZREM leaderboard user3<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧠-三、排行榜功能实现示例"><a href="#🧠-三、排行榜功能实现示例" class="headerlink" title="🧠 三、排行榜功能实现示例"></a>🧠 三、排行榜功能实现示例</h2><h3 id="1-加入-更新排行榜"><a href="#1-加入-更新排行榜" class="headerlink" title="1. 加入&#x2F;更新排行榜"></a>1. 加入&#x2F;更新排行榜</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">redisTemplate.opsForZSet().add(<span class="hljs-string">&quot;leaderboard&quot;</span>, <span class="hljs-string">&quot;user123&quot;</span>, <span class="hljs-number">1500</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-获取某用户的排名（注意是倒序）"><a href="#2-获取某用户的排名（注意是倒序）" class="headerlink" title="2. 获取某用户的排名（注意是倒序）"></a>2. 获取某用户的排名（注意是倒序）</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Long</span> <span class="hljs-variable">rank</span> <span class="hljs-operator">=</span> redisTemplate.opsForZSet().reverseRank(<span class="hljs-string">&quot;leaderboard&quot;</span>, <span class="hljs-string">&quot;user123&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-获取-Top-N-榜单"><a href="#3-获取-Top-N-榜单" class="headerlink" title="3. 获取 Top N 榜单"></a>3. 获取 Top N 榜单</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java">Set&lt;ZSetOperations.TypedTuple&lt;String&gt;&gt; top10 =<br>    redisTemplate.opsForZSet().reverseRangeWithScores(<span class="hljs-string">&quot;leaderboard&quot;</span>, <span class="hljs-number">0</span>, <span class="hljs-number">9</span>);<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧮-四、score-的设计建议"><a href="#🧮-四、score-的设计建议" class="headerlink" title="🧮 四、score 的设计建议"></a>🧮 四、score 的设计建议</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐 score 设计</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>游戏积分榜</td>
+<td>积分分数</td>
+</tr>
+<tr>
+<td>点赞榜</td>
+<td>点赞总数</td>
+</tr>
+<tr>
+<td>活跃度榜</td>
+<td>最后活跃时间戳或行为权重加权值</td>
+</tr>
+<tr>
+<td>连续签到榜</td>
+<td>连续天数 + 时间戳拼接</td>
+</tr>
+</tbody></table>
+<p>例如：为了避免同分用户冲突，可以用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">score = 积分 * 1e10 + 时间戳（精确到秒）<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔧-五、注意事项"><a href="#🔧-五、注意事项" class="headerlink" title="🔧 五、注意事项"></a>🔧 五、注意事项</h2><ol>
+<li><p>**ZSet 是基于跳表实现的，插入&#x2F;查询性能非常高，O(log N)**。</p>
+</li>
+<li><p>默认排序是按 <code>score</code> 升序，可用 <code>ZREVRANGE</code> 变为降序。</p>
+</li>
+<li><p>元素数量大时，可以结合定期 <code>ZREMRANGEBYRANK</code> 清理尾部数据。</p>
+</li>
+<li><p>Redis 是内存型数据库，<strong>排行榜需控制大小</strong>，避免内存膨胀。</p>
+</li>
+</ol>
+<hr>
+<h2 id="🛠-六、进阶应用"><a href="#🛠-六、进阶应用" class="headerlink" title="🛠 六、进阶应用"></a>🛠 六、进阶应用</h2><h3 id="分页排行榜"><a href="#分页排行榜" class="headerlink" title="分页排行榜"></a>分页排行榜</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">ZREVRANGE leaderboard 10 19 WITHSCORES  <span class="hljs-comment"># 第2页，每页10个</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="获取用户是否上榜、具体位置"><a href="#获取用户是否上榜、具体位置" class="headerlink" title="获取用户是否上榜、具体位置"></a>获取用户是否上榜、具体位置</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Long</span> <span class="hljs-variable">rank</span> <span class="hljs-operator">=</span> redisTemplate.opsForZSet().reverseRank(<span class="hljs-string">&quot;leaderboard&quot;</span>, userId);<br><span class="hljs-keyword">if</span> (rank != <span class="hljs-literal">null</span> &amp;&amp; rank &lt; <span class="hljs-number">100</span>) &#123;<br>    <span class="hljs-comment">// 上榜啦</span><br>&#125;<br></code></pre></td></tr></table></figure>
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/27/Redis%E7%9A%84zset%E5%AE%9E%E7%8E%B0%E6%8E%92%E8%A1%8C%E6%A6%9C/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;27&#x2F;Redis%E7%9A%84zset%E5%AE%9E%E7%8E%B0%E6%8E%92%E8%A1%8C%E6%A6%9C&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;27&#x2F;Redis%E7%9A%84zset%E5%AE%9E%E7%8E%B0%E6%8E%92%E8%A1%8C%E6%A6%9C&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/26/%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E6%9F%A5%E6%89%BE%E9%99%84%E8%BF%91%E7%9A%84%E4%BA%BA%E5%8A%9F%E8%83%BD/">如何实现查找附近的人功能<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8E%AF-%E4%B8%80%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF"><span class="toc-text">🎯 一、典型场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%B1-%E4%BA%8C%E3%80%81ZSet-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4"><span class="toc-text">🧱 二、ZSet 基本命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%A0-%E4%B8%89%E3%80%81%E6%8E%92%E8%A1%8C%E6%A6%9C%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0%E7%A4%BA%E4%BE%8B"><span class="toc-text">🧠 三、排行榜功能实现示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%8A%A0%E5%85%A5-%E6%9B%B4%E6%96%B0%E6%8E%92%E8%A1%8C%E6%A6%9C"><span class="toc-text">1. 加入&#x2F;更新排行榜</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E8%8E%B7%E5%8F%96%E6%9F%90%E7%94%A8%E6%88%B7%E7%9A%84%E6%8E%92%E5%90%8D%EF%BC%88%E6%B3%A8%E6%84%8F%E6%98%AF%E5%80%92%E5%BA%8F%EF%BC%89"><span class="toc-text">2. 获取某用户的排名（注意是倒序）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%8E%B7%E5%8F%96-Top-N-%E6%A6%9C%E5%8D%95"><span class="toc-text">3. 获取 Top N 榜单</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%A7%AE-%E5%9B%9B%E3%80%81score-%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%BB%BA%E8%AE%AE"><span class="toc-text">🧮 四、score 的设计建议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%94%A7-%E4%BA%94%E3%80%81%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">🔧 五、注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E5%85%AD%E3%80%81%E8%BF%9B%E9%98%B6%E5%BA%94%E7%94%A8"><span class="toc-text">🛠 六、进阶应用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E9%A1%B5%E6%8E%92%E8%A1%8C%E6%A6%9C"><span class="toc-text">分页排行榜</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E6%98%AF%E5%90%A6%E4%B8%8A%E6%A6%9C%E3%80%81%E5%85%B7%E4%BD%93%E4%BD%8D%E7%BD%AE"><span class="toc-text">获取用户是否上榜、具体位置</span></a></li></ol></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"><a 
+        href="tencent://message/?Menu=yes&uin=894519210 "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#12B7F5'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconQQ "></i>
+      </a><a 
+        href="javascript:; "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#09BB07'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconwechat-fill "></i>
+      </a><a 
+        href="https://www.instagram.com/izhaoo/ "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#DA2E76'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconinstagram "></i>
+      </a><a 
+        href="https://github.com/zhaoo "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color= '#9f7be1'" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  icongithub-fill "></i>
+      </a><a 
+        href="mailto:izhaoo@163.com "
+        target="_blank"
+        class="footer-social-item"
+        onMouseOver="this.style.color=#FF3B00" 
+        onMouseOut="this.style.color='#33333D'">
+          <i class="iconfont  iconmail"></i>
+      </a></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
