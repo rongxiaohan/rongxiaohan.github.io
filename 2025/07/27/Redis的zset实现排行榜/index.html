@@ -204,7 +204,7 @@
     <div class="head-info">
       <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 27, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1404</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1405</span>
     </div>
   </div>
 </section>
@@ -275,6 +275,7 @@
 <h2 id="🛠-六、进阶应用"><a href="#🛠-六、进阶应用" class="headerlink" title="🛠 六、进阶应用"></a>🛠 六、进阶应用</h2><h3 id="分页排行榜"><a href="#分页排行榜" class="headerlink" title="分页排行榜"></a>分页排行榜</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">ZREVRANGE leaderboard 10 19 WITHSCORES  <span class="hljs-comment"># 第2页，每页10个</span><br></code></pre></td></tr></table></figure>
 
 <h3 id="获取用户是否上榜、具体位置"><a href="#获取用户是否上榜、具体位置" class="headerlink" title="获取用户是否上榜、具体位置"></a>获取用户是否上榜、具体位置</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">Long</span> <span class="hljs-variable">rank</span> <span class="hljs-operator">=</span> redisTemplate.opsForZSet().reverseRank(<span class="hljs-string">&quot;leaderboard&quot;</span>, userId);<br><span class="hljs-keyword">if</span> (rank != <span class="hljs-literal">null</span> &amp;&amp; rank &lt; <span class="hljs-number">100</span>) &#123;<br>    <span class="hljs-comment">// 上榜啦</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
       </section>
       <section class="extra">
         
@@ -292,7 +293,7 @@
 
         
   <nav class="nav">
-    <a></a>
+    <a href="/2025/07/29/%E5%85%B3%E4%BA%8E%E5%B0%8F%E7%B1%B3%E7%94%B5%E8%A7%86%E6%97%A0%E6%B3%95%E4%B8%8B%E8%BD%BDTVbox/"><i class="iconfont iconleft"></i>关于小米电视无法下载TVbox</a>
     <a href="/2025/07/26/%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E6%9F%A5%E6%89%BE%E9%99%84%E8%BF%91%E7%9A%84%E4%BA%BA%E5%8A%9F%E8%83%BD/">如何实现查找附近的人功能<i class="iconfont iconright"></i></a>
   </nav>
 

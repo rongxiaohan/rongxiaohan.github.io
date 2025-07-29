@@ -6,13 +6,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>删除排序数组中的重复项 - 笑容+</title>
+  <title>关于小米电视无法下载TVbox - 笑容+</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="google" content="notranslate" />
   <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
   <meta name="description" content="
-删除排序数组中的重复项（LeetCode 26）题目...">
+一、常见问题及原因1. 系统限制安装未知来源 APK...">
   <meta name="author" content="单线程垃圾清理工">
   <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
@@ -153,7 +153,7 @@
       
       
     </div>
-    <div class="center">删除排序数组中的重复项</div>
+    <div class="center">关于小米电视无法下载TVbox</div>
     <div class="right">
       <i class="iconfont iconmenu j-navbar-menu"></i>
     </div>
@@ -197,11 +197,11 @@
     <section class="head">
   <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
   <div class="head-mask">
-    <h1 class="head-title">删除排序数组中的重复项</h1>
+    <h1 class="head-title">关于小米电视无法下载TVbox</h1>
     <div class="head-info">
-      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 11, 2025</span>
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 29, 2025</span>
       
-      <span class="post-info-item"><i class="iconfont iconfont-size"></i>436</span>
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>918</span>
     </div>
   </div>
 </section>
@@ -209,35 +209,87 @@
       <section class="content">
         
         <hr>
-<h2 id="删除排序数组中的重复项（LeetCode-26）"><a href="#删除排序数组中的重复项（LeetCode-26）" class="headerlink" title="删除排序数组中的重复项（LeetCode 26）"></a>删除排序数组中的重复项（LeetCode 26）</h2><p><strong>题目：</strong><br>给定一个 <strong>升序</strong> 数组 <code>nums</code>，<strong>原地</strong>删除重复项，使得每个元素只出现一次，返回新数组长度。</p>
-<h3 id="思路（双指针）："><a href="#思路（双指针）：" class="headerlink" title="思路（双指针）："></a>思路（双指针）：</h3><ul>
-<li><p><code>i</code> 指向不重复序列的最后一个位置</p>
+<h2 id="一、常见问题及原因"><a href="#一、常见问题及原因" class="headerlink" title="一、常见问题及原因"></a>一、常见问题及原因</h2><h3 id="1-系统限制安装未知来源-APK"><a href="#1-系统限制安装未知来源-APK" class="headerlink" title="1. 系统限制安装未知来源 APK"></a>1. <strong>系统限制安装未知来源 APK</strong></h3><p>最近小米电视系统安装tvbox又不想用u盘安装 APK，弄的有点上火所以记录一下。</p>
+<p> <strong>解决办法：</strong></p>
+<ul>
+<li><p>进入电视「设置」&gt;「账号与安全」&gt; 打开「允许安装未知来源应用」。</p>
 </li>
-<li><p><code>j</code> 向前扫描新元素</p>
-</li>
-<li><p>如果 <code>nums[j] != nums[i]</code>，就将 <code>j</code> 赋值给 <code>i + 1</code> 的位置</p>
+<li><p>若找不到此选项，可尝试通过「开发者模式」解锁（见下方）。</p>
 </li>
 </ul>
-<h3 id="Java-实现："><a href="#Java-实现：" class="headerlink" title="Java 实现："></a>Java 实现：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">removeDuplicates</span><span class="hljs-params">(<span class="hljs-type">int</span>[] nums)</span> &#123;<br>    <span class="hljs-keyword">if</span> (nums.length == <span class="hljs-number">0</span>) <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>    <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">j</span> <span class="hljs-operator">=</span> <span class="hljs-number">1</span>; j &lt; nums.length; j++) &#123;<br>        <span class="hljs-keyword">if</span> (nums[j] != nums[i]) &#123;<br>            nums[++i] = nums[j];<br>        &#125;<br>    &#125;<br>    <span class="hljs-keyword">return</span> i + <span class="hljs-number">1</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<hr>
+<h3 id="2-TVBox-APK-文件没有正确下载或已损坏"><a href="#2-TVBox-APK-文件没有正确下载或已损坏" class="headerlink" title="2. TVBox APK 文件没有正确下载或已损坏"></a>2. <strong>TVBox APK 文件没有正确下载或已损坏</strong></h3><p>如果通过 U 盘或第三方下载工具安装，文件可能损坏或未下载完整。</p>
+<p> <strong>解决办法：</strong></p>
+<ul>
+<li><p>确认 APK 文件大小是否正常（例如 TVBox 常见版本大约 20-30MB）。</p>
+</li>
+<li><p>尽量从可信论坛下载（如 GitHub、吾爱破解等）。</p>
+</li>
+<li><p>U盘格式建议为 FAT32，拷贝完成后使用「文件管理器」进行安装。</p>
+</li>
+</ul>
+<hr>
+<h3 id="3-小米系统禁止安装某些“可疑”应用"><a href="#3-小米系统禁止安装某些“可疑”应用" class="headerlink" title="3. 小米系统禁止安装某些“可疑”应用"></a>3. <strong>小米系统禁止安装某些“可疑”应用</strong></h3><p>小米可能通过系统层做了白名单，阻止聚合类或破解类应用安装（尤其较新系统）。</p>
+<p> <strong>解决办法：</strong></p>
+<ul>
+<li><p>可以尝试：</p>
+<ul>
+<li><p><strong>通过 adb 安装</strong>（见下方教程）。</p>
+</li>
+<li><p>使用旧系统或刷机（需谨慎，不建议普通用户操作）。</p>
+</li>
+<li><p>试试更名 APK 为无敏感词版本（例如：重命名 <code>tvbox-release.apk</code> → <code>movie.apk</code>）。</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="🛠-二、ADB-安装-TVBox-教程（推荐）"><a href="#🛠-二、ADB-安装-TVBox-教程（推荐）" class="headerlink" title="🛠 二、ADB 安装 TVBox 教程（推荐）"></a>🛠 二、ADB 安装 TVBox 教程（推荐）</h2><h3 id="步骤一：准备"><a href="#步骤一：准备" class="headerlink" title="步骤一：准备"></a>步骤一：准备</h3><ul>
+<li><p>下载 TVBox APK 文件，例如 <code>tvbox-release.apk</code></p>
+</li>
+<li><p>将电视和电脑接入同一 WiFi</p>
+</li>
+<li><p>打开小米电视开发者模式：</p>
+<ul>
+<li><p>进入设置 → 我的设备 → 所有参数 → 连续点击「内部版本号」7次</p>
+</li>
+<li><p>返回设置菜单，找到「开发者选项」</p>
+</li>
+<li><p>打开「USB调试」或「网络调试」</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="步骤二：在电脑执行命令安装"><a href="#步骤二：在电脑执行命令安装" class="headerlink" title="步骤二：在电脑执行命令安装"></a>步骤二：在电脑执行命令安装</h3><ol>
+<li><p>安装 adb 工具（可用 Android SDK Platform Tools）<br> 下载地址：<a target="_blank" rel="noopener" href="https://developer.android.com/studio/releases/platform-tools">https://developer.android.com/studio/releases/platform-tools</a></p>
+</li>
+<li><p>将 TVBox APK 放到 adb 所在目录，打开命令行终端，输入：</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">adb connect 电视IP地址<br>adb install tvbox-release.apk<br></code></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>安装成功后，可在电视「全部应用」中看到 TVBox。</li>
+</ol>
+
       </section>
       <section class="extra">
         
           <ul class="copyright">
   
     <li><strong>本文作者：</strong>单线程垃圾清理工</li>
-    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/11/%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;11&#x2F;%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;11&#x2F;%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9&#x2F;index.html</a></li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/29/%E5%85%B3%E4%BA%8E%E5%B0%8F%E7%B1%B3%E7%94%B5%E8%A7%86%E6%97%A0%E6%B3%95%E4%B8%8B%E8%BD%BDTVbox/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;29&#x2F;%E5%85%B3%E4%BA%8E%E5%B0%8F%E7%B1%B3%E7%94%B5%E8%A7%86%E6%97%A0%E6%B3%95%E4%B8%8B%E8%BD%BDTVbox&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;29&#x2F;%E5%85%B3%E4%BA%8E%E5%B0%8F%E7%B1%B3%E7%94%B5%E8%A7%86%E6%97%A0%E6%B3%95%E4%B8%8B%E8%BD%BDTVbox&#x2F;index.html</a></li>
     <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
   
 </ul>
         
         
         
-  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AE%97%E6%B3%95/" rel="tag">算法</a></li></ul> 
-
         
   <nav class="nav">
-    <a href="/2025/07/12/X%E7%9A%84%E5%B9%B3%E6%96%B9%E6%A0%B9%E4%B9%8B%E7%89%9B%E9%A1%BF%E8%BF%AD%E4%BB%A3%E5%92%8C%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/"><i class="iconfont iconleft"></i>X的平方根之牛顿迭代和二分查找</a>
-    <a href="/2025/07/11/%E5%90%88%E5%B9%B6%E4%B8%A4%E4%B8%AA%E6%9C%89%E5%BA%8F%E6%95%B0%E7%BB%84/">合并两个有序数组<i class="iconfont iconright"></i></a>
+    <a></a>
+    <a href="/2025/07/27/Redis%E7%9A%84zset%E5%AE%9E%E7%8E%B0%E6%8E%92%E8%A1%8C%E6%A6%9C/">Redis的zset实现排行榜<i class="iconfont iconright"></i></a>
   </nav>
 
       </section>
@@ -250,7 +302,7 @@
           
   <aside class="toc-wrap">
     <h3 class="toc-title">文章目录：</h3>
-    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%8E%92%E5%BA%8F%E6%95%B0%E7%BB%84%E4%B8%AD%E7%9A%84%E9%87%8D%E5%A4%8D%E9%A1%B9%EF%BC%88LeetCode-26%EF%BC%89"><span class="toc-text">删除排序数组中的重复项（LeetCode 26）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%EF%BC%88%E5%8F%8C%E6%8C%87%E9%92%88%EF%BC%89%EF%BC%9A"><span class="toc-text">思路（双指针）：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E5%AE%9E%E7%8E%B0%EF%BC%9A"><span class="toc-text">Java 实现：</span></a></li></ol></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E5%8F%8A%E5%8E%9F%E5%9B%A0"><span class="toc-text">一、常见问题及原因</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%B3%BB%E7%BB%9F%E9%99%90%E5%88%B6%E5%AE%89%E8%A3%85%E6%9C%AA%E7%9F%A5%E6%9D%A5%E6%BA%90-APK"><span class="toc-text">1. 系统限制安装未知来源 APK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-TVBox-APK-%E6%96%87%E4%BB%B6%E6%B2%A1%E6%9C%89%E6%AD%A3%E7%A1%AE%E4%B8%8B%E8%BD%BD%E6%88%96%E5%B7%B2%E6%8D%9F%E5%9D%8F"><span class="toc-text">2. TVBox APK 文件没有正确下载或已损坏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B0%8F%E7%B1%B3%E7%B3%BB%E7%BB%9F%E7%A6%81%E6%AD%A2%E5%AE%89%E8%A3%85%E6%9F%90%E4%BA%9B%E2%80%9C%E5%8F%AF%E7%96%91%E2%80%9D%E5%BA%94%E7%94%A8"><span class="toc-text">3. 小米系统禁止安装某些“可疑”应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0-%E4%BA%8C%E3%80%81ADB-%E5%AE%89%E8%A3%85-TVBox-%E6%95%99%E7%A8%8B%EF%BC%88%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-text">🛠 二、ADB 安装 TVBox 教程（推荐）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4%E4%B8%80%EF%BC%9A%E5%87%86%E5%A4%87"><span class="toc-text">步骤一：准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%A5%E9%AA%A4%E4%BA%8C%EF%BC%9A%E5%9C%A8%E7%94%B5%E8%84%91%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E5%AE%89%E8%A3%85"><span class="toc-text">步骤二：在电脑执行命令安装</span></a></li></ol></li></ol>
   </aside>
 
         
