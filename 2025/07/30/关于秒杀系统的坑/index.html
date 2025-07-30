@@ -1,0 +1,451 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>关于秒杀系统的坑 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="关于之前同事在设计秒杀系统时，使用 Redis 分布式...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: false
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">关于秒杀系统的坑</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">关于秒杀系统的坑</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 30, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1055</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <p>关于之前同事在设计<strong>秒杀系统</strong>时，使用 <strong>Redis 分布式锁</strong> 线上发生的事故。它并不是最优方案，存在一些明显的<strong>缺点和隐患</strong>，尤其在高并发下。</p>
+<hr>
+<h3 id="一、性能瓶颈（锁粒度粗、QPS低）"><a href="#一、性能瓶颈（锁粒度粗、QPS低）" class="headerlink" title="一、性能瓶颈（锁粒度粗、QPS低）"></a>一、性能瓶颈（<strong>锁粒度粗、QPS低</strong>）</h3><ul>
+<li><p><strong>说明</strong>：秒杀系统是典型的高并发场景，如果每个请求都先获取分布式锁再处理逻辑，就会导致系统吞吐量严重下降。</p>
+</li>
+<li><p><strong>结果</strong>：锁竞争严重，请求排队等待，造成大量请求积压或超时，系统响应变慢。</p>
+</li>
+</ul>
+<hr>
+<h3 id="二、可靠性问题（锁丢失、死锁等问题）"><a href="#二、可靠性问题（锁丢失、死锁等问题）" class="headerlink" title="二、可靠性问题（锁丢失、死锁等问题）"></a>二、可靠性问题（<strong>锁丢失、死锁等问题</strong>）</h3><ul>
+<li><p><strong>1. 锁超时释放风险</strong>：</p>
+<ul>
+<li><p>如果业务逻辑执行超过锁的过期时间，锁会被自动释放，导致线程<strong>并发多个请求同时修改库存</strong>，破坏数据一致性。</p>
+</li>
+<li><p>即便使用如 <code>Redisson</code> 的看门狗机制，也无法完全避免因为网络延迟或节点故障导致锁提前释放。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>2. 解锁不安全</strong>：</p>
+<ul>
+<li>若锁误删（例如解锁的线程和加锁的线程不一致）也会造成其他线程获得锁而业务未完成。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="三、可用性问题（Redis单点故障或重启影响业务-并发数小于10w发生概率较小可以忽略）"><a href="#三、可用性问题（Redis单点故障或重启影响业务-并发数小于10w发生概率较小可以忽略）" class="headerlink" title="三、可用性问题（Redis单点故障或重启影响业务 并发数小于10w发生概率较小可以忽略）"></a>三、可用性问题（<strong>Redis单点故障或重启影响业务 并发数小于10w发生概率较小可以忽略</strong>）</h3><ul>
+<li><p>使用 Redis 实现分布式锁一般会依赖单个 Redis 实例或集群：</p>
+<ul>
+<li><p>若 Redis 宕机或重启，锁信息会丢失；</p>
+</li>
+<li><p>重启期间新请求可能抢到“假锁”，导致<strong>多个线程同时扣减库存</strong>。</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="四、锁机制实现复杂、细节易错"><a href="#四、锁机制实现复杂、细节易错" class="headerlink" title="四、锁机制实现复杂、细节易错"></a>四、锁机制实现复杂、细节易错</h3><ul>
+<li><p>正确使用 Redis 锁必须考虑：</p>
+<ul>
+<li><p>原子加锁（如 <code>SET NX EX</code>）</p>
+</li>
+<li><p>解锁原子性（Lua 脚本校验 value）</p>
+</li>
+<li><p>锁续期机制（如 Redisson 的“看门狗”）</p>
+</li>
+</ul>
+</li>
+<li><p>稍有不慎就会导致<strong>锁失效或死锁</strong>，增加维护成本和系统复杂度。</p>
+</li>
+</ul>
+<hr>
+<h3 id="五、不支持高并发优化手段"><a href="#五、不支持高并发优化手段" class="headerlink" title="五、不支持高并发优化手段"></a>五、不支持高并发优化手段</h3><ul>
+<li><p>Redis 锁机制属于<strong>串行化控制手段</strong>，会阻塞其他请求：</p>
+<ul>
+<li><p>无法使用削峰（队列）、缓存预扣、异步确认等高并发优化策略；</p>
+</li>
+<li><p>对于秒杀场景不具备可扩展性。</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="总结对比"><a href="#总结对比" class="headerlink" title="总结对比"></a>总结对比</h3><table>
+<thead>
+<tr>
+<th>缺点</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>性能瓶颈</td>
+<td>高并发场景下严重影响吞吐量</td>
+</tr>
+<tr>
+<td>锁超时风险</td>
+<td>锁释放后业务未完成，导致数据错误</td>
+</tr>
+<tr>
+<td>锁误删问题</td>
+<td>解锁不是当前线程时可能误删他人锁</td>
+</tr>
+<tr>
+<td>Redis 异常</td>
+<td>Redis 崩溃&#x2F;重启导致锁失效</td>
+</tr>
+<tr>
+<td>实现复杂</td>
+<td>需处理加锁、解锁、续期、容错等细节</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="方案优化"><a href="#方案优化" class="headerlink" title="方案优化"></a>方案优化</h3><ol>
+<li><p><strong>预减库存 + 异步队列</strong>（最常见）</p>
+<ul>
+<li><p>库存在 Redis 中预扣，异步写入数据库；</p>
+</li>
+<li><p>不需要锁，天然支持高并发，吞吐量高。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>数据库乐观锁</strong>（加版本号或 CAS）</p>
+<ul>
+<li>小并发时可控，但高并发下容易冲突失败。</li>
+</ul>
+</li>
+<li><p><strong>队列串行化控制</strong>（如 Kafka + Worker 消费处理）</p>
+<ul>
+<li>类似秒杀排队，先抢到资格再处理订单，保证有序。</li>
+</ul>
+</li>
+</ol>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/30/%E5%85%B3%E4%BA%8E%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9D%91/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;30&#x2F;%E5%85%B3%E4%BA%8E%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9D%91&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;30&#x2F;%E5%85%B3%E4%BA%8E%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9D%91&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag">架构设计</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/29/%E5%85%B3%E4%BA%8E%E5%B0%8F%E7%B1%B3%E7%94%B5%E8%A7%86%E6%97%A0%E6%B3%95%E4%B8%8B%E8%BD%BDTVbox/">关于小米电视无法下载TVbox<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88%EF%BC%88%E9%94%81%E7%B2%92%E5%BA%A6%E7%B2%97%E3%80%81QPS%E4%BD%8E%EF%BC%89"><span class="toc-text">一、性能瓶颈（锁粒度粗、QPS低）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8F%AF%E9%9D%A0%E6%80%A7%E9%97%AE%E9%A2%98%EF%BC%88%E9%94%81%E4%B8%A2%E5%A4%B1%E3%80%81%E6%AD%BB%E9%94%81%E7%AD%89%E9%97%AE%E9%A2%98%EF%BC%89"><span class="toc-text">二、可靠性问题（锁丢失、死锁等问题）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8F%AF%E7%94%A8%E6%80%A7%E9%97%AE%E9%A2%98%EF%BC%88Redis%E5%8D%95%E7%82%B9%E6%95%85%E9%9A%9C%E6%88%96%E9%87%8D%E5%90%AF%E5%BD%B1%E5%93%8D%E4%B8%9A%E5%8A%A1-%E5%B9%B6%E5%8F%91%E6%95%B0%E5%B0%8F%E4%BA%8E10w%E5%8F%91%E7%94%9F%E6%A6%82%E7%8E%87%E8%BE%83%E5%B0%8F%E5%8F%AF%E4%BB%A5%E5%BF%BD%E7%95%A5%EF%BC%89"><span class="toc-text">三、可用性问题（Redis单点故障或重启影响业务 并发数小于10w发生概率较小可以忽略）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%94%81%E6%9C%BA%E5%88%B6%E5%AE%9E%E7%8E%B0%E5%A4%8D%E6%9D%82%E3%80%81%E7%BB%86%E8%8A%82%E6%98%93%E9%94%99"><span class="toc-text">四、锁机制实现复杂、细节易错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%B8%8D%E6%94%AF%E6%8C%81%E9%AB%98%E5%B9%B6%E5%8F%91%E4%BC%98%E5%8C%96%E6%89%8B%E6%AE%B5"><span class="toc-text">五、不支持高并发优化手段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%E5%AF%B9%E6%AF%94"><span class="toc-text">总结对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E4%BC%98%E5%8C%96"><span class="toc-text">方案优化</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
