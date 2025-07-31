@@ -1,0 +1,539 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-Hans" color-mode=light>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>数据库性能瓶颈 - 笑容+</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google" content="notranslate" />
+  <meta name="keywords" content="技术博客, Java, Python, Node.js, Web 开发">
+  <meta name="description" content="
+一、常见数据库性能瓶颈类型1. CPU瓶颈
+特征：C...">
+  <meta name="author" content="单线程垃圾清理工">
+  <link rel="icon" href="/images/icons/favicon-16x16.png" type="image/png" sizes="16x16">
+  <link rel="icon" href="/images/icons/favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/icons/apple-touch-icon.png" sizes="180x180">
+  <meta rel="mask-icon" href="/images/icons/stun-logo.svg" color="#333333">
+  
+    <meta rel="msapplication-TileImage" content="/images/icons/favicon-144x144.png">
+    <meta rel="msapplication-TileColor" content="#000000">
+  
+
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  
+    
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1445822_p6ry5n7lrr.css">
+
+  
+
+  
+    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+  
+
+  
+    
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="light">
+
+      
+        
+        
+<link rel="stylesheet" href="https://cdn.bootcss.com/highlight.js/9.18.1/styles/solarized-dark.min.css" name="highlight-style" mode="dark">
+
+      
+  
+
+  <script>
+    var CONFIG = window.CONFIG || {};
+    var ZHAOO = window.ZHAOO || {};
+    CONFIG = {
+      isHome: false,
+      fancybox: true,
+      pjax: false,
+      loading: {
+        gif: '/images/theme/loading.gif',
+        lottie: ''
+      },
+      lazyload: {
+        enable: true,
+        only_post: 'false',
+        loading: {
+          gif: '/images/theme/loading.gif',
+          lottie: ''
+        }
+      },
+      donate: {
+        enable: false,
+        alipay: 'https://pic.izhaoo.com/alipay.jpg',
+        wechat: 'https://pic.izhaoo.com/wechat.jpg'
+      },
+      galleries: {
+        enable: false
+      },
+      fab: {
+        enable: true,
+        always_show: false
+      },
+      carrier: {
+        enable: true
+      },
+      daovoice: {
+        enable: false
+      },
+      preview: {
+        background: {
+          default: '',
+          api: ''
+        },
+        motto: {
+          default: '我在开了灯的床头下，想问问自己的心啊。',
+          typing: true,
+          api: 'https://v2.jinrishici.com/one.json',
+          data_contents: '["data","content"]'
+        },
+      },
+      qrcode: {
+        enable: true,
+        type: 'url',
+        image: 'https://pic.izhaoo.com/weapp-code.jpg',
+      },
+      toc: {
+        enable: true
+      },
+      scrollbar: {
+        type: 'simple'
+      },
+      notification: {
+        enable: false,
+        delay: 4500,
+        list: '',
+        page_white_list: '',
+        page_black_list: ''
+      },
+      search: {
+        enable: false,
+        path: ''
+      }
+    }
+  </script>
+
+  
+
+  
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body class="lock-screen">
+  <div class="loading" id="loading"></div>
+  
+    
+
+
+  <nav class="navbar">
+    <div class="left">
+      
+        <i class="iconfont iconhome j-navbar-back-home"></i>
+      
+      
+        <i class="iconfont iconqrcode j-navbar-qrcode"></i>
+      
+      
+        <i class="iconfont iconmoono" id="color-toggle" color-toggle="light"></i>
+      
+      
+    </div>
+    <div class="center">数据库性能瓶颈</div>
+    <div class="right">
+      <i class="iconfont iconmenu j-navbar-menu"></i>
+    </div>
+    
+      <div id="qrcode-navbar"></div>
+    
+  </nav>
+
+  
+  
+
+<nav class="menu">
+  <div class="menu-container">
+    <div class="menu-close">
+      <i class="iconfont iconbaseline-close-px"></i>
+    </div>
+    <ul class="menu-content"><li class="menu-item">
+        <a href="/ " class="underline "> 首页</a>
+      </li><li class="menu-item">
+        <a href="/archives/ " class="underline "> 归档</a>
+      </li><li class="menu-item">
+        <a href="/tags/ " class="underline "> 标签</a>
+      </li><li class="menu-item">
+        <a href="/categories/ " class="underline "> 分类</a>
+      </li><li class="menu-item">
+        <a href="/about/ " class="underline "> 关于</a>
+      </li></ul>
+    
+      <div class="menu-copyright"><p></p></div>
+    
+  </div>
+</nav>
+  <main id="main">
+  <div class="article-wrap">
+    <div class="row container">
+      <div class="col-xl-3"></div>
+      <div class="col-xl-6"><article class="article">
+  <div class="wrap">
+    <section class="head">
+  <img   class="lazyload" data-original="/images/theme/post-image.jpg" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg=="  draggable="false">
+  <div class="head-mask">
+    <h1 class="head-title">数据库性能瓶颈</h1>
+    <div class="head-info">
+      <span class="post-info-item"><i class="iconfont iconcalendar"></i>July 31, 2025</span>
+      
+      <span class="post-info-item"><i class="iconfont iconfont-size"></i>1522</span>
+    </div>
+  </div>
+</section>
+    <section class="main">
+      <section class="content">
+        
+        <hr>
+<h2 id="一、常见数据库性能瓶颈类型"><a href="#一、常见数据库性能瓶颈类型" class="headerlink" title="一、常见数据库性能瓶颈类型"></a>一、常见数据库性能瓶颈类型</h2><h3 id="1-CPU瓶颈"><a href="#1-CPU瓶颈" class="headerlink" title="1. CPU瓶颈"></a>1. <strong>CPU瓶颈</strong></h3><ul>
+<li><p>特征：CPU 使用率高，长时间接近 100%</p>
+</li>
+<li><p>原因：</p>
+<ul>
+<li><p>SQL 查询计算复杂（如大量聚合、排序、函数、子查询）</p>
+</li>
+<li><p>索引缺失导致全表扫描</p>
+</li>
+<li><p>大量连接运算 &#x2F; 频繁的解析执行计划</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-内存瓶颈"><a href="#2-内存瓶颈" class="headerlink" title="2. 内存瓶颈"></a>2. <strong>内存瓶颈</strong></h3><ul>
+<li><p>特征：频繁磁盘 I&#x2F;O，Buffer Pool 使用率低</p>
+</li>
+<li><p>原因：</p>
+<ul>
+<li><p>缓存不足（如 MySQL 的 innodb_buffer_pool_size 太小）</p>
+</li>
+<li><p>查询缓存未命中，频繁落盘</p>
+</li>
+<li><p>数据量大，超过内存载入能力</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-磁盘-I-O-瓶颈"><a href="#3-磁盘-I-O-瓶颈" class="headerlink" title="3. 磁盘 I&#x2F;O 瓶颈"></a>3. <strong>磁盘 I&#x2F;O 瓶颈</strong></h3><ul>
+<li><p>特征：磁盘读写延迟高，TPS&#x2F;IOPS 下降</p>
+</li>
+<li><p>原因：</p>
+<ul>
+<li><p>大量随机读写（如未命中缓存的大表查询）</p>
+</li>
+<li><p>写放大问题（特别是 InnoDB 的双写缓冲）</p>
+</li>
+<li><p>无效索引导致额外 I&#x2F;O</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-锁竞争-死锁"><a href="#4-锁竞争-死锁" class="headerlink" title="4. 锁竞争 &#x2F; 死锁"></a>4. <strong>锁竞争 &#x2F; 死锁</strong></h3><ul>
+<li><p>特征：SQL 执行变慢，等待锁时间长</p>
+</li>
+<li><p>原因：</p>
+<ul>
+<li><p>事务未及时提交</p>
+</li>
+<li><p>长事务持有锁过久</p>
+</li>
+<li><p>表锁&#x2F;行锁冲突频繁（如 UPDATE 全表）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="5-网络瓶颈"><a href="#5-网络瓶颈" class="headerlink" title="5. 网络瓶颈"></a>5. <strong>网络瓶颈</strong></h3><ul>
+<li><p>特征：数据库响应慢，但查询耗时短</p>
+</li>
+<li><p>原因：</p>
+<ul>
+<li><p>数据库和应用部署不在同一网络</p>
+</li>
+<li><p>查询返回结果集过大，网络传输延迟</p>
+</li>
+<li><p>高并发下连接池配置不足</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="6-连接数瓶颈"><a href="#6-连接数瓶颈" class="headerlink" title="6. 连接数瓶颈"></a>6. <strong>连接数瓶颈</strong></h3><ul>
+<li><p>特征：连接被拒绝，连接池耗尽</p>
+</li>
+<li><p>原因：</p>
+<ul>
+<li><p>每个请求一个连接，未复用</p>
+</li>
+<li><p>长连接不释放</p>
+</li>
+<li><p>应用连接数 &gt; 数据库 max_connections 限制</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="二、数据库性能瓶颈识别方式"><a href="#二、数据库性能瓶颈识别方式" class="headerlink" title="二、数据库性能瓶颈识别方式"></a>二、数据库性能瓶颈识别方式</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>用法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SHOW PROCESSLIST</code></td>
+<td>查看当前正在执行的 SQL</td>
+<td>可识别慢 SQL、锁等待</td>
+</tr>
+<tr>
+<td><code>EXPLAIN</code> 或 <code>EXPLAIN ANALYZE</code></td>
+<td>查看 SQL 执行计划</td>
+<td>判断是否使用索引</td>
+</tr>
+<tr>
+<td>慢查询日志</td>
+<td>分析执行时间长的语句</td>
+<td>MySQL 可开启 <code>slow_query_log</code></td>
+</tr>
+<tr>
+<td>数据库监控系统（如 Prometheus + Grafana）</td>
+<td>实时监控 QPS、TPS、慢 SQL、锁等待、IO 等指标</td>
+<td>建议部署</td>
+</tr>
+<tr>
+<td><code>pt-query-digest</code></td>
+<td>分析慢查询日志</td>
+<td>Percona 工具，分析效率高</td>
+</tr>
+<tr>
+<td>数据库本身状态命令</td>
+<td>如 <code>SHOW ENGINE INNODB STATUS</code></td>
+<td>查看死锁、事务等待等问题</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、数据库性能优化方向"><a href="#三、数据库性能优化方向" class="headerlink" title="三、数据库性能优化方向"></a>三、数据库性能优化方向</h2><h3 id="1-SQL-优化"><a href="#1-SQL-优化" class="headerlink" title="1. SQL 优化"></a>1. <strong>SQL 优化</strong></h3><ul>
+<li><p>加索引（避免全表扫描）</p>
+</li>
+<li><p>避免 SELECT *</p>
+</li>
+<li><p>分页优化（大 offset 慎用）</p>
+</li>
+<li><p>拆分复杂 SQL，避免嵌套查询</p>
+</li>
+<li><p>使用预编译语句（防止 SQL 注入和解析开销）</p>
+</li>
+</ul>
+<h3 id="2-索引优化"><a href="#2-索引优化" class="headerlink" title="2. 索引优化"></a>2. <strong>索引优化</strong></h3><ul>
+<li><p>建立合适的联合索引</p>
+</li>
+<li><p>避免冗余索引、重复索引</p>
+</li>
+<li><p>经常使用的条件放到索引前面</p>
+</li>
+<li><p>用 <code>覆盖索引</code> 提高效率</p>
+</li>
+</ul>
+<h3 id="3-事务与锁优化"><a href="#3-事务与锁优化" class="headerlink" title="3. 事务与锁优化"></a>3. <strong>事务与锁优化</strong></h3><ul>
+<li><p>减少事务范围，尽快提交</p>
+</li>
+<li><p>避免长事务</p>
+</li>
+<li><p>行锁优于表锁，使用更小粒度的锁</p>
+</li>
+</ul>
+<h3 id="4-缓存设计"><a href="#4-缓存设计" class="headerlink" title="4. 缓存设计"></a>4. <strong>缓存设计</strong></h3><ul>
+<li><p>利用 Redis、Memcached 缓存热点数据</p>
+</li>
+<li><p>查询缓存（应用层或数据库层）</p>
+</li>
+<li><p>CDN 缓存静态数据（对读多写少的内容有效）</p>
+</li>
+</ul>
+<h3 id="5-数据库结构优化"><a href="#5-数据库结构优化" class="headerlink" title="5. 数据库结构优化"></a>5. <strong>数据库结构优化</strong></h3><ul>
+<li><p>表分区、分表分库</p>
+</li>
+<li><p>归档冷数据</p>
+</li>
+<li><p>表字段精简，减少数据行宽</p>
+</li>
+</ul>
+<h3 id="6-系统架构优化"><a href="#6-系统架构优化" class="headerlink" title="6. 系统架构优化"></a>6. <strong>系统架构优化</strong></h3><ul>
+<li><p>主从复制，读写分离</p>
+</li>
+<li><p>分布式数据库中间件（如 ShardingSphere）</p>
+</li>
+<li><p>数据服务拆分，微服务化</p>
+</li>
+</ul>
+<hr>
+<h2 id="四、排查数据库瓶颈的思维路径"><a href="#四、排查数据库瓶颈的思维路径" class="headerlink" title="四、排查数据库瓶颈的思维路径"></a>四、排查数据库瓶颈的思维路径</h2><ol>
+<li><p><strong>慢 or 卡顿？</strong>（前端慢 or 后台慢）</p>
+</li>
+<li><p><strong>是数据库问题？</strong>（排除网络、应用层）</p>
+</li>
+<li><p><strong>资源瓶颈在哪？</strong>（CPU、内存、IO、连接）</p>
+</li>
+<li><p><strong>哪个 SQL 或业务模块引发问题？</strong></p>
+</li>
+<li><p><strong>是偶发、定时、还是持续？</strong></p>
+</li>
+<li><p><strong>有哪些慢 SQL？执行计划对吗？索引合理吗？</strong></p>
+</li>
+<li><p><strong>是否存在长事务？锁冲突？缓存未命中？</strong></p>
+</li>
+</ol>
+
+      </section>
+      <section class="extra">
+        
+          <ul class="copyright">
+  
+    <li><strong>本文作者：</strong>单线程垃圾清理工</li>
+    <li><strong>本文链接：</strong><a href="https://rongxiaohan.github.io/2025/07/31/%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88/index.html" title="https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;31&#x2F;%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88&#x2F;index.html">https:&#x2F;&#x2F;rongxiaohan.github.io&#x2F;2025&#x2F;07&#x2F;31&#x2F;%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88&#x2F;index.html</a></li>
+    <li><strong>版权声明：</strong>本博客所有文章均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" title="BY-NC-SA" target="_blank" rel="noopener">BY-NC-SA</a> 许可协议，转载请注明出处！</li>
+  
+</ul>
+        
+        
+        
+  <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag">架构设计</a></li></ul> 
+
+        
+  <nav class="nav">
+    <a></a>
+    <a href="/2025/07/30/%E5%85%B3%E4%BA%8E%E7%A7%92%E6%9D%80%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%9D%91/">关于秒杀系统的坑<i class="iconfont iconright"></i></a>
+  </nav>
+
+      </section>
+      
+    </section>
+  </div>
+</article></div>
+      <div class="col-xl-3">
+        
+          
+  <aside class="toc-wrap">
+    <h3 class="toc-title">文章目录：</h3>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%B8%B8%E8%A7%81%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88%E7%B1%BB%E5%9E%8B"><span class="toc-text">一、常见数据库性能瓶颈类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-CPU%E7%93%B6%E9%A2%88"><span class="toc-text">1. CPU瓶颈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%86%85%E5%AD%98%E7%93%B6%E9%A2%88"><span class="toc-text">2. 内存瓶颈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%A3%81%E7%9B%98-I-O-%E7%93%B6%E9%A2%88"><span class="toc-text">3. 磁盘 I&#x2F;O 瓶颈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E9%94%81%E7%AB%9E%E4%BA%89-%E6%AD%BB%E9%94%81"><span class="toc-text">4. 锁竞争 &#x2F; 死锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E7%BD%91%E7%BB%9C%E7%93%B6%E9%A2%88"><span class="toc-text">5. 网络瓶颈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E8%BF%9E%E6%8E%A5%E6%95%B0%E7%93%B6%E9%A2%88"><span class="toc-text">6. 连接数瓶颈</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%A7%E8%83%BD%E7%93%B6%E9%A2%88%E8%AF%86%E5%88%AB%E6%96%B9%E5%BC%8F"><span class="toc-text">二、数据库性能瓶颈识别方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%96%B9%E5%90%91"><span class="toc-text">三、数据库性能优化方向</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-SQL-%E4%BC%98%E5%8C%96"><span class="toc-text">1. SQL 优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%B4%A2%E5%BC%95%E4%BC%98%E5%8C%96"><span class="toc-text">2. 索引优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%BA%8B%E5%8A%A1%E4%B8%8E%E9%94%81%E4%BC%98%E5%8C%96"><span class="toc-text">3. 事务与锁优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%BC%93%E5%AD%98%E8%AE%BE%E8%AE%A1"><span class="toc-text">4. 缓存设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BB%93%E6%9E%84%E4%BC%98%E5%8C%96"><span class="toc-text">5. 数据库结构优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E4%BC%98%E5%8C%96"><span class="toc-text">6. 系统架构优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%8E%92%E6%9F%A5%E6%95%B0%E6%8D%AE%E5%BA%93%E7%93%B6%E9%A2%88%E7%9A%84%E6%80%9D%E7%BB%B4%E8%B7%AF%E5%BE%84"><span class="toc-text">四、排查数据库瓶颈的思维路径</span></a></li></ol>
+  </aside>
+
+        
+      </div>
+    </div>
+  </div>
+</main>
+  
+
+<footer class="footer">
+  <div class="footer-social"></div>
+  
+    <div class="footer-copyright"><p></p></div>
+  
+</footer>
+  
+      <div class="fab fab-plus">
+    <i class="iconfont iconplus"></i>
+  </div>
+  
+  
+  
+  <div class="fab fab-up">
+    <i class="iconfont iconcaret-up"></i>
+  </div>
+  
+  
+    <div class="scrollbar j-scrollbar">
+  <div class="scrollbar-current j-scrollbar-current"></div>
+</div>
+  
+  
+    
+<script src="/js/color-mode.js"></script>
+
+  
+  
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js"></script>
+
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
+
+
+
+
+  
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+
+
+
+
+<script src="/js/utils.js"></script>
+<script src="/js/script.js"></script>
+
+
+
+
+
+
+
+  <script>
+    (function () {
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      } else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
