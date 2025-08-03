@@ -368,17 +368,17 @@
 <h3 id="2-数据恢复原理图"><a href="#2-数据恢复原理图" class="headerlink" title="2. 数据恢复原理图"></a>2. 数据恢复原理图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">[全量备份] + [binlog 增量恢复] → [指定时间点的数据]<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h2 id="🧑‍🔧-实操指南：删库后如何恢复？"><a href="#🧑‍🔧-实操指南：删库后如何恢复？" class="headerlink" title="🧑‍🔧 实操指南：删库后如何恢复？"></a>🧑‍🔧 实操指南：删库后如何恢复？</h2><h3 id="🍱-Step-1：找到最近的全量备份文件"><a href="#🍱-Step-1：找到最近的全量备份文件" class="headerlink" title="🍱 Step 1：找到最近的全量备份文件"></a>🍱 Step 1：找到最近的全量备份文件</h3><p>比如你有一个 2025-05-20 00:00 的备份：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">prod_db_full_2025-05-20.sql<br></code></pre></td></tr></table></figure>
+<h2 id="🧑‍🔧-实操指南：删库后如何恢复？"><a href="#🧑‍🔧-实操指南：删库后如何恢复？" class="headerlink" title="🧑‍🔧 实操指南：删库后如何恢复？"></a>🧑‍🔧 实操指南：删库后如何恢复？</h2><h3 id="🍱-Step-1：找到最近的全量备份文件"><a href="#🍱-Step-1：找到最近的全量备份文件" class="headerlink" title="🍱 Step 1：找到最近的全量备份文件"></a>🍱 Step 1：找到最近的全量备份文件</h3><p>比如你有一个 2022-05-20 00:00 的备份：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">prod_db_full_2022-05-20.sql<br></code></pre></td></tr></table></figure>
 
 <hr>
-<h3 id="Step-2：恢复全量备份"><a href="#Step-2：恢复全量备份" class="headerlink" title="Step 2：恢复全量备份"></a>Step 2：恢复全量备份</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">mysql -u root -p &lt; prod_db_full_2025-05-20.sql<br></code></pre></td></tr></table></figure>
+<h3 id="Step-2：恢复全量备份"><a href="#Step-2：恢复全量备份" class="headerlink" title="Step 2：恢复全量备份"></a>Step 2：恢复全量备份</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">mysql -u root -p &lt; prod_db_full_2022-05-20.sql<br></code></pre></td></tr></table></figure>
 
 <hr>
 <h3 id="Step-3：找到误操作前的-binlog"><a href="#Step-3：找到误操作前的-binlog" class="headerlink" title="Step 3：找到误操作前的 binlog"></a>Step 3：找到误操作前的 binlog</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-keyword">SHOW</span> <span class="hljs-type">BINARY</span> LOGS;<br><span class="hljs-keyword">SHOW</span> BINLOG EVENTS <span class="hljs-keyword">IN</span> <span class="hljs-string">&#x27;mysql-bin.000123&#x27;</span>;<br></code></pre></td></tr></table></figure>
 
 <p>也可以使用 <code>mysqlbinlog</code> 工具：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">mysqlbinlog --start-datetime=<span class="hljs-string">&quot;2025-05-20 00:00:01&quot;</span> \<br>            --stop-datetime=<span class="hljs-string">&quot;2025-05-20 14:32:10&quot;</span> \<br>            --base64-output=DECODE-ROWS -v \<br>            mysql-bin.000123 &gt; binlog_recovery.sql<br></code></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">mysqlbinlog --start-datetime=<span class="hljs-string">&quot;2022-05-20 00:00:01&quot;</span> \<br>            --stop-datetime=<span class="hljs-string">&quot;2022-05-20 14:32:10&quot;</span> \<br>            --base64-output=DECODE-ROWS -v \<br>            mysql-bin.000123 &gt; binlog_recovery.sql<br></code></pre></td></tr></table></figure>
 
 <blockquote>
 <p><code>--stop-datetime</code> 是你删库的那个时间点前几秒！</p>
@@ -655,7 +655,7 @@
 </li>
 </ul>
 <p>比如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">2025-05-24T12:34:56     123 Connect  user@host on test<br>123 Query SELECT * FROM user<br>123 Quit<br></code></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs plaintext">2022-05-24T12:34:56     123 Connect  user@host on test<br>123 Query SELECT * FROM user<br>123 Quit<br></code></pre></td></tr></table></figure>
 
 <hr>
 <h3 id="⚠️-注意事项："><a href="#⚠️-注意事项：" class="headerlink" title="⚠️ 注意事项："></a>⚠️ 注意事项：</h3><ul>
